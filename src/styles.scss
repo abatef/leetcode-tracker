@@ -168,6 +168,7 @@ html, body {
 }
 
 body {
+  font-family: 'Google Sans', 'Roboto', "Helvetica Neue", sans-serif;
   background-color: #fafafa;
   color: rgba(0, 0, 0, 0.87);
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -227,125 +228,156 @@ body {
   }
 }
 
-// Fix table spacing
+// Material Design 3 Table Styling
 .mat-mdc-table {
-  .mat-mdc-cell, .mat-mdc-header-cell {
-    padding: 12px 8px !important;
-    line-height: 1.4 !important;
-  }
+  font-family: 'Google Sans', 'Roboto', sans-serif !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
 }
 
-// Fix Material Design form field issues and improve label positioning
+.mat-mdc-header-row {
+  box-shadow: none !important;
+}
+
+.mat-mdc-row {
+  box-shadow: none !important;
+}
+
+.mat-mdc-cell, .mat-mdc-header-cell {
+  border-bottom: none !important;
+  vertical-align: middle !important;
+}
+
+// Fix Material chip styling
+.mat-mdc-chip {
+  --mdc-chip-container-shape: 14px !important;
+  --mdc-chip-label-text-size: 12px !important;
+  --mdc-chip-container-height: 28px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.25px !important;
+}
+
+// Material Design ripple effects
+.mat-mdc-row {
+  position: relative;
+  overflow: hidden;
+}
+
+.mat-mdc-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.mat-mdc-row:hover::before {
+  background: rgba(103, 80, 164, 0.04);
+}
+
+// Dark theme table fixes
+.dark-theme .mat-mdc-row:hover::before {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+// Remove ALL the custom .mat-mdc-form-field styles and replace with minimal fixes only:
+
+// Remove all the custom form field styles and just keep these essential fixes:
 .mat-mdc-form-field {
-  .mat-mdc-floating-label {
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-  }
+  width: 100%;
 
-  &.mat-mdc-form-field-has-icon-suffix .mat-mdc-floating-label {
-    left: 12px !important;
-  }
-
-  .mdc-notched-outline {
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: rgba(0, 0, 0, 0.38) !important;
+  // Only fix the textarea specific case
+  &.textarea-field {
+    .mat-mdc-text-field-wrapper {
+      min-height: 120px;
     }
-  }
 
-  &.mat-focused .mdc-notched-outline {
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: var(--mdc-theme-primary) !important;
-      border-width: 2px !important;
+    textarea {
+      min-height: 80px;
+      resize: vertical;
     }
-  }
-
-  .mat-mdc-floating-label.mdc-floating-label--float-above {
-    transform: translateY(-115%) scale(0.75) !important;
-  }
-
-  .mdc-notched-outline__notch {
-    padding-top: 0 !important;
   }
 }
 
-// Dark theme form field fixes
+// Keep the dark theme support
 .dark-theme .mat-mdc-form-field {
-  .mdc-notched-outline {
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: rgba(255, 255, 255, 0.38) !important;
-    }
-  }
-
-  &.mat-focused .mdc-notched-outline {
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: var(--mdc-theme-primary) !important;
-    }
-  }
-
   .mat-mdc-floating-label {
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: rgba(255, 255, 255, 0.6) !important;
   }
 
   &.mat-focused .mat-mdc-floating-label {
     color: var(--mdc-theme-primary) !important;
   }
-
-  .mat-mdc-form-field-input-control input,
-  .mat-mdc-form-field-input-control textarea {
-    color: #ffffff !important;
-  }
-}
-
-// Utility classes
-.mt-4 { margin-top: 1rem !important; }
-.mb-4 { margin-bottom: 1rem !important; }
-.p-4 { padding: 1rem !important; }
-
-// Custom component styles with proper contrast
-.difficulty-easy {
-  background-color: #4CAF50 !important;
-  color: white !important;
-}
-
-.difficulty-medium {
-  background-color: #FF9800 !important;
-  color: white !important;
-}
-
-.difficulty-hard {
-  background-color: #F44336 !important;
-  color: white !important;
-}
-
-.status-solved {
-  background-color: #4CAF50 !important;
-  color: white !important;
-}
-
-.status-attempted {
-  background-color: #FF9800 !important;
-  color: white !important;
-}
-
-.status-not-attempted {
-  background-color: #9E9E9E !important;
-  color: white !important;
-}
-
-.status-reviewed {
-  background-color: #2196F3 !important;
-  color: white !important;
 }
 
 // Import Google Fonts
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap');
+
+// Custom Material You Scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(103, 80, 164, 0.3);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(103, 80, 164, 0.5);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(103, 80, 164, 0.7);
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+// Dark theme scrollbar
+.dark-theme {
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+// Firefox scrollbar support
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(103, 80, 164, 0.3) rgba(0, 0, 0, 0.05);
+}
+
+.dark-theme * {
+  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+}

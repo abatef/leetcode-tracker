@@ -72,7 +72,7 @@ const COMMON_TAGS = [
 
           <!-- Problem ID and Title Row -->
           <div class="form-row">
-            <mat-form-field appearance="outline" class="id-field">
+            <mat-form-field appearance="outline">
               <mat-label>Problem ID</mat-label>
               <input matInput
                      formControlName="leetcodeId"
@@ -86,10 +86,9 @@ const COMMON_TAGS = [
               </mat-error>
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="title-field">
+            <mat-form-field appearance="outline">
               <mat-label>Problem Title</mat-label>
-              <input matInput
-                     formControlName="title">
+              <input matInput formControlName="title">
               <mat-error *ngIf="problemForm.get('title')?.errors?.['required']">
                 Problem title is required
               </mat-error>
@@ -115,63 +114,27 @@ const COMMON_TAGS = [
             <mat-form-field appearance="outline">
               <mat-label>Difficulty</mat-label>
               <mat-select formControlName="difficulty">
-                <mat-option value="Easy">
-                  <div class="select-option">
-                    <mat-icon class="difficulty-icon easy">sentiment_satisfied</mat-icon>
-                    <span>Easy</span>
-                  </div>
-                </mat-option>
-                <mat-option value="Medium">
-                  <div class="select-option">
-                    <mat-icon class="difficulty-icon medium">sentiment_neutral</mat-icon>
-                    <span>Medium</span>
-                  </div>
-                </mat-option>
-                <mat-option value="Hard">
-                  <div class="select-option">
-                    <mat-icon class="difficulty-icon hard">sentiment_very_dissatisfied</mat-icon>
-                    <span>Hard</span>
-                  </div>
-                </mat-option>
+                <mat-option value="Easy">Easy</mat-option>
+                <mat-option value="Medium">Medium</mat-option>
+                <mat-option value="Hard">Hard</mat-option>
               </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
               <mat-label>Status</mat-label>
               <mat-select formControlName="status" (selectionChange)="onStatusChange($event)">
-                <mat-option value="Not Attempted">
-                  <div class="select-option">
-                    <mat-icon class="status-icon not-attempted">radio_button_unchecked</mat-icon>
-                    <span>Not Attempted</span>
-                  </div>
-                </mat-option>
-                <mat-option value="Attempted">
-                  <div class="select-option">
-                    <mat-icon class="status-icon attempted">partial_fulfillment</mat-icon>
-                    <span>Attempted</span>
-                  </div>
-                </mat-option>
-                <mat-option value="Solved">
-                  <div class="select-option">
-                    <mat-icon class="status-icon solved">check_circle</mat-icon>
-                    <span>Solved</span>
-                  </div>
-                </mat-option>
-                <mat-option value="Reviewed">
-                  <div class="select-option">
-                    <mat-icon class="status-icon reviewed">verified</mat-icon>
-                    <span>Reviewed</span>
-                  </div>
-                </mat-option>
+                <mat-option value="Not Attempted">Not Attempted</mat-option>
+                <mat-option value="Attempted">Attempted</mat-option>
+                <mat-option value="Solved">Solved</mat-option>
+                <mat-option value="Reviewed">Reviewed</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
 
           <!-- Problem URL -->
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline">
             <mat-label>Problem URL</mat-label>
-            <input matInput
-                   formControlName="url">
+            <input matInput formControlName="url">
             <mat-error *ngIf="problemForm.get('url')?.errors?.['required']">
               Problem URL is required
             </mat-error>
@@ -198,8 +161,8 @@ const COMMON_TAGS = [
             </mat-form-field>
           </div>
 
-          <!-- Solved Date (only show if status is Solved) -->
-          <mat-form-field appearance="outline" class="full-width" *ngIf="showSolvedDate">
+          <!-- Solved Date -->
+          <mat-form-field appearance="outline" *ngIf="showSolvedDate">
             <mat-label>Solved Date</mat-label>
             <input matInput
                    [matDatepicker]="solvedDatePicker"
@@ -211,7 +174,7 @@ const COMMON_TAGS = [
 
           <!-- Tags Section -->
           <div class="tags-section">
-            <mat-form-field appearance="outline" class="full-width">
+            <mat-form-field appearance="outline">
               <mat-label>Add Tag</mat-label>
               <input matInput
                      #tagInput
@@ -234,15 +197,19 @@ const COMMON_TAGS = [
             </div>
           </div>
 
-          <!-- Notes with Markdown Support -->
+          <!-- Notes -->
           <div class="notes-section">
-            <mat-form-field appearance="outline" class="full-width notes-field">
+            <mat-form-field appearance="outline" class="textarea-field">
               <mat-label>Notes</mat-label>
-              <textarea matInput
-                        #notesTextarea
-                        formControlName="notes"
-                        rows="4"></textarea>
-              <mat-hint>Markdown formatting supported: **bold**, *italic*, - bullets, 1. numbers, \`code\`</mat-hint>
+              <textarea
+                #notesTextarea
+                matInput
+                formControlName="notes"
+                placeholder="Add notes about the problem, solution approach, or key insights..."
+                rows="4"
+                maxlength="2000">
+              </textarea>
+              <mat-hint>Optional notes about the problem</mat-hint>
             </mat-form-field>
 
             <!-- Markdown Toolbar -->
@@ -295,8 +262,9 @@ const COMMON_TAGS = [
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1.5rem 0;
-      margin-bottom: 1rem;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     }
 
     .dialog-header h2 {
@@ -308,28 +276,73 @@ const COMMON_TAGS = [
       font-size: 1.5rem;
     }
 
-    .dialog-header h2 mat-icon {
-      width: 24px;
-      height: 24px;
-      font-size: 24px;
-      line-height: 24px;
-    }
-
-    .close-button {
-      margin-right: -8px;
-    }
-
     .dialog-content {
       padding: 0 1.5rem !important;
       max-height: 70vh;
       overflow-y: auto;
+      padding-top: 0 !important;
+
+      /* Enhanced scrollbar for the dialog content */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(103, 80, 164, 0.3) rgba(0, 0, 0, 0.05);
+      scroll-behavior: smooth;
+      scroll-padding-top: 1rem;
+    }
+
+    .dialog-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .dialog-content::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 3px;
+      margin: 4px 0;
+    }
+
+    .dialog-content::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(103, 80, 164, 0.3), rgba(103, 80, 164, 0.4));
+      border-radius: 3px;
+      transition: all 0.2s ease;
+    }
+
+    .dialog-content::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(103, 80, 164, 0.5), rgba(103, 80, 164, 0.6));
+      width: 8px;
+    }
+
+    .dialog-content::-webkit-scrollbar-thumb:active {
+      background: linear-gradient(180deg, rgba(103, 80, 164, 0.7), rgba(103, 80, 164, 0.8));
+    }
+
+    .dialog-content:hover::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(103, 80, 164, 0.4), rgba(103, 80, 164, 0.5));
+      box-shadow: 0 2px 4px rgba(103, 80, 164, 0.2);
     }
 
     .problem-form {
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
-      width: 100%;
+      gap: 1rem;
+      padding-top: 0.5rem;
+      scroll-behavior: smooth;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 1rem;
+      scroll-margin-top: 1rem;
+    }
+
+    .form-row:first-of-type {
+      margin-top: 0.5rem;
+    }
+
+    .form-row:first-of-type mat-form-field {
+      margin-top: 0;
+    }
+
+    .form-row mat-form-field {
+      flex: 1;
     }
 
     .auto-fetch-option {
@@ -337,114 +350,29 @@ const COMMON_TAGS = [
       background-color: rgba(63, 81, 181, 0.1);
       border-radius: 8px;
       border-left: 4px solid #3f51b5;
-    }
-
-    .auto-fetch-option mat-checkbox {
-      margin-bottom: 0.5rem;
+      margin-bottom: 1rem;
     }
 
     .auto-fetch-hint {
-      margin: 0;
-      font-size: 0.875rem;
+      margin: 0.5rem 0 0 0;
+      font-size: 0.85rem;
       color: rgba(0, 0, 0, 0.6);
-      line-height: 1.4;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 1rem;
-      align-items: flex-start;
-    }
-
-    .form-row mat-form-field {
-      flex: 1;
-    }
-
-    .id-field {
-      flex: 0 0 140px;
-      min-width: 140px;
-    }
-
-    .title-field {
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .full-width {
-      width: 100%;
     }
 
     .fetch-section {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      align-items: flex-start;
-      margin: -0.5rem 0 0.5rem 0;
+      margin: 0.5rem 0;
     }
 
     .fetch-button {
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
-      height: 48px;
-      border-radius: 8px;
-      font-weight: 500;
-    }
-
-    .fetch-button mat-icon,
-    .fetch-button mat-spinner {
-      margin: 0 !important;
-      width: 20px;
-      height: 20px;
-      font-size: 20px;
-    }
-
-    .select-option {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.25rem 0;
-    }
-
-    .select-option mat-icon {
-      width: 20px;
-      height: 20px;
-      font-size: 20px;
-      margin: 0;
-    }
-
-    .difficulty-icon.easy {
-      color: #4CAF50;
-    }
-
-    .difficulty-icon.medium {
-      color: #FF9800;
-    }
-
-    .difficulty-icon.hard {
-      color: #F44336;
-    }
-
-    .status-icon.solved {
-      color: #4CAF50;
-    }
-
-    .status-icon.attempted {
-      color: #FF9800;
-    }
-
-    .status-icon.not-attempted {
-      color: #9E9E9E;
-    }
-
-    .status-icon.reviewed {
-      color: #3F51B5;
+      height: 40px;
     }
 
     .tags-section {
-      margin: 0.5rem 0;
+      margin: 1rem 0;
+      scroll-margin-top: 1rem;
     }
 
     .selected-tags {
@@ -471,31 +399,21 @@ const COMMON_TAGS = [
     }
 
     .remove-tag {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
       cursor: pointer;
       opacity: 0.7;
       transition: opacity 0.2s ease;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .remove-tag:hover {
       opacity: 1;
-      background-color: rgba(63, 81, 181, 0.2);
     }
 
     .notes-section {
-      position: relative;
-    }
-
-    .notes-field textarea {
-      min-height: 100px;
-      resize: vertical;
-      font-family: 'Roboto Mono', monospace;
+      margin: 1rem 0;
+      scroll-margin-top: 1rem;
     }
 
     .markdown-toolbar {
@@ -512,12 +430,6 @@ const COMMON_TAGS = [
       height: 36px;
     }
 
-    .markdown-toolbar mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
-
     .dialog-actions {
       padding: 1.5rem;
       gap: 1rem;
@@ -528,33 +440,52 @@ const COMMON_TAGS = [
     .save-button {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      min-width: 160px;
-      height: 48px;
-      font-weight: 500;
-      border-radius: 8px;
+      gap: 0.5rem;
+      min-width: 140px;
+      height: 40px;
     }
 
-    .save-button mat-icon,
-    .save-button mat-spinner {
-      margin: 0 !important;
-      width: 20px;
-      height: 20px;
-      font-size: 20px;
+    /* Custom scrollbar for textarea */
+    .textarea-field textarea {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(103, 80, 164, 0.3) rgba(0, 0, 0, 0.05);
     }
 
-    /* Dark theme overrides for the form */
+    .textarea-field textarea::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .textarea-field textarea::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 3px;
+      margin: 2px;
+    }
+
+    .textarea-field textarea::-webkit-scrollbar-thumb {
+      background: rgba(103, 80, 164, 0.3);
+      border-radius: 3px;
+      transition: background-color 0.2s ease;
+    }
+
+    .textarea-field textarea::-webkit-scrollbar-thumb:hover {
+      background: rgba(103, 80, 164, 0.5);
+    }
+
+    .textarea-field textarea:focus::-webkit-scrollbar-thumb {
+      background: rgba(103, 80, 164, 0.6);
+    }
+
+    /* Dark theme */
+    :host-context(.dark-theme) .auto-fetch-option {
+      background-color: rgba(63, 81, 181, 0.2);
+    }
+
     :host-context(.dark-theme) .auto-fetch-hint {
       color: rgba(255, 255, 255, 0.6);
     }
 
     :host-context(.dark-theme) .dialog-actions {
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    :host-context(.dark-theme) .auto-fetch-option {
-      background-color: rgba(63, 81, 181, 0.2);
+      border-top-color: rgba(255, 255, 255, 0.1);
     }
 
     :host-context(.dark-theme) .tag-chip {
@@ -563,12 +494,52 @@ const COMMON_TAGS = [
       border-color: rgba(159, 168, 218, 0.3);
     }
 
-    :host-context(.dark-theme) .remove-tag:hover {
-      background-color: rgba(159, 168, 218, 0.3);
-    }
-
     :host-context(.dark-theme) .markdown-toolbar {
       background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    :host-context(.dark-theme) .dialog-header {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    :host-context(.dark-theme) .dialog-content {
+      scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+    }
+
+    :host-context(.dark-theme) .dialog-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    :host-context(.dark-theme) .dialog-content::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    :host-context(.dark-theme) .dialog-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    :host-context(.dark-theme) .dialog-content::-webkit-scrollbar-thumb:active {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    :host-context(.dark-theme) .textarea-field textarea {
+      scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+    }
+
+    :host-context(.dark-theme) .textarea-field textarea::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    :host-context(.dark-theme) .textarea-field textarea::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    :host-context(.dark-theme) .textarea-field textarea::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    :host-context(.dark-theme) .textarea-field textarea:focus::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.4);
     }
 
     @media (max-width: 600px) {
@@ -579,36 +550,23 @@ const COMMON_TAGS = [
 
       .form-row {
         flex-direction: column;
-        gap: 1rem;
       }
+    }
 
-      .id-field {
-        flex: 1;
-        min-width: auto;
+    /* Add this section for advanced scrollbar animations */
+    @keyframes scrollbar-appear {
+      from {
+        opacity: 0;
+        transform: scaleY(0.8);
       }
+      to {
+        opacity: 1;
+        transform: scaleY(1);
+      }
+    }
 
-      .dialog-content {
-        padding: 0 1rem !important;
-        max-height: 60vh;
-      }
-
-      .dialog-header {
-        padding: 1rem 1rem 0;
-      }
-
-      .dialog-actions {
-        padding: 1rem;
-        flex-wrap: wrap;
-      }
-
-      .save-button {
-        min-width: auto;
-        flex: 1;
-      }
-
-      .fetch-button {
-        width: 100%;
-      }
+    .dialog-content::-webkit-scrollbar-thumb {
+      animation: scrollbar-appear 0.2s ease-out;
     }
   `]
 })

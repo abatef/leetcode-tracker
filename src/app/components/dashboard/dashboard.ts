@@ -361,6 +361,17 @@ import { Observable } from 'rxjs';
         padding: 1rem 0.5rem;
       }
     }
+
+    .mat-mdc-card {
+      border-radius: 12px !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    :host-context(.dark-theme) .mat-mdc-card {
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2) !important;
+    }
   `]
 })
 export class DashboardComponent implements OnInit {

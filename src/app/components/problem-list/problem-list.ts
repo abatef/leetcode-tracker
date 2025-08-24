@@ -12,6 +12,7 @@ import { LeetcodeService } from '../../services/leetcode';
 import { Problem } from '../../models/problem';
 import { Observable } from 'rxjs';
 import { ProblemFormComponent } from '../problem-form/problem-form';
+import { NotesDialogComponent } from '../notes-dialog/notes-dialog';
 
 @Component({
   selector: 'app-problem-list',
@@ -95,6 +96,18 @@ import { ProblemFormComponent } from '../problem-form/problem-form';
             <ng-container matColumnDef="attempts">
               <mat-header-cell *matHeaderCellDef>Attempts</mat-header-cell>
               <mat-cell *matCellDef="let problem">{{ problem.attempts }}</mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="notes">
+              <mat-header-cell *matHeaderCellDef>Notes</mat-header-cell>
+              <mat-cell *matCellDef="let problem">
+                <button mat-icon-button
+                        (click)="viewNotes(problem)"
+                        [disabled]="!problem.notes"
+                        [title]="problem.notes ? 'View notes' : 'No notes'">
+                  <mat-icon [class.has-notes]="problem.notes">description</mat-icon>
+                </button>
+              </mat-cell>
             </ng-container>
 
             <ng-container matColumnDef="actions">
@@ -194,132 +207,342 @@ import { ProblemFormComponent } from '../problem-form/problem-form';
     }
 
     .problems-card {
+      border-radius: 12px !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+      border: 1px solid rgba(0, 0, 0, 0.05);
       overflow: hidden;
     }
 
     .problems-table {
       width: 100%;
+      font-family: 'Google Sans', 'Roboto', sans-serif;
+      background: transparent;
     }
 
-    .problem-row:hover {
-      background-color: rgba(0, 0, 0, 0.02);
+    .mat-mdc-table {
+      background: transparent !important;
     }
 
-    .problem-title {
-      max-width: 200px;
+    .mat-mdc-header-row {
+      background: rgba(103, 80, 164, 0.04) !important;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+      height: 56px;
+    }
+
+    .mat-mdc-header-cell {
+      color: #1f2937 !important;
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.8px !important;
+      text-transform: uppercase !important;
+      padding: 0 16px !important;
+      border-bottom: none !important;
+      height: 56px;
+      display: flex;
+      align-items: center;
+    }
+
+    .mat-mdc-row {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+      height: 72px;
+      transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mat-mdc-row:hover {
+      background: rgba(103, 80, 164, 0.04) !important;
+    }
+
+    .mat-mdc-row:last-child {
+      border-bottom: none !important;
+    }
+
+    .mat-mdc-cell {
+      color: #374151 !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      padding: 12px 16px !important;
+      border-bottom: none !important;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      line-height: 1.43;
+    }
+
+    // Title cell styling
+    .mat-mdc-cell .problem-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .title-link {
+      color: #1976d2 !important;
+      text-decoration: none !important;
+      font-weight: 500 !important;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      text-decoration: none;
-      color: var(--mdc-theme-primary);
-      font-weight: 500;
+      gap: 6px;
+      transition: color 0.15s ease;
     }
 
     .title-link:hover {
-      text-decoration: underline;
+      color: #1565c0 !important;
     }
 
     .external-link {
-      font-size: 1rem;
-      width: 1rem;
-      height: 1rem;
+      font-size: 16px !important;
+      width: 16px !important;
+      height: 16px !important;
+      opacity: 0.6;
+    }
+
+    // Modern Material chips
+    .mat-mdc-chip {
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      height: 28px !important;
+      border-radius: 14px !important;
+      padding: 0 12px !important;
+      border: none !important;
+      letter-spacing: 0.25px !important;
     }
 
     .difficulty-easy {
-      background-color: #4CAF50;
-      color: white;
+      background: rgba(34, 197, 94, 0.12) !important;
+      color: #059669 !important;
     }
 
     .difficulty-medium {
-      background-color: #FF9800;
-      color: white;
+      background: rgba(251, 146, 60, 0.12) !important;
+      color: #ea580c !important;
     }
 
     .difficulty-hard {
-      background-color: #F44336;
-      color: white;
+      background: rgba(239, 68, 68, 0.12) !important;
+      color: #dc2626 !important;
     }
 
     .status-solved {
-      background-color: #4CAF50;
-      color: white;
+      background: rgba(34, 197, 94, 0.12) !important;
+      color: #059669 !important;
     }
 
     .status-attempted {
-      background-color: #FF9800;
-      color: white;
+      background: rgba(251, 191, 36, 0.12) !important;
+      color: #d97706 !important;
     }
 
     .status-not-attempted {
-      background-color: #9E9E9E;
-      color: white;
+      background: rgba(148, 163, 184, 0.12) !important;
+      color: #64748b !important;
     }
 
     .status-reviewed {
-      background-color: #2196F3;
-      color: white;
+      background: rgba(99, 102, 241, 0.12) !important;
+      color: #4f46e5 !important;
     }
 
+    // Tags styling
     .tags-container {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 4px;
       flex-wrap: wrap;
     }
 
     .tag-chip {
-      font-size: 0.75rem;
-      height: 24px;
-      background-color: rgba(0, 0, 0, 0.1);
+      background: rgba(103, 80, 164, 0.08) !important;
+      color: #5b21b6 !important;
+      border: 1px solid rgba(103, 80, 164, 0.2) !important;
+      font-size: 11px !important;
+      height: 24px !important;
+      border-radius: 12px !important;
+      padding: 0 8px !important;
+      font-weight: 500 !important;
     }
 
     .more-tags {
-      font-size: 0.75rem;
-      color: rgba(0, 0, 0, 0.6);
+      font-size: 12px !important;
+      color: #6b7280 !important;
+      font-weight: 500 !important;
     }
 
+    // Notes button
+    .mat-mdc-icon-button {
+      width: 40px !important;
+      height: 40px !important;
+      border-radius: 20px !important;
+    }
+
+    .mat-mdc-icon-button mat-icon.has-notes {
+      color: #1976d2 !important;
+    }
+
+    .mat-mdc-icon-button mat-icon:not(.has-notes) {
+      color: #9ca3af !important;
+    }
+
+    .mat-mdc-icon-button:hover {
+      background: rgba(0, 0, 0, 0.04) !important;
+    }
+
+    // Actions menu button
+    .mat-mdc-icon-button[aria-expanded="true"] {
+      background: rgba(103, 80, 164, 0.08) !important;
+    }
+
+    // Empty state
     .empty-state {
       text-align: center;
-      padding: 4rem 2rem;
-      color: rgba(0, 0, 0, 0.6);
+      padding: 64px 32px;
+      color: #6b7280;
     }
 
     .empty-state mat-icon {
-      font-size: 4rem;
-      width: 4rem;
-      height: 4rem;
-      margin-bottom: 1rem;
+      font-size: 64px !important;
+      width: 64px !important;
+      height: 64px !important;
+      margin-bottom: 16px;
+      color: #d1d5db;
     }
 
     .empty-state h3 {
-      margin-bottom: 0.5rem;
-      color: rgba(0, 0, 0, 0.8);
+      font-size: 20px;
+      font-weight: 500;
+      margin: 0 0 8px 0;
+      color: #374151;
     }
 
     .empty-state p {
-      margin-bottom: 2rem;
+      font-size: 14px;
+      margin: 0 0 24px 0;
+      color: #6b7280;
+      line-height: 1.5;
     }
 
-    @media (max-width: 768px) {
-      .header {
-        flex-direction: column;
-        gap: 1.5rem;
-        align-items: stretch;
+    // Dark theme overrides
+    :host-context(.dark-theme) {
+      .problems-card {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2) !important;
       }
 
-      .add-problem-btn {
-        width: 100%;
-        justify-content: center !important;
+      .mat-mdc-header-row {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .mat-mdc-header-cell {
+        color: rgba(255, 255, 255, 0.7) !important;
+      }
+
+      .mat-mdc-row {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+      }
+
+      .mat-mdc-row:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+      }
+
+      .mat-mdc-cell {
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+
+      .title-link {
+        color: #93c5fd !important;
+      }
+
+      .title-link:hover {
+        color: #bfdbfe !important;
+      }
+
+      .difficulty-easy {
+        background: rgba(34, 197, 94, 0.2) !important;
+        color: #4ade80 !important;
+      }
+
+      .difficulty-medium {
+        background: rgba(251, 146, 60, 0.2) !important;
+        color: #fb923c !important;
+      }
+
+      .difficulty-hard {
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #f87171 !important;
+      }
+
+      .status-solved {
+        background: rgba(34, 197, 94, 0.2) !important;
+        color: #4ade80 !important;
+      }
+
+      .status-attempted {
+        background: rgba(251, 191, 36, 0.2) !important;
+        color: #fbbf24 !important;
+      }
+
+      .status-not-attempted {
+        background: rgba(148, 163, 184, 0.2) !important;
+        color: #94a3b8 !important;
+      }
+
+      .status-reviewed {
+        background: rgba(99, 102, 241, 0.2) !important;
+        color: #a5b4fc !important;
+      }
+
+      .tag-chip {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: #c4b5fd !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      }
+
+      .more-tags {
+        color: rgba(255, 255, 255, 0.6) !important;
+      }
+
+      .mat-mdc-icon-button:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+      }
+
+      .empty-state h3 {
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+
+      .empty-state mat-icon {
+        color: rgba(255, 255, 255, 0.3) !important;
+      }
+    }
+
+    // Responsive design
+    @media (max-width: 768px) {
+      .mat-mdc-cell, .mat-mdc-header-cell {
+        padding: 8px 12px !important;
+      }
+
+      .mat-mdc-row {
+        height: 64px;
+      }
+
+      .mat-mdc-header-row {
+        height: 48px;
+      }
+
+      .mat-mdc-header-cell {
+        height: 48px;
+        font-size: 11px !important;
+      }
+
+      .mat-mdc-cell {
+        height: 64px;
+        font-size: 13px !important;
       }
     }
   `]
 })
 export class ProblemListComponent implements OnInit {
   problems$: Observable<Problem[]>;
-  displayedColumns: string[] = ['leetcodeId', 'title', 'difficulty', 'status', 'tags', 'attempts', 'actions'];
+  displayedColumns: string[] = ['leetcodeId', 'title', 'difficulty', 'status', 'tags', 'attempts', 'notes', 'actions'];
 
   constructor(
     private leetcodeService: LeetcodeService,
@@ -396,5 +619,13 @@ export class ProblemListComponent implements OnInit {
         await this.leetcodeService.deleteProblem(problem.id);
       }
     }
+  }
+
+  viewNotes(problem: Problem): void {
+    this.dialog.open(NotesDialogComponent, {
+      width: '90vw',
+      maxWidth: '700px',
+      data: problem
+    });
   }
 }
