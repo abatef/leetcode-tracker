@@ -47,7 +47,15 @@ export class LeetcodeService {
     onSnapshot(q, (snapshot) => {
       const problems: Problem[] = [];
       snapshot.forEach((doc) => {
-        problems.push({ id: doc.id, ...doc.data() } as Problem);
+        const data = doc.data();
+        problems.push({
+          id: doc.id,
+          ...data,
+          createdAt: data['createdAt']?.toDate() || new Date(),
+          updatedAt: data['updatedAt']?.toDate() || new Date(),
+          solvedDate: data['solvedDate']?.toDate() || null,
+          lastAttemptDate: data['lastAttemptDate']?.toDate() || null,
+        } as Problem);
       });
       this.problemsSubject.next(problems);
       this.updateStats(problems);
@@ -71,7 +79,11 @@ export class LeetcodeService {
     const solvedDates = problems
       .filter(p => p.status === 'Solved' && p.solvedDate)
       .map(p => p.solvedDate!)
-      .sort((a, b) => b.getTime() - a.getTime());
+      .sort((a, b) => {
+        const aTime = a ? a.getTime() : 0;
+        const bTime = b ? b.getTime() : 0;
+        return bTime - aTime;
+      });
 
     if (solvedDates.length === 0) return 0;
 
@@ -100,7 +112,12 @@ export class LeetcodeService {
   private getLastActiveDate(problems: Problem[]): Date {
     const dates = problems
       .map(p => p.lastAttemptDate || p.createdAt)
-      .sort((a, b) => b.getTime() - a.getTime());
+      .sort((a, b) => {
+        if (!a && !b) return 0;
+        if (!a) return 1;
+        if (!b) return -1;
+        return b.getTime() - a.getTime();
+      });
 
     return dates[0] || new Date();
   }
@@ -119,54 +136,68 @@ export class LeetcodeService {
 
   async addProblem(problem: Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<void> {
     const user = this.authService.getCurrentUser();
-    if (!user) throw new Error('User not authenticated');
+    if (!user) {
+      console.error('User not authenticated');
+      throw new Error('User not authenticated');
+    }
 
-    const problemData: Omit<Problem, 'id'> = {
-      ...problem,
+    console.log('Adding problem with data:', problem);
+
+    // Clean the data to remove undefined values
+    const cleanData: any = {
+      leetcodeId: problem.leetcodeId,
+      title: problem.title,
+      difficulty: problem.difficulty,
+      status: problem.status,
+      url: problem.url,
+      tags: problem.tags || [],
+      attempts: problem.attempts || 0,
+      timeSpent: problem.timeSpent || 0,
+      notes: problem.notes || '',
       userId: user.uid,
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
-    const problemsRef = collection(this.firestore, 'problems');
-    await addDoc(problemsRef, problemData);
+    // Only add optional dates if they exist
+    if (problem.solvedDate) {
+      cleanData.solvedDate = problem.solvedDate;
+    }
+
+    if (problem.lastAttemptDate) {
+      cleanData.lastAttemptDate = problem.lastAttemptDate;
+    }
+
+    console.log('Final problem data:', cleanData);
+
+    try {
+      const problemsRef = collection(this.firestore, 'problems');
+      const docRef = await addDoc(problemsRef, cleanData);
+      console.log('Problem added successfully with ID:', docRef.id);
+    } catch (error) {
+      console.error('Error adding problem to Firestore:', error);
+      throw error;
+    }
   }
 
   async updateProblem(problemId: string, updates: Partial<Problem>): Promise<void> {
-    const problemRef = doc(this.firestore, 'problems', problemId);
-    await updateDoc(problemRef, {
-      ...updates,
+    // Clean updates to remove undefined values
+    const cleanUpdates: any = {
       updatedAt: new Date()
+    };
+
+    Object.keys(updates).forEach(key => {
+      if (updates[key as keyof Problem] !== undefined) {
+        cleanUpdates[key] = updates[key as keyof Problem];
+      }
     });
+
+    const problemRef = doc(this.firestore, 'problems', problemId);
+    await updateDoc(problemRef, cleanUpdates);
   }
 
   async deleteProblem(problemId: string): Promise<void> {
     const problemRef = doc(this.firestore, 'problems', problemId);
     await deleteDoc(problemRef);
-  }
-
-  // LeetCode API integration (optional - requires CORS proxy)
-  async fetchProblemDetails(problemSlug: string): Promise<any> {
-    try {
-      // Note: This requires a CORS proxy or backend service
-      // const response = await fetch(`https://leetcode.com/api/problems/algorithms/`);
-      // const data = await response.json();
-      // return data.stat_status_pairs.find((problem: any) =>
-      //   problem.stat.question__title_slug === problemSlug
-      // );
-
-      // For now, return mock data
-      return {
-        stat: {
-          question_id: Math.floor(Math.random() * 3000),
-          question__title: 'Sample Problem',
-          question__title_slug: problemSlug,
-          difficulty: { level: Math.floor(Math.random() * 3) + 1 }
-        }
-      };
-    } catch (error) {
-      console.error('Failed to fetch problem details:', error);
-      throw error;
-    }
   }
 }

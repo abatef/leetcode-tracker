@@ -393,7 +393,9 @@ export class DashboardComponent implements OnInit {
       .sort((a, b) => {
         const dateA = a.lastAttemptDate || a.updatedAt;
         const dateB = b.lastAttemptDate || b.updatedAt;
-        return dateB.getTime() - dateA.getTime();
+        const timeA = dateA ? dateA.getTime() : 0;
+        const timeB = dateB ? dateB.getTime() : 0;
+        return timeB - timeA;
       })
       .slice(0, 5)
       .map(problem => ({

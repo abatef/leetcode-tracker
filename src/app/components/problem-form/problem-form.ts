@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -10,16 +10,11 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatSliderModule } from '@angular/material/slider';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { Problem } from '../../models/problem';
-import { LeetcodeService } from '../../services/leetcode';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { MatChipInputEvent } from '@angular/material/chips';
-import { Observable, startWith, map } from 'rxjs';
 
 // Common LeetCode problem tags for autocomplete
 const COMMON_TAGS = [
@@ -47,11 +42,10 @@ const COMMON_TAGS = [
     MatIconModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatSliderModule,
+    MatAutocompleteModule,
     MatCheckboxModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule,
-    MatAutocompleteModule
+    MatSnackBarModule
   ],
   template: `
     <div class="dialog-container">
@@ -68,6 +62,14 @@ const COMMON_TAGS = [
       <mat-dialog-content class="dialog-content">
         <form [formGroup]="problemForm" class="problem-form">
 
+          <!-- Auto-fetch Option -->
+          <div class="auto-fetch-option" *ngIf="!data">
+            <mat-checkbox formControlName="autoFetch" color="primary">
+              Auto-fetch problem details from LeetCode
+            </mat-checkbox>
+            <p class="auto-fetch-hint">When enabled, problem details will be fetched automatically when you enter the Problem ID</p>
+          </div>
+
           <!-- Problem ID and Title Row -->
           <div class="form-row">
             <mat-form-field appearance="outline" class="id-field">
@@ -75,9 +77,7 @@ const COMMON_TAGS = [
               <input matInput
                      formControlName="leetcodeId"
                      type="number"
-                     placeholder="1"
                      (blur)="onProblemIdChange()">
-              <mat-icon matSuffix>tag</mat-icon>
               <mat-error *ngIf="problemForm.get('leetcodeId')?.errors?.['required']">
                 Problem ID is required
               </mat-error>
@@ -89,29 +89,25 @@ const COMMON_TAGS = [
             <mat-form-field appearance="outline" class="title-field">
               <mat-label>Problem Title</mat-label>
               <input matInput
-                     formControlName="title"
-                     placeholder="Two Sum"
-                     #titleInput>
-              <mat-icon matSuffix>title</mat-icon>
+                     formControlName="title">
               <mat-error *ngIf="problemForm.get('title')?.errors?.['required']">
                 Problem title is required
               </mat-error>
             </mat-form-field>
           </div>
 
-          <!-- Auto-fetch button -->
-          <div class="fetch-section" *ngIf="!data">
+          <!-- Manual fetch button (only show if auto-fetch is disabled) -->
+          <div class="fetch-section" *ngIf="!data && !problemForm.get('autoFetch')?.value">
             <button type="button"
                     mat-stroked-button
                     color="primary"
                     (click)="fetchProblemDetails()"
                     [disabled]="isLoading || !problemForm.get('leetcodeId')?.value"
                     class="fetch-button">
-              <mat-icon *ngIf="!isLoading">cloud_download</mat-icon>
               <mat-spinner *ngIf="isLoading" diameter="16"></mat-spinner>
-              <span>{{ isLoading ? 'Fetching...' : 'Auto-fetch from LeetCode' }}</span>
+              <mat-icon *ngIf="!isLoading">cloud_download</mat-icon>
+              <span>{{ isLoading ? 'Fetching...' : 'Fetch from LeetCode' }}</span>
             </button>
-            <span class="fetch-hint">Fill in the Problem ID and click to auto-populate details</span>
           </div>
 
           <!-- Difficulty and Status Row -->
@@ -120,20 +116,20 @@ const COMMON_TAGS = [
               <mat-label>Difficulty</mat-label>
               <mat-select formControlName="difficulty">
                 <mat-option value="Easy">
-                  <div class="difficulty-option easy">
-                    <mat-icon>sentiment_satisfied</mat-icon>
+                  <div class="select-option">
+                    <mat-icon class="difficulty-icon easy">sentiment_satisfied</mat-icon>
                     <span>Easy</span>
                   </div>
                 </mat-option>
                 <mat-option value="Medium">
-                  <div class="difficulty-option medium">
-                    <mat-icon>sentiment_neutral</mat-icon>
+                  <div class="select-option">
+                    <mat-icon class="difficulty-icon medium">sentiment_neutral</mat-icon>
                     <span>Medium</span>
                   </div>
                 </mat-option>
                 <mat-option value="Hard">
-                  <div class="difficulty-option hard">
-                    <mat-icon>sentiment_very_dissatisfied</mat-icon>
+                  <div class="select-option">
+                    <mat-icon class="difficulty-icon hard">sentiment_very_dissatisfied</mat-icon>
                     <span>Hard</span>
                   </div>
                 </mat-option>
@@ -144,26 +140,26 @@ const COMMON_TAGS = [
               <mat-label>Status</mat-label>
               <mat-select formControlName="status" (selectionChange)="onStatusChange($event)">
                 <mat-option value="Not Attempted">
-                  <div class="status-option not-attempted">
-                    <mat-icon>radio_button_unchecked</mat-icon>
+                  <div class="select-option">
+                    <mat-icon class="status-icon not-attempted">radio_button_unchecked</mat-icon>
                     <span>Not Attempted</span>
                   </div>
                 </mat-option>
                 <mat-option value="Attempted">
-                  <div class="status-option attempted">
-                    <mat-icon>partial_fulfillment</mat-icon>
+                  <div class="select-option">
+                    <mat-icon class="status-icon attempted">partial_fulfillment</mat-icon>
                     <span>Attempted</span>
                   </div>
                 </mat-option>
                 <mat-option value="Solved">
-                  <div class="status-option solved">
-                    <mat-icon>check_circle</mat-icon>
+                  <div class="select-option">
+                    <mat-icon class="status-icon solved">check_circle</mat-icon>
                     <span>Solved</span>
                   </div>
                 </mat-option>
                 <mat-option value="Reviewed">
-                  <div class="status-option reviewed">
-                    <mat-icon>verified</mat-icon>
+                  <div class="select-option">
+                    <mat-icon class="status-icon reviewed">verified</mat-icon>
                     <span>Reviewed</span>
                   </div>
                 </mat-option>
@@ -175,14 +171,9 @@ const COMMON_TAGS = [
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Problem URL</mat-label>
             <input matInput
-                   formControlName="url"
-                   placeholder="https://leetcode.com/problems/two-sum/">
-            <mat-icon matSuffix>link</mat-icon>
+                   formControlName="url">
             <mat-error *ngIf="problemForm.get('url')?.errors?.['required']">
               Problem URL is required
-            </mat-error>
-            <mat-error *ngIf="problemForm.get('url')?.errors?.['pattern']">
-              Please enter a valid LeetCode problem URL
             </mat-error>
           </mat-form-field>
 
@@ -195,7 +186,6 @@ const COMMON_TAGS = [
                      type="number"
                      min="0"
                      max="100">
-              <mat-icon matSuffix>refresh</mat-icon>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
@@ -205,7 +195,6 @@ const COMMON_TAGS = [
                      type="number"
                      min="0"
                      max="1440">
-              <mat-icon matSuffix>access_time</mat-icon>
             </mat-form-field>
           </div>
 
@@ -220,16 +209,61 @@ const COMMON_TAGS = [
             <mat-datepicker #solvedDatePicker></mat-datepicker>
           </mat-form-field>
 
-          <!-- Notes -->
-          <mat-form-field appearance="outline" class="full-width notes-field">
-            <mat-label>Notes</mat-label>
-            <textarea matInput
-                      formControlName="notes"
-                      rows="3"
-                      placeholder="Add your notes, approach, solution details, or key insights..."></textarea>
-            <mat-icon matSuffix>notes</mat-icon>
-            <mat-hint>Share your approach, key insights, or things to remember</mat-hint>
-          </mat-form-field>
+          <!-- Tags Section -->
+          <div class="tags-section">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Add Tag</mat-label>
+              <input matInput
+                     #tagInput
+                     [matAutocomplete]="auto"
+                     (keyup.enter)="addTag(tagInput.value); tagInput.value = ''">
+              <mat-autocomplete #auto="matAutocomplete" (optionSelected)="addTag($event.option.value); tagInput.value = ''">
+                <mat-option *ngFor="let tag of filteredTags" [value]="tag">
+                  {{ tag }}
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+
+            <div class="selected-tags" *ngIf="selectedTags.length > 0">
+              <div class="tags-list">
+                <span class="tag-chip" *ngFor="let tag of selectedTags">
+                  {{ tag }}
+                  <mat-icon (click)="removeTag(tag)" class="remove-tag">close</mat-icon>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes with Markdown Support -->
+          <div class="notes-section">
+            <mat-form-field appearance="outline" class="full-width notes-field">
+              <mat-label>Notes</mat-label>
+              <textarea matInput
+                        #notesTextarea
+                        formControlName="notes"
+                        rows="4"></textarea>
+              <mat-hint>Markdown formatting supported: **bold**, *italic*, - bullets, 1. numbers, \`code\`</mat-hint>
+            </mat-form-field>
+
+            <!-- Markdown Toolbar -->
+            <div class="markdown-toolbar">
+              <button type="button" mat-icon-button (click)="insertMarkdown('bold')" title="Bold">
+                <mat-icon>format_bold</mat-icon>
+              </button>
+              <button type="button" mat-icon-button (click)="insertMarkdown('italic')" title="Italic">
+                <mat-icon>format_italic</mat-icon>
+              </button>
+              <button type="button" mat-icon-button (click)="insertMarkdown('bullet')" title="Bullet List">
+                <mat-icon>format_list_bulleted</mat-icon>
+              </button>
+              <button type="button" mat-icon-button (click)="insertMarkdown('number')" title="Numbered List">
+                <mat-icon>format_list_numbered</mat-icon>
+              </button>
+              <button type="button" mat-icon-button (click)="insertMarkdown('code')" title="Code">
+                <mat-icon>code</mat-icon>
+              </button>
+            </div>
+          </div>
 
         </form>
       </mat-dialog-content>
@@ -298,6 +332,24 @@ const COMMON_TAGS = [
       width: 100%;
     }
 
+    .auto-fetch-option {
+      padding: 1rem;
+      background-color: rgba(63, 81, 181, 0.1);
+      border-radius: 8px;
+      border-left: 4px solid #3f51b5;
+    }
+
+    .auto-fetch-option mat-checkbox {
+      margin-bottom: 0.5rem;
+    }
+
+    .auto-fetch-hint {
+      margin: 0;
+      font-size: 0.875rem;
+      color: rgba(0, 0, 0, 0.6);
+      line-height: 1.4;
+    }
+
     .form-row {
       display: flex;
       gap: 1rem;
@@ -335,47 +387,135 @@ const COMMON_TAGS = [
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      padding: 0.5rem 1rem;
+      padding: 0.75rem 1.5rem;
+      height: 48px;
+      border-radius: 8px;
+      font-weight: 500;
     }
 
     .fetch-button mat-icon,
     .fetch-button mat-spinner {
       margin: 0 !important;
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
     }
 
-    .fetch-hint {
-      font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
-      line-height: 1.4;
-    }
-
-    .difficulty-option, .status-option {
+    .select-option {
       display: flex;
       align-items: center;
       gap: 0.75rem;
       padding: 0.25rem 0;
     }
 
-    .difficulty-option mat-icon, .status-option mat-icon {
+    .select-option mat-icon {
       width: 20px;
       height: 20px;
       font-size: 20px;
-      line-height: 20px;
       margin: 0;
     }
 
-    .difficulty-option.easy mat-icon { color: #4CAF50; }
-    .difficulty-option.medium mat-icon { color: #FF9800; }
-    .difficulty-option.hard mat-icon { color: #F44336; }
+    .difficulty-icon.easy {
+      color: #4CAF50;
+    }
 
-    .status-option.solved mat-icon { color: #4CAF50; }
-    .status-option.attempted mat-icon { color: #FF9800; }
-    .status-option.not-attempted mat-icon { color: #9E9E9E; }
-    .status-option.reviewed mat-icon { color: #3F51B5; }
+    .difficulty-icon.medium {
+      color: #FF9800;
+    }
+
+    .difficulty-icon.hard {
+      color: #F44336;
+    }
+
+    .status-icon.solved {
+      color: #4CAF50;
+    }
+
+    .status-icon.attempted {
+      color: #FF9800;
+    }
+
+    .status-icon.not-attempted {
+      color: #9E9E9E;
+    }
+
+    .status-icon.reviewed {
+      color: #3F51B5;
+    }
+
+    .tags-section {
+      margin: 0.5rem 0;
+    }
+
+    .selected-tags {
+      margin-top: 1rem;
+    }
+
+    .tags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background-color: rgba(63, 81, 181, 0.1);
+      border: 1px solid rgba(63, 81, 181, 0.3);
+      border-radius: 20px;
+      font-size: 0.875rem;
+      color: #3f51b5;
+      font-weight: 500;
+    }
+
+    .remove-tag {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .remove-tag:hover {
+      opacity: 1;
+      background-color: rgba(63, 81, 181, 0.2);
+    }
+
+    .notes-section {
+      position: relative;
+    }
 
     .notes-field textarea {
-      min-height: 80px;
+      min-height: 100px;
       resize: vertical;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .markdown-toolbar {
+      display: flex;
+      gap: 0.25rem;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 4px;
+    }
+
+    .markdown-toolbar button {
+      width: 36px;
+      height: 36px;
+    }
+
+    .markdown-toolbar mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
     }
 
     .dialog-actions {
@@ -389,24 +529,46 @@ const COMMON_TAGS = [
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      min-width: 140px;
+      gap: 0.75rem;
+      min-width: 160px;
+      height: 48px;
+      font-weight: 500;
+      border-radius: 8px;
     }
 
     .save-button mat-icon,
     .save-button mat-spinner {
       margin: 0 !important;
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
     }
 
     /* Dark theme overrides for the form */
-    :host-context(.dark-theme) {
-      .fetch-hint {
-        color: rgba(255, 255, 255, 0.6);
-      }
+    :host-context(.dark-theme) .auto-fetch-hint {
+      color: rgba(255, 255, 255, 0.6);
+    }
 
-      .dialog-actions {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-      }
+    :host-context(.dark-theme) .dialog-actions {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    :host-context(.dark-theme) .auto-fetch-option {
+      background-color: rgba(63, 81, 181, 0.2);
+    }
+
+    :host-context(.dark-theme) .tag-chip {
+      background-color: rgba(63, 81, 181, 0.2);
+      color: #9fa8da;
+      border-color: rgba(159, 168, 218, 0.3);
+    }
+
+    :host-context(.dark-theme) .remove-tag:hover {
+      background-color: rgba(159, 168, 218, 0.3);
+    }
+
+    :host-context(.dark-theme) .markdown-toolbar {
+      background-color: rgba(255, 255, 255, 0.05);
     }
 
     @media (max-width: 600px) {
@@ -443,109 +605,144 @@ const COMMON_TAGS = [
         min-width: auto;
         flex: 1;
       }
+
+      .fetch-button {
+        width: 100%;
+      }
     }
   `]
 })
 export class ProblemFormComponent implements OnInit {
-  @ViewChild('tagInput') tagInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('notesTextarea') notesTextarea!: ElementRef<HTMLTextAreaElement>;
 
   problemForm: FormGroup;
+  selectedTags: string[] = [];
+  filteredTags: string[] = COMMON_TAGS;
   isLoading = false;
-  showAdvanced = false;
   showSolvedDate = false;
-
-  // Tags
-  tags: string[] = [];
-  separatorKeysCodes: number[] = [ENTER, COMMA];
-  filteredTags: Observable<string[]>;
-
-  // Common companies for autocomplete
-  commonCompanies = [
-    'Google', 'Amazon', 'Microsoft', 'Facebook', 'Apple', 'Netflix', 'Uber',
-    'Adobe', 'LinkedIn', 'Twitter', 'Airbnb', 'Salesforce', 'Oracle', 'IBM'
-  ];
 
   constructor(
     private fb: FormBuilder,
-    private leetcodeService: LeetcodeService,
-    private snackBar: MatSnackBar,
     public dialogRef: MatDialogRef<ProblemFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Problem | null
   ) {
-    this.problemForm = this.createForm();
-    this.filteredTags = this.problemForm.get('tagInput')!.valueChanges.pipe(
-      startWith(''),
-      map((value: string | null) => this._filterTags(value || ''))
-    );
+    this.problemForm = this.fb.group({
+      leetcodeId: ['', [Validators.required, Validators.min(1)]],
+      title: ['', Validators.required],
+      difficulty: ['Easy', Validators.required],
+      status: ['Not Attempted', Validators.required],
+      url: ['', Validators.required],
+      notes: [''],
+      attempts: [0, [Validators.min(0)]],
+      timeSpent: [0, [Validators.min(0)]],
+      solvedDate: [null],
+      autoFetch: [true]
+    });
   }
 
   ngOnInit(): void {
     if (this.data) {
-      this.populateForm(this.data);
+      this.problemForm.patchValue({
+        leetcodeId: this.data.leetcodeId,
+        title: this.data.title,
+        difficulty: this.data.difficulty,
+        status: this.data.status,
+        url: this.data.url,
+        notes: this.data.notes,
+        attempts: this.data.attempts,
+        timeSpent: this.data.timeSpent,
+        solvedDate: this.data.solvedDate,
+        autoFetch: false
+      });
+      this.selectedTags = [...this.data.tags];
+      this.showSolvedDate = this.data.status === 'Solved';
     }
 
-    // Watch status changes to show/hide solved date
     this.problemForm.get('status')?.valueChanges.subscribe(status => {
       this.showSolvedDate = status === 'Solved';
       if (status === 'Solved' && !this.problemForm.get('solvedDate')?.value) {
         this.problemForm.patchValue({ solvedDate: new Date() });
       }
     });
-  }
 
-  private createForm(): FormGroup {
-    return this.fb.group({
-      leetcodeId: ['', [Validators.required, Validators.min(1)]],
-      title: ['', Validators.required],
-      difficulty: ['Easy', Validators.required],
-      status: ['Not Attempted', Validators.required],
-      url: ['', [Validators.required, this.leetcodeUrlValidator]],
-      tagInput: [''],
-      attempts: [0, [Validators.required, Validators.min(0)]],
-      timeSpent: [0, [Validators.required, Validators.min(0)]],
-      notes: [''],
-      solvedDate: [null],
-      personalRating: [5],
-      companyTag: [[]],
-      priority: ['Medium'],
-      isBookmarked: [false],
-      needsReview: [false]
+    this.problemForm.get('leetcodeId')?.valueChanges.subscribe(() => {
+      if (this.problemForm.get('autoFetch')?.value && !this.data) {
+        const leetcodeId = this.problemForm.get('leetcodeId')?.value;
+        if (leetcodeId && leetcodeId > 0) {
+          setTimeout(() => this.fetchProblemDetails(), 500);
+        }
+      }
     });
   }
 
-  private populateForm(problem: Problem): void {
-    this.tags = [...problem.tags];
-    this.showSolvedDate = problem.status === 'Solved';
+  onProblemIdChange(): void {
+    const leetcodeId = this.problemForm.get('leetcodeId')?.value;
+    const title = this.problemForm.get('title')?.value;
+    if (leetcodeId && title && !this.problemForm.get('url')?.value) {
+      const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+      this.problemForm.patchValue({
+        url: `https://leetcode.com/problems/${slug}/`
+      });
+    }
+  }
 
-    this.problemForm.patchValue({
-      leetcodeId: problem.leetcodeId,
-      title: problem.title,
-      difficulty: problem.difficulty,
-      status: problem.status,
-      url: problem.url,
-      attempts: problem.attempts,
-      timeSpent: problem.timeSpent,
-      notes: problem.notes,
-      solvedDate: problem.solvedDate,
-      personalRating: (problem as any).personalRating || 5,
-      companyTag: (problem as any).companyTag || [],
-      priority: (problem as any).priority || 'Medium',
-      isBookmarked: (problem as any).isBookmarked || false,
-      needsReview: (problem as any).needsReview || false
+  onStatusChange(event: any): void {
+    const status = event.value;
+    this.showSolvedDate = status === 'Solved';
+    if (status === 'Solved' && !this.problemForm.get('solvedDate')?.value) {
+      this.problemForm.patchValue({ solvedDate: new Date() });
+    }
+  }
+
+  addTag(tag: string): void {
+    if (tag && !this.selectedTags.includes(tag)) {
+      this.selectedTags.push(tag);
+    }
+  }
+
+  removeTag(tag: string): void {
+    const index = this.selectedTags.indexOf(tag);
+    if (index >= 0) {
+      this.selectedTags.splice(index, 1);
+    }
+  }
+
+  insertMarkdown(type: string): void {
+    const textarea = this.notesTextarea.nativeElement;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    const notesControl = this.problemForm.get('notes');
+    let newText = '';
+
+    switch (type) {
+      case 'bold':
+        newText = selectedText ? `**${selectedText}**` : '**bold text**';
+        break;
+      case 'italic':
+        newText = selectedText ? `*${selectedText}*` : '*italic text*';
+        break;
+      case 'bullet':
+        newText = selectedText ? `- ${selectedText}` : '- bullet point';
+        break;
+      case 'number':
+        newText = selectedText ? `1. ${selectedText}` : '1. numbered item';
+        break;
+      case 'code':
+        newText = selectedText ? `\`${selectedText}\`` : '`code`';
+        break;
+    }
+
+    const currentValue = notesControl?.value || '';
+    const newValue = currentValue.substring(0, start) + newText + currentValue.substring(end);
+    notesControl?.setValue(newValue);
+
+    // Set cursor position
+    setTimeout(() => {
+      const newPosition = start + newText.length;
+      textarea.setSelectionRange(newPosition, newPosition);
+      textarea.focus();
     });
-  }
-
-  private leetcodeUrlValidator(control: AbstractControl): {[key: string]: any} | null {
-    if (!control.value) return null;
-    const urlPattern = /^https:\/\/leetcode\.com\/problems\/.+/;
-    return urlPattern.test(control.value) ? null : { 'pattern': { value: control.value } };
-  }
-
-  private _filterTags(value: string): string[] {
-    const filterValue = value.toLowerCase();
-    return COMMON_TAGS
-      .filter(tag => tag.toLowerCase().includes(filterValue))
-      .filter(tag => !this.tags.includes(tag));
   }
 
   async fetchProblemDetails(): Promise<void> {
@@ -554,11 +751,8 @@ export class ProblemFormComponent implements OnInit {
 
     this.isLoading = true;
     try {
-      // This is a mock implementation - in a real app you'd call a backend service
-      // that scrapes LeetCode or uses their API
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Mock data based on problem ID
       const mockData = this.generateMockProblemData(leetcodeId);
 
       this.problemForm.patchValue({
@@ -567,19 +761,15 @@ export class ProblemFormComponent implements OnInit {
         url: mockData.url
       });
 
-      this.tags = [...mockData.tags];
-
-      this.snackBar.open('Problem details fetched successfully!', 'Close', { duration: 3000 });
+      this.selectedTags = [...mockData.tags];
     } catch (error) {
       console.error('Failed to fetch problem details:', error);
-      this.snackBar.open('Failed to fetch problem details. Please fill manually.', 'Close', { duration: 5000 });
     } finally {
       this.isLoading = false;
     }
   }
 
   private generateMockProblemData(id: number): any {
-    // Mock data generation - replace with actual API call
     const mockProblems: {[key: number]: any} = {
       1: { title: 'Two Sum', difficulty: 'Easy', tags: ['Array', 'Hash Table'] },
       2: { title: 'Add Two Numbers', difficulty: 'Medium', tags: ['Linked List', 'Math'] },
@@ -599,91 +789,19 @@ export class ProblemFormComponent implements OnInit {
     };
   }
 
-  onProblemIdChange(): void {
-    const leetcodeId = this.problemForm.get('leetcodeId')?.value;
-    if (leetcodeId && !this.problemForm.get('url')?.value) {
-      // Auto-generate URL if not provided
-      const baseUrl = 'https://leetcode.com/problems/problem-' + leetcodeId + '/';
-      this.problemForm.patchValue({ url: baseUrl });
-    }
-  }
-
-  onStatusChange(event: any): void {
-    const status = event.value;
-    this.showSolvedDate = status === 'Solved';
-
-    if (status === 'Solved' && !this.problemForm.get('solvedDate')?.value) {
-      this.problemForm.patchValue({ solvedDate: new Date() });
-    }
-  }
-
-  // Tag management methods
-  addTag(event: MatChipInputEvent): void {
-    const value = (event.value || '').trim();
-    if (value && !this.tags.includes(value)) {
-      this.tags.push(value);
-    }
-    event.chipInput!.clear();
-    this.problemForm.get('tagInput')?.setValue('');
-  }
-
-  removeTag(tag: string): void {
-    const index = this.tags.indexOf(tag);
-    if (index >= 0) {
-      this.tags.splice(index, 1);
-    }
-  }
-
-  selectedTag(event: any): void {
-    const tag = event.option.value;
-    if (!this.tags.includes(tag)) {
-      this.tags.push(tag);
-    }
-    this.tagInput.nativeElement.value = '';
-    this.problemForm.get('tagInput')?.setValue('');
-  }
-
-  addSuggestedTag(tag: string): void {
-    if (!this.tags.includes(tag)) {
-      this.tags.push(tag);
-    }
-  }
-
-  getTagSuggestions(): string[] {
-    const difficulty = this.problemForm.get('difficulty')?.value;
-    const suggestions: {[key: string]: string[]} = {
-      'Easy': ['Array', 'String', 'Hash Table', 'Math'],
-      'Medium': ['Dynamic Programming', 'Tree', 'Graph', 'Backtracking'],
-      'Hard': ['Dynamic Programming', 'Graph', 'Tree', 'Backtracking', 'Binary Search']
-    };
-
-    return suggestions[difficulty]?.filter(tag => !this.tags.includes(tag)).slice(0, 3) || [];
-  }
-
-  async saveDraft(): Promise<void> {
-    // Save as draft (status = 'Not Attempted', minimal validation)
-    this.problemForm.patchValue({ status: 'Not Attempted' });
-    await this.saveForm(true);
-  }
-
   async onSave(): Promise<void> {
-    await this.saveForm(false);
-  }
-
-  private async saveForm(isDraft: boolean): Promise<void> {
-    if (this.problemForm.invalid && !isDraft) return;
+    if (this.problemForm.invalid) return;
 
     this.isLoading = true;
     try {
       const formValue = this.problemForm.value;
-
-      const problemData: Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'> = {
+      const problemData = {
         leetcodeId: formValue.leetcodeId,
         title: formValue.title,
         difficulty: formValue.difficulty,
         status: formValue.status,
         url: formValue.url,
-        tags: [...this.tags],
+        tags: [...this.selectedTags],
         attempts: formValue.attempts,
         timeSpent: formValue.timeSpent,
         notes: formValue.notes,
@@ -691,43 +809,15 @@ export class ProblemFormComponent implements OnInit {
         lastAttemptDate: formValue.status !== 'Not Attempted' ? new Date() : undefined
       };
 
-      // Add extended properties
-      const extendedData = {
-        ...problemData,
-        personalRating: formValue.personalRating,
-        companyTag: formValue.companyTag,
-        priority: formValue.priority,
-        isBookmarked: formValue.isBookmarked,
-        needsReview: formValue.needsReview,
-        isDraft
-      };
-
-      if (this.data?.id) {
-        await this.leetcodeService.updateProblem(this.data.id, extendedData);
-        this.snackBar.open('Problem updated successfully!', 'Close', { duration: 3000 });
-      } else {
-        await this.leetcodeService.addProblem(extendedData);
-        this.snackBar.open(
-          isDraft ? 'Problem saved as draft!' : 'Problem added successfully!',
-          'Close',
-          { duration: 3000 }
-        );
-      }
-
-      this.dialogRef.close(true);
+      this.dialogRef.close(problemData);
     } catch (error) {
       console.error('Failed to save problem:', error);
-      this.snackBar.open('Failed to save problem. Please try again.', 'Close', { duration: 5000 });
     } finally {
       this.isLoading = false;
     }
   }
 
   onCancel(): void {
-    if (this.problemForm.dirty) {
-      const confirmed = confirm('You have unsaved changes. Are you sure you want to cancel?');
-      if (!confirmed) return;
-    }
-    this.dialogRef.close(false);
+    this.dialogRef.close();
   }
 }

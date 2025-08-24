@@ -7,6 +7,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatCardModule } from '@angular/material/card';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { LeetcodeService } from '../../services/leetcode';
 import { Problem } from '../../models/problem';
 import { Observable } from 'rxjs';
@@ -23,7 +24,8 @@ import { ProblemFormComponent } from '../problem-form/problem-form';
     MatChipsModule,
     MatCardModule,
     MatMenuModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSnackBarModule
   ],
   template: `
     <div class="problem-list-container">
@@ -32,9 +34,9 @@ import { ProblemFormComponent } from '../problem-form/problem-form';
           <h1>Problems</h1>
           <p>Manage and track your LeetCode problems</p>
         </div>
-        <button mat-raised-button color="primary" (click)="openAddProblemDialog()">
+        <button mat-raised-button color="primary" (click)="openAddProblemDialog()" class="add-problem-btn">
           <mat-icon>add</mat-icon>
-          Add Problem
+          <span>Add Problem</span>
         </button>
       </div>
 
@@ -143,17 +145,52 @@ import { ProblemFormComponent } from '../problem-form/problem-form';
       justify-content: space-between;
       align-items: flex-end;
       margin-bottom: 2rem;
+      gap: 1rem;
     }
 
     .header-content h1 {
       font-size: 2.5rem;
       font-weight: 400;
       margin-bottom: 0.5rem;
+      line-height: 1.2;
     }
 
     .header-content p {
       color: rgba(0, 0, 0, 0.6);
       margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .add-problem-btn {
+      height: 56px !important;
+      padding: 0 32px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 12px !important;
+      font-weight: 500 !important;
+      border-radius: 12px !important;
+      flex-shrink: 0;
+      min-width: 180px;
+      font-size: 16px !important;
+    }
+
+    .add-problem-btn mat-icon {
+      font-size: 24px !important;
+      width: 24px !important;
+      height: 24px !important;
+      margin: 0 !important;
+    }
+
+    .add-problem-btn span {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    /* Dark theme override */
+    :host-context(.dark-theme) .header-content p {
+      color: rgba(255, 255, 255, 0.6);
     }
 
     .problems-card {
@@ -269,16 +306,13 @@ import { ProblemFormComponent } from '../problem-form/problem-form';
     @media (max-width: 768px) {
       .header {
         flex-direction: column;
-        gap: 1rem;
+        gap: 1.5rem;
         align-items: stretch;
       }
 
-      .problems-table {
-        font-size: 0.9rem;
-      }
-
-      .problem-title {
-        max-width: 150px;
+      .add-problem-btn {
+        width: 100%;
+        justify-content: center !important;
       }
     }
   `]
@@ -289,7 +323,8 @@ export class ProblemListComponent implements OnInit {
 
   constructor(
     private leetcodeService: LeetcodeService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar // Inject MatSnackBar
   ) {
     this.problems$ = this.leetcodeService.problems$;
   }
@@ -297,6 +332,8 @@ export class ProblemListComponent implements OnInit {
   ngOnInit(): void {}
 
   openAddProblemDialog(): void {
+    console.log('Opening add problem dialog...'); // Debug log
+
     const dialogRef = this.dialog.open(ProblemFormComponent, {
       width: '90vw',
       maxWidth: '600px',
@@ -306,12 +343,29 @@ export class ProblemListComponent implements OnInit {
       disableClose: false,
       autoFocus: true,
       restoreFocus: true,
-      data: null
+      data: null // Make sure this is null for add mode
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      console.log('Dialog closed with result:', result); // Debug log
+
       if (result) {
-        this.leetcodeService.addProblem(result);
+        console.log('Adding problem...'); // Debug log
+        this.leetcodeService.addProblem(result).then(() => {
+          console.log('Problem added successfully!'); // Debug log
+          this.snackBar.open('Problem added successfully!', 'Close', {
+            duration: 3000,
+            verticalPosition: 'top',
+            panelClass: ['snack-bar-success']
+          });
+        }).catch(error => {
+          console.error('Error adding problem:', error); // Debug log
+          this.snackBar.open('Error adding problem. Please try again.', 'Close', {
+            duration: 3000,
+            verticalPosition: 'top',
+            panelClass: ['snack-bar-error']
+          });
+        });
       }
     });
   }

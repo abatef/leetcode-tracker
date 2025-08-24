@@ -9,11 +9,11 @@ export interface Problem {
   notes: string;
   attempts: number;
   timeSpent: number; // in minutes
-  solvedDate?: Date;
-  lastAttemptDate?: Date;
-  userId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  userId?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  solvedDate?: Date | null;
+  lastAttemptDate?: Date | null;
 }
 
 export interface UserStats {
