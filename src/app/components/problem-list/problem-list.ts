@@ -13,6 +13,12 @@ import { Problem } from '../../models/problem';
 import { Observable } from 'rxjs';
 import { ProblemFormComponent } from '../problem-form/problem-form';
 import { NotesDialogComponent } from '../notes-dialog/notes-dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { AllTagsDialogComponent } from '../tags-dialog/tags-dialog';
 
 @Component({
   selector: 'app-problem-list',
@@ -26,7 +32,12 @@ import { NotesDialogComponent } from '../notes-dialog/notes-dialog';
     MatCardModule,
     MatMenuModule,
     MatDialogModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatInputModule,
+    MatTooltipModule,
+    FormsModule
   ],
   template: `
     <div class="problem-list-container">
@@ -41,105 +52,206 @@ import { NotesDialogComponent } from '../notes-dialog/notes-dialog';
         </button>
       </div>
 
+      <!-- Enhanced Filters Section -->
+      <mat-card class="filters-card">
+        <mat-card-content>
+          <div class="filters-container">
+            <div class="filter-row">
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Search Problems</mat-label>
+                <input matInput
+                       [(ngModel)]="searchQuery"
+                       (ngModelChange)="applyFilters()"
+                       placeholder="Search by title or ID...">
+                <mat-icon matSuffix>search</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Difficulty</mat-label>
+                <mat-select [(ngModel)]="selectedDifficulty" (selectionChange)="applyFilters()" multiple>
+                  <mat-option value="Easy">Easy</mat-option>
+                  <mat-option value="Medium">Medium</mat-option>
+                  <mat-option value="Hard">Hard</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Status</mat-label>
+                <mat-select [(ngModel)]="selectedStatus" (selectionChange)="applyFilters()" multiple>
+                  <mat-option value="Not Attempted">Not Attempted</mat-option>
+                  <mat-option value="Attempted">Attempted</mat-option>
+                  <mat-option value="Solved">Solved</mat-option>
+                  <mat-option value="Reviewed">Reviewed</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Tags</mat-label>
+                <mat-select [(ngModel)]="selectedTags" (selectionChange)="applyFilters()" multiple>
+                  <mat-option *ngFor="let tag of allTags" [value]="tag">{{ tag }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <button mat-icon-button
+                      (click)="clearFilters()"
+                      title="Clear all filters"
+                      class="clear-filters-btn">
+                <mat-icon>clear</mat-icon>
+              </button>
+            </div>
+
+            <div class="active-filters" *ngIf="hasActiveFilters()">
+              <span class="filter-label">Active filters:</span>
+              <mat-chip *ngIf="searchQuery" (removed)="clearSearch()" class="filter-chip">
+                Search: "{{ searchQuery }}"
+                <mat-icon matChipRemove>cancel</mat-icon>
+              </mat-chip>
+              <mat-chip *ngFor="let difficulty of selectedDifficulty"
+                        (removed)="removeFilter('difficulty', difficulty)"
+                        class="filter-chip">
+                {{ difficulty }}
+                <mat-icon matChipRemove>cancel</mat-icon>
+              </mat-chip>
+              <mat-chip *ngFor="let status of selectedStatus"
+                        (removed)="removeFilter('status', status)"
+                        class="filter-chip">
+                {{ status }}
+                <mat-icon matChipRemove>cancel</mat-icon>
+              </mat-chip>
+              <mat-chip *ngFor="let tag of selectedTags"
+                        (removed)="removeFilter('tag', tag)"
+                        class="filter-chip">
+                {{ tag }}
+                <mat-icon matChipRemove>cancel</mat-icon>
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
       <mat-card class="problems-card">
         <mat-card-content>
-          <mat-table [dataSource]="(problems$ | async) || []" class="problems-table">
-            <ng-container matColumnDef="leetcodeId">
-              <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
-              <mat-cell *matCellDef="let problem">{{ problem.leetcodeId }}</mat-cell>
-            </ng-container>
+          <div class="table-header">
+            <span class="results-count">
+              {{ filteredProblems.length }} of {{ totalProblems }} problems
+            </span>
+          </div>
 
-            <ng-container matColumnDef="title">
-              <mat-header-cell *matHeaderCellDef>Title</mat-header-cell>
-              <mat-cell *matCellDef="let problem">
-                <div class="problem-title">
-                  <a [href]="problem.url" target="_blank" class="title-link">
-                    {{ problem.title }}
-                    <mat-icon class="external-link">open_in_new</mat-icon>
-                  </a>
-                </div>
-              </mat-cell>
-            </ng-container>
+          <div class="table-scroll-container">
+            <mat-table [dataSource]="filteredProblems" class="problems-table">
+              <ng-container matColumnDef="leetcodeId">
+                <mat-header-cell *matHeaderCellDef class="id-column">#</mat-header-cell>
+                <mat-cell *matCellDef="let problem" class="id-column">{{ problem.leetcodeId }}</mat-cell>
+              </ng-container>
 
-            <ng-container matColumnDef="difficulty">
-              <mat-header-cell *matHeaderCellDef>Difficulty</mat-header-cell>
-              <mat-cell *matCellDef="let problem">
-                <mat-chip [class]="'difficulty-' + problem.difficulty.toLowerCase()">
-                  {{ problem.difficulty }}
-                </mat-chip>
-              </mat-cell>
-            </ng-container>
+              <ng-container matColumnDef="title">
+                <mat-header-cell *matHeaderCellDef class="title-column">Title</mat-header-cell>
+                <mat-cell *matCellDef="let problem" class="title-column">
+                  <div class="problem-title">
+                    <a [href]="problem.url" target="_blank" class="title-link">
+                      {{ problem.title }}
+                      <mat-icon class="external-link">open_in_new</mat-icon>
+                    </a>
+                  </div>
+                </mat-cell>
+              </ng-container>
 
-            <ng-container matColumnDef="status">
-              <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
-              <mat-cell *matCellDef="let problem">
-                <mat-chip [class]="'status-' + problem.status.toLowerCase().replace(' ', '-')">
-                  {{ problem.status }}
-                </mat-chip>
-              </mat-cell>
-            </ng-container>
-
-            <ng-container matColumnDef="tags">
-              <mat-header-cell *matHeaderCellDef>Tags</mat-header-cell>
-              <mat-cell *matCellDef="let problem">
-                <div class="tags-container">
-                  <mat-chip *ngFor="let tag of problem.tags.slice(0, 2)" class="tag-chip">
-                    {{ tag }}
+              <ng-container matColumnDef="difficulty">
+                <mat-header-cell *matHeaderCellDef class="difficulty-column">Difficulty</mat-header-cell>
+                <mat-cell *matCellDef="let problem" class="difficulty-column">
+                  <mat-chip [class]="'difficulty-' + problem.difficulty.toLowerCase()">
+                    {{ problem.difficulty }}
                   </mat-chip>
-                  <span *ngIf="problem.tags.length > 2" class="more-tags">
-                    +{{ problem.tags.length - 2 }} more
-                  </span>
-                </div>
-              </mat-cell>
-            </ng-container>
+                </mat-cell>
+              </ng-container>
 
-            <ng-container matColumnDef="attempts">
-              <mat-header-cell *matHeaderCellDef>Attempts</mat-header-cell>
-              <mat-cell *matCellDef="let problem">{{ problem.attempts }}</mat-cell>
-            </ng-container>
+              <ng-container matColumnDef="status">
+                <mat-header-cell *matHeaderCellDef class="status-column">Status</mat-header-cell>
+                <mat-cell *matCellDef="let problem" class="status-column">
+                  <mat-chip [class]="'status-' + problem.status.toLowerCase().replace(' ', '-')">
+                    {{ problem.status }}
+                  </mat-chip>
+                </mat-cell>
+              </ng-container>
 
-            <ng-container matColumnDef="notes">
-              <mat-header-cell *matHeaderCellDef>Notes</mat-header-cell>
-              <mat-cell *matCellDef="let problem">
-                <button mat-icon-button
-                        (click)="viewNotes(problem)"
-                        [disabled]="!problem.notes"
-                        [title]="problem.notes ? 'View notes' : 'No notes'">
-                  <mat-icon [class.has-notes]="problem.notes">description</mat-icon>
-                </button>
-              </mat-cell>
-            </ng-container>
+              <ng-container matColumnDef="tags">
+                <mat-header-cell *matHeaderCellDef class="tags-column">Tags</mat-header-cell>
+                <mat-cell *matCellDef="let problem" class="tags-column">
+                  <div class="tags-container">
+                    <mat-chip *ngFor="let tag of problem.tags.slice(0, 2)" class="tag-chip">
+                      {{ tag }}
+                    </mat-chip>
+                    <button mat-button
+                            *ngIf="problem.tags.length > 2"
+                            class="more-tags-btn"
+                            (click)="showAllTags(problem)"
+                            [matTooltip]="getTooltipTags(problem)">
+                      +{{ problem.tags.length - 2 }} more
+                    </button>
+                  </div>
+                </mat-cell>
+              </ng-container>
 
-            <ng-container matColumnDef="actions">
-              <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
-              <mat-cell *matCellDef="let problem">
-                <button mat-icon-button [matMenuTriggerFor]="actionMenu">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
-                <mat-menu #actionMenu="matMenu">
-                  <button mat-menu-item (click)="editProblem(problem)">
-                    <mat-icon>edit</mat-icon>
-                    <span>Edit</span>
+              <ng-container matColumnDef="attempts">
+                <mat-header-cell *matHeaderCellDef class="attempts-column">Attempts</mat-header-cell>
+                <mat-cell *matCellDef="let problem" class="attempts-column">{{ problem.attempts }}</mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="notes">
+                <mat-header-cell *matHeaderCellDef class="notes-column">Notes</mat-header-cell>
+                <mat-cell *matCellDef="let problem" class="notes-column">
+                  <button mat-icon-button
+                          (click)="viewNotes(problem)"
+                          [disabled]="!problem.notes"
+                          [title]="problem.notes ? 'View notes' : 'No notes'">
+                    <mat-icon [class.has-notes]="problem.notes">description</mat-icon>
                   </button>
-                  <button mat-menu-item (click)="deleteProblem(problem)">
-                    <mat-icon>delete</mat-icon>
-                    <span>Delete</span>
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef class="actions-column">Actions</mat-header-cell>
+                <mat-cell *matCellDef="let problem" class="actions-column">
+                  <button mat-icon-button
+                          [matMenuTriggerFor]="actionMenu"
+                          class="action-menu-button">
+                    <mat-icon>more_vert</mat-icon>
                   </button>
-                </mat-menu>
-              </mat-cell>
-            </ng-container>
+                  <mat-menu #actionMenu="matMenu">
+                    <button mat-menu-item (click)="editProblem(problem)">
+                      <mat-icon>edit</mat-icon>
+                      <span>Edit</span>
+                    </button>
+                    <button mat-menu-item (click)="deleteProblem(problem)">
+                      <mat-icon>delete</mat-icon>
+                      <span>Delete</span>
+                    </button>
+                  </mat-menu>
+                </mat-cell>
+              </ng-container>
 
-            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-            <mat-row *matRowDef="let row; columns: displayedColumns;" class="problem-row"></mat-row>
-          </mat-table>
+              <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: displayedColumns;" class="problem-row"></mat-row>
+            </mat-table>
+          </div>
 
-          <div class="empty-state" *ngIf="(problems$ | async)?.length === 0">
+          <div class="empty-state" *ngIf="filteredProblems.length === 0 && totalProblems === 0">
             <mat-icon>assignment</mat-icon>
             <h3>No problems yet</h3>
             <p>Start tracking your LeetCode journey by adding your first problem!</p>
             <button mat-raised-button color="primary" (click)="openAddProblemDialog()">
               <mat-icon>add</mat-icon>
               Add Your First Problem
+            </button>
+          </div>
+
+          <div class="no-results-state" *ngIf="filteredProblems.length === 0 && totalProblems > 0">
+            <mat-icon>search_off</mat-icon>
+            <h3>No problems found</h3>
+            <p>Try adjusting your filters or search criteria.</p>
+            <button mat-button (click)="clearFilters()">
+              <mat-icon>clear</mat-icon>
+              Clear Filters
             </button>
           </div>
         </mat-card-content>
@@ -217,6 +329,7 @@ import { NotesDialogComponent } from '../notes-dialog/notes-dialog';
       width: 100%;
       font-family: 'Google Sans', 'Roboto', sans-serif;
       background: transparent;
+      min-width: 1100px; // Ensure minimum width for all columns
     }
 
     .mat-mdc-table {
@@ -420,123 +533,315 @@ import { NotesDialogComponent } from '../notes-dialog/notes-dialog';
       line-height: 1.5;
     }
 
-    // Dark theme overrides
+    // Filters Section
+    .filters-card {
+      margin-bottom: 1.5rem;
+      border-radius: 12px !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .filters-container {
+      padding: 0.5rem 0;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .filter-field {
+      min-width: 200px;
+      flex: 1;
+    }
+
+    .clear-filters-btn {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+
+    .active-filters {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      font-size: 0.9rem;
+      color: rgba(0, 0, 0, 0.6);
+      font-weight: 500;
+    }
+
+    .filter-chip {
+      background: rgba(103, 80, 164, 0.1) !important;
+      color: #5b21b6 !important;
+      font-size: 0.8rem !important;
+      height: 24px !important;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 0 0.5rem;
+    }
+
+    .results-count {
+      font-size: 0.9rem;
+      color: rgba(0, 0, 0, 0.6);
+      font-weight: 500;
+    }
+
+    // Enhanced Column Widths
+    .mat-mdc-header-cell, .mat-mdc-cell {
+      &.id-column {
+        flex: 0 0 80px !important;
+        width: 80px !important;
+        min-width: 80px !important;
+        max-width: 80px !important;
+      }
+
+      &.title-column {
+        flex: 0 0 300px !important;
+        width: 300px !important;
+        min-width: 250px !important;
+        max-width: 350px !important;
+      }
+
+      &.difficulty-column {
+        flex: 0 0 120px !important;
+        width: 120px !important;
+        min-width: 120px !important;
+        max-width: 120px !important;
+      }
+
+      &.status-column {
+        flex: 0 0 140px !important;
+        width: 140px !important;
+        min-width: 140px !important;
+        max-width: 140px !important;
+      }
+
+      &.tags-column {
+        flex: 0 0 250px !important;
+        width: 250px !important;
+        min-width: 220px !important;
+        max-width: 280px !important;
+      }
+
+      &.attempts-column {
+        flex: 0 0 100px !important;
+        width: 100px !important;
+        min-width: 100px !important;
+        max-width: 100px !important;
+      }
+
+      &.notes-column {
+        flex: 0 0 80px !important;
+        width: 80px !important;
+        min-width: 80px !important;
+        max-width: 80px !important;
+      }
+
+      &.actions-column {
+        flex: 0 0 60px !important;
+        width: 60px !important;
+        min-width: 60px !important;
+        max-width: 60px !important;
+        text-align: center !important;
+        justify-content: center !important;
+      }
+    }
+
+    // Enhanced Tags Display
+    .tags-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .more-tags-btn {
+      font-size: 11px !important;
+      height: 24px !important;
+      min-height: 24px !important;
+      padding: 0 8px !important;
+      background: rgba(103, 80, 164, 0.05) !important;
+      color: #5b21b6 !important;
+      border: 1px solid rgba(103, 80, 164, 0.2) !important;
+      border-radius: 12px !important;
+      font-weight: 500 !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .more-tags-btn:hover {
+      background: rgba(103, 80, 164, 0.1) !important;
+      transform: translateY(-1px);
+    }
+
+    // No Results State
+    .no-results-state {
+      text-align: center;
+      padding: 48px 32px;
+      color: #6b7280;
+    }
+
+    .no-results-state mat-icon {
+      font-size: 48px !important;
+      width: 48px !important;
+      height: 48px !important;
+      margin-bottom: 16px;
+      color: #d1d5db;
+    }
+
+    .no-results-state h3 {
+      font-size: 18px;
+      font-weight: 500;
+      margin: 0 0 8px 0;
+      color: #374151;
+    }
+
+    .no-results-state p {
+      font-size: 14px;
+      margin: 0 0 24px 0;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    // Dark theme enhancements
     :host-context(.dark-theme) {
-      .problems-card {
+      .filters-card {
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2) !important;
       }
 
-      .mat-mdc-header-row {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      .active-filters {
+        border-top-color: rgba(255, 255, 255, 0.1);
       }
 
-      .mat-mdc-header-cell {
-        color: rgba(255, 255, 255, 0.7) !important;
+      .filter-label {
+        color: rgba(255, 255, 255, 0.6);
       }
 
-      .mat-mdc-row {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+      .results-count {
+        color: rgba(255, 255, 255, 0.6);
       }
 
-      .mat-mdc-row:hover {
-        background: rgba(255, 255, 255, 0.05) !important;
-      }
-
-      .mat-mdc-cell {
-        color: rgba(255, 255, 255, 0.9) !important;
-      }
-
-      .title-link {
-        color: #93c5fd !important;
-      }
-
-      .title-link:hover {
-        color: #bfdbfe !important;
-      }
-
-      .difficulty-easy {
-        background: rgba(34, 197, 94, 0.2) !important;
-        color: #4ade80 !important;
-      }
-
-      .difficulty-medium {
-        background: rgba(251, 146, 60, 0.2) !important;
-        color: #fb923c !important;
-      }
-
-      .difficulty-hard {
-        background: rgba(239, 68, 68, 0.2) !important;
-        color: #f87171 !important;
-      }
-
-      .status-solved {
-        background: rgba(34, 197, 94, 0.2) !important;
-        color: #4ade80 !important;
-      }
-
-      .status-attempted {
-        background: rgba(251, 191, 36, 0.2) !important;
-        color: #fbbf24 !important;
-      }
-
-      .status-not-attempted {
-        background: rgba(148, 163, 184, 0.2) !important;
-        color: #94a3b8 !important;
-      }
-
-      .status-reviewed {
-        background: rgba(99, 102, 241, 0.2) !important;
-        color: #a5b4fc !important;
-      }
-
-      .tag-chip {
+      .filter-chip {
         background: rgba(255, 255, 255, 0.1) !important;
+        color: #c4b5fd !important;
+      }
+
+      .more-tags-btn {
+        background: rgba(255, 255, 255, 0.05) !important;
         color: #c4b5fd !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
       }
 
-      .more-tags {
-        color: rgba(255, 255, 255, 0.6) !important;
+      .more-tags-btn:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
       }
 
-      .mat-mdc-icon-button:hover {
-        background: rgba(255, 255, 255, 0.05) !important;
-      }
-
-      .empty-state h3 {
+      .no-results-state h3 {
         color: rgba(255, 255, 255, 0.9) !important;
       }
 
-      .empty-state mat-icon {
+      .no-results-state mat-icon {
         color: rgba(255, 255, 255, 0.3) !important;
       }
     }
 
-    // Responsive design
+    // Responsive Design
+    @media (max-width: 1200px) {
+      .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-field {
+        min-width: unset;
+      }
+
+      .problems-card {
+        overflow-x: auto;
+      }
+
+      .problems-table {
+        min-width: 1000px;
+      }
+    }
+
     @media (max-width: 768px) {
-      .mat-mdc-cell, .mat-mdc-header-cell {
-        padding: 8px 12px !important;
+      .problems-table {
+        min-width: 800px;
       }
 
-      .mat-mdc-row {
-        height: 64px;
-      }
+      .mat-mdc-header-cell, .mat-mdc-cell {
+        &.title-column {
+          flex: 0 0 200px !important;
+          width: 200px !important;
+          min-width: 180px !important;
+        }
 
-      .mat-mdc-header-row {
-        height: 48px;
+        &.tags-column {
+          flex: 0 0 180px !important;
+          width: 180px !important;
+          min-width: 160px !important;
+        }
       }
+    }
 
-      .mat-mdc-header-cell {
-        height: 48px;
-        font-size: 11px !important;
-      }
+    .table-scroll-container {
+      overflow-x: auto;
+      overflow-y: visible;
 
-      .mat-mdc-cell {
-        height: 64px;
-        font-size: 13px !important;
-      }
+      // Custom scrollbar for table
+      scrollbar-width: thin;
+      scrollbar-color: rgba(103, 80, 164, 0.3) rgba(0, 0, 0, 0.05);
+    }
+
+    .table-scroll-container::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .table-scroll-container::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 4px;
+    }
+
+    .table-scroll-container::-webkit-scrollbar-thumb {
+      background: rgba(103, 80, 164, 0.3);
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+    }
+
+    .table-scroll-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(103, 80, 164, 0.5);
+    }
+
+    // Dark theme table scroll
+    :host-context(.dark-theme) .table-scroll-container {
+      scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+    }
+
+    :host-context(.dark-theme) .table-scroll-container::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    :host-context(.dark-theme) .table-scroll-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    :host-context(.dark-theme) .table-scroll-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
     }
   `]
 })
@@ -544,15 +849,122 @@ export class ProblemListComponent implements OnInit {
   problems$: Observable<Problem[]>;
   displayedColumns: string[] = ['leetcodeId', 'title', 'difficulty', 'status', 'tags', 'attempts', 'notes', 'actions'];
 
+  // Filter properties
+  searchQuery: string = '';
+  selectedDifficulty: string[] = [];
+  selectedStatus: string[] = [];
+  selectedTags: string[] = [];
+  allTags: string[] = [];
+  filteredProblems: Problem[] = [];
+  totalProblems: number = 0;
+  allProblems: Problem[] = [];
+
   constructor(
     private leetcodeService: LeetcodeService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar // Inject MatSnackBar
+    private snackBar: MatSnackBar
   ) {
     this.problems$ = this.leetcodeService.problems$;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.problems$.subscribe(problems => {
+      this.allProblems = problems;
+      this.totalProblems = problems.length;
+      this.extractAllTags(problems);
+      this.applyFilters();
+    });
+  }
+
+  private extractAllTags(problems: Problem[]): void {
+    const tagSet = new Set<string>();
+    problems.forEach(problem => {
+      problem.tags.forEach(tag => tagSet.add(tag));
+    });
+    this.allTags = Array.from(tagSet).sort();
+  }
+
+  applyFilters(): void {
+    let filtered = [...this.allProblems];
+
+    // Search filter
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(problem =>
+        problem.title.toLowerCase().includes(query) ||
+        problem.leetcodeId.toString().includes(query)
+      );
+    }
+
+    // Difficulty filter
+    if (this.selectedDifficulty.length > 0) {
+      filtered = filtered.filter(problem =>
+        this.selectedDifficulty.includes(problem.difficulty)
+      );
+    }
+
+    // Status filter
+    if (this.selectedStatus.length > 0) {
+      filtered = filtered.filter(problem =>
+        this.selectedStatus.includes(problem.status)
+      );
+    }
+
+    // Tags filter
+    if (this.selectedTags.length > 0) {
+      filtered = filtered.filter(problem =>
+        this.selectedTags.some(tag => problem.tags.includes(tag))
+      );
+    }
+
+    this.filteredProblems = filtered;
+  }
+
+  clearFilters(): void {
+    this.searchQuery = '';
+    this.selectedDifficulty = [];
+    this.selectedStatus = [];
+    this.selectedTags = [];
+    this.applyFilters();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.applyFilters();
+  }
+
+  removeFilter(type: string, value: string): void {
+    switch (type) {
+      case 'difficulty':
+        this.selectedDifficulty = this.selectedDifficulty.filter(d => d !== value);
+        break;
+      case 'status':
+        this.selectedStatus = this.selectedStatus.filter(s => s !== value);
+        break;
+      case 'tag':
+        this.selectedTags = this.selectedTags.filter(t => t !== value);
+        break;
+    }
+    this.applyFilters();
+  }
+
+  hasActiveFilters(): boolean {
+    return this.searchQuery.trim() !== '' ||
+           this.selectedDifficulty.length > 0 ||
+           this.selectedStatus.length > 0 ||
+           this.selectedTags.length > 0;
+  }
+
+  showAllTags(problem: Problem): void {
+    this.dialog.open(AllTagsDialogComponent, {
+      width: '500px',
+      data: { tags: problem.tags, title: problem.title }
+    });
+  }
+
+  getTooltipTags(problem: Problem): string {
+    return problem.tags.slice(2).join(', ');
+  }
 
   openAddProblemDialog(): void {
     console.log('Opening add problem dialog...'); // Debug log
