@@ -298,8 +298,15 @@ export class ProblemListComponent implements OnInit {
 
   openAddProblemDialog(): void {
     const dialogRef = this.dialog.open(ProblemFormComponent, {
-      width: '600px',
-      data: { mode: 'add' }
+      width: '90vw',
+      maxWidth: '600px',
+      minWidth: '500px',
+      height: 'auto',
+      maxHeight: '90vh',
+      disableClose: false,
+      autoFocus: true,
+      restoreFocus: true,
+      data: null
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -311,8 +318,15 @@ export class ProblemListComponent implements OnInit {
 
   editProblem(problem: Problem): void {
     const dialogRef = this.dialog.open(ProblemFormComponent, {
-      width: '600px',
-      data: { mode: 'edit', problem }
+      width: '90vw',
+      maxWidth: '600px',
+      minWidth: '500px',
+      height: 'auto',
+      maxHeight: '90vh',
+      disableClose: false,
+      autoFocus: true,
+      restoreFocus: true,
+      data: problem
     });
 
     dialogRef.afterClosed().subscribe(result => {

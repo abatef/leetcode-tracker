@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Renderer2, Inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './components/header/header';
 import { ThemeService } from './services/theme';
@@ -9,22 +9,32 @@ import { ThemeService } from './services/theme';
   standalone: true,
   imports: [CommonModule, RouterOutlet, HeaderComponent],
   template: `
-    <div [class.dark-theme]="isDarkMode">
-      <app-header></app-header>
-      <main class="container mt-4">
-        <router-outlet></router-outlet>
-      </main>
-    </div>
-  `
+    <app-header></app-header>
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  `,
+  styles: [`
+    .main-content {
+      min-height: calc(100vh - 64px);
+      padding: 0;
+    }
+  `]
 })
 export class AppComponent implements OnInit {
-  isDarkMode = false;
-
-  constructor(private themeService: ThemeService) {}
+  constructor(
+    private themeService: ThemeService,
+    private renderer: Renderer2,
+    @Inject(DOCUMENT) private document: Document
+  ) {}
 
   ngOnInit() {
     this.themeService.isDarkMode$.subscribe(isDark => {
-      this.isDarkMode = isDark;
+      if (isDark) {
+        this.renderer.addClass(this.document.body, 'dark-theme');
+      } else {
+        this.renderer.removeClass(this.document.body, 'dark-theme');
+      }
     });
   }
 }

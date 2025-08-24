@@ -54,324 +54,231 @@ const COMMON_TAGS = [
     MatAutocompleteModule
   ],
   template: `
-    <div class="dialog-header">
-      <h2 mat-dialog-title>
-        <mat-icon>{{ data ? 'edit' : 'add' }}</mat-icon>
-        {{ data ? 'Edit Problem' : 'Add New Problem' }}
-      </h2>
-      <button mat-icon-button mat-dialog-close class="close-button">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
+    <div class="dialog-container">
+      <div class="dialog-header">
+        <h2 mat-dialog-title>
+          <mat-icon>{{ data ? 'edit' : 'add' }}</mat-icon>
+          {{ data ? 'Edit Problem' : 'Add New Problem' }}
+        </h2>
+        <button mat-icon-button mat-dialog-close class="close-button">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
 
-    <mat-dialog-content class="dialog-content">
-      <form [formGroup]="problemForm" class="problem-form">
+      <mat-dialog-content class="dialog-content">
+        <form [formGroup]="problemForm" class="problem-form">
 
-        <!-- Problem ID and Title Row -->
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="id-field">
-            <mat-label>Problem ID</mat-label>
-            <input matInput
-                   formControlName="leetcodeId"
-                   type="number"
-                   placeholder="1"
-                   (blur)="onProblemIdChange()">
-            <mat-icon matSuffix>tag</mat-icon>
-            <mat-error *ngIf="problemForm.get('leetcodeId')?.errors?.['required']">
-              Problem ID is required
-            </mat-error>
-            <mat-error *ngIf="problemForm.get('leetcodeId')?.errors?.['min']">
-              Problem ID must be greater than 0
-            </mat-error>
-          </mat-form-field>
+          <!-- Problem ID and Title Row -->
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="id-field">
+              <mat-label>Problem ID</mat-label>
+              <input matInput
+                     formControlName="leetcodeId"
+                     type="number"
+                     placeholder="1"
+                     (blur)="onProblemIdChange()">
+              <mat-icon matSuffix>tag</mat-icon>
+              <mat-error *ngIf="problemForm.get('leetcodeId')?.errors?.['required']">
+                Problem ID is required
+              </mat-error>
+              <mat-error *ngIf="problemForm.get('leetcodeId')?.errors?.['min']">
+                Problem ID must be greater than 0
+              </mat-error>
+            </mat-form-field>
 
-          <mat-form-field appearance="outline" class="title-field">
-            <mat-label>Problem Title</mat-label>
-            <input matInput
-                   formControlName="title"
-                   placeholder="Two Sum"
-                   #titleInput>
-            <mat-icon matSuffix>title</mat-icon>
-            <mat-error *ngIf="problemForm.get('title')?.errors?.['required']">
-              Problem title is required
-            </mat-error>
-          </mat-form-field>
-        </div>
+            <mat-form-field appearance="outline" class="title-field">
+              <mat-label>Problem Title</mat-label>
+              <input matInput
+                     formControlName="title"
+                     placeholder="Two Sum"
+                     #titleInput>
+              <mat-icon matSuffix>title</mat-icon>
+              <mat-error *ngIf="problemForm.get('title')?.errors?.['required']">
+                Problem title is required
+              </mat-error>
+            </mat-form-field>
+          </div>
 
-        <!-- Auto-fetch button -->
-        <div class="fetch-section" *ngIf="!data">
-          <button type="button"
-                  mat-stroked-button
-                  color="primary"
-                  (click)="fetchProblemDetails()"
-                  [disabled]="isLoading || !problemForm.get('leetcodeId')?.value">
-            <mat-icon *ngIf="!isLoading">cloud_download</mat-icon>
-            <mat-spinner *ngIf="isLoading" diameter="16"></mat-spinner>
-            {{ isLoading ? 'Fetching...' : 'Auto-fetch from LeetCode' }}
-          </button>
-          <span class="fetch-hint">Fill in the Problem ID and click to auto-populate details</span>
-        </div>
-
-        <!-- Difficulty and Status Row -->
-        <div class="form-row">
-          <mat-form-field appearance="outline">
-            <mat-label>Difficulty</mat-label>
-            <mat-select formControlName="difficulty">
-              <mat-option value="Easy">
-                <div class="difficulty-option easy">
-                  <mat-icon>sentiment_satisfied</mat-icon>
-                  Easy
-                </div>
-              </mat-option>
-              <mat-option value="Medium">
-                <div class="difficulty-option medium">
-                  <mat-icon>sentiment_neutral</mat-icon>
-                  Medium
-                </div>
-              </mat-option>
-              <mat-option value="Hard">
-                <div class="difficulty-option hard">
-                  <mat-icon>sentiment_very_dissatisfied</mat-icon>
-                  Hard
-                </div>
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Status</mat-label>
-            <mat-select formControlName="status" (selectionChange)="onStatusChange($event)">
-              <mat-option value="Not Attempted">
-                <div class="status-option not-attempted">
-                  <mat-icon>radio_button_unchecked</mat-icon>
-                  Not Attempted
-                </div>
-              </mat-option>
-              <mat-option value="Attempted">
-                <div class="status-option attempted">
-                  <mat-icon>partial_fulfillment</mat-icon>
-                  Attempted
-                </div>
-              </mat-option>
-              <mat-option value="Solved">
-                <div class="status-option solved">
-                  <mat-icon>check_circle</mat-icon>
-                  Solved
-                </div>
-              </mat-option>
-              <mat-option value="Reviewed">
-                <div class="status-option reviewed">
-                  <mat-icon>verified</mat-icon>
-                  Reviewed
-                </div>
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <!-- Problem URL -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Problem URL</mat-label>
-          <input matInput
-                 formControlName="url"
-                 placeholder="https://leetcode.com/problems/two-sum/">
-          <mat-icon matSuffix>link</mat-icon>
-          <mat-error *ngIf="problemForm.get('url')?.errors?.['required']">
-            Problem URL is required
-          </mat-error>
-          <mat-error *ngIf="problemForm.get('url')?.errors?.['pattern']">
-            Please enter a valid LeetCode problem URL
-          </mat-error>
-        </mat-form-field>
-
-        <!-- Tags Section -->
-        <div class="tags-section">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Tags</mat-label>
-            <mat-chip-grid #chipGrid>
-              <mat-chip-row
-                *ngFor="let tag of tags"
-                (removed)="removeTag(tag)"
-                [removable]="true">
-                {{ tag }}
-                <mat-icon matChipRemove>cancel</mat-icon>
-              </mat-chip-row>
-            </mat-chip-grid>
-            <input
-              #tagInput
-              matInput
-              [matAutocomplete]="tagAutocomplete"
-              [matChipInputFor]="chipGrid"
-              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-              (matChipInputTokenEnd)="addTag($event)"
-              placeholder="Type to add tags...">
-            <mat-autocomplete
-              #tagAutocomplete="matAutocomplete"
-              (optionSelected)="selectedTag($event)">
-              <mat-option *ngFor="let tag of filteredTags | async" [value]="tag">
-                {{ tag }}
-              </mat-option>
-            </mat-autocomplete>
-          </mat-form-field>
-          <div class="tag-suggestions">
-            <span class="suggestion-label">Suggestions:</span>
+          <!-- Auto-fetch button -->
+          <div class="fetch-section" *ngIf="!data">
             <button type="button"
-                    mat-chip-option
-                    *ngFor="let tag of getTagSuggestions()"
-                    (click)="addSuggestedTag(tag)"
-                    class="suggestion-chip">
-              {{ tag }}
+                    mat-stroked-button
+                    color="primary"
+                    (click)="fetchProblemDetails()"
+                    [disabled]="isLoading || !problemForm.get('leetcodeId')?.value"
+                    class="fetch-button">
+              <mat-icon *ngIf="!isLoading">cloud_download</mat-icon>
+              <mat-spinner *ngIf="isLoading" diameter="16"></mat-spinner>
+              <span>{{ isLoading ? 'Fetching...' : 'Auto-fetch from LeetCode' }}</span>
             </button>
+            <span class="fetch-hint">Fill in the Problem ID and click to auto-populate details</span>
           </div>
-        </div>
 
-        <!-- Attempts and Time Spent -->
-        <div class="form-row">
-          <mat-form-field appearance="outline">
-            <mat-label>Attempts</mat-label>
+          <!-- Difficulty and Status Row -->
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Difficulty</mat-label>
+              <mat-select formControlName="difficulty">
+                <mat-option value="Easy">
+                  <div class="difficulty-option easy">
+                    <mat-icon>sentiment_satisfied</mat-icon>
+                    <span>Easy</span>
+                  </div>
+                </mat-option>
+                <mat-option value="Medium">
+                  <div class="difficulty-option medium">
+                    <mat-icon>sentiment_neutral</mat-icon>
+                    <span>Medium</span>
+                  </div>
+                </mat-option>
+                <mat-option value="Hard">
+                  <div class="difficulty-option hard">
+                    <mat-icon>sentiment_very_dissatisfied</mat-icon>
+                    <span>Hard</span>
+                  </div>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Status</mat-label>
+              <mat-select formControlName="status" (selectionChange)="onStatusChange($event)">
+                <mat-option value="Not Attempted">
+                  <div class="status-option not-attempted">
+                    <mat-icon>radio_button_unchecked</mat-icon>
+                    <span>Not Attempted</span>
+                  </div>
+                </mat-option>
+                <mat-option value="Attempted">
+                  <div class="status-option attempted">
+                    <mat-icon>partial_fulfillment</mat-icon>
+                    <span>Attempted</span>
+                  </div>
+                </mat-option>
+                <mat-option value="Solved">
+                  <div class="status-option solved">
+                    <mat-icon>check_circle</mat-icon>
+                    <span>Solved</span>
+                  </div>
+                </mat-option>
+                <mat-option value="Reviewed">
+                  <div class="status-option reviewed">
+                    <mat-icon>verified</mat-icon>
+                    <span>Reviewed</span>
+                  </div>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Problem URL -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Problem URL</mat-label>
             <input matInput
-                   formControlName="attempts"
-                   type="number"
-                   min="0"
-                   max="100">
-            <mat-icon matSuffix>refresh</mat-icon>
+                   formControlName="url"
+                   placeholder="https://leetcode.com/problems/two-sum/">
+            <mat-icon matSuffix>link</mat-icon>
+            <mat-error *ngIf="problemForm.get('url')?.errors?.['required']">
+              Problem URL is required
+            </mat-error>
+            <mat-error *ngIf="problemForm.get('url')?.errors?.['pattern']">
+              Please enter a valid LeetCode problem URL
+            </mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Time Spent (minutes)</mat-label>
+          <!-- Attempts and Time Spent -->
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Attempts</mat-label>
+              <input matInput
+                     formControlName="attempts"
+                     type="number"
+                     min="0"
+                     max="100">
+              <mat-icon matSuffix>refresh</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Time Spent (minutes)</mat-label>
+              <input matInput
+                     formControlName="timeSpent"
+                     type="number"
+                     min="0"
+                     max="1440">
+              <mat-icon matSuffix>access_time</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <!-- Solved Date (only show if status is Solved) -->
+          <mat-form-field appearance="outline" class="full-width" *ngIf="showSolvedDate">
+            <mat-label>Solved Date</mat-label>
             <input matInput
-                   formControlName="timeSpent"
-                   type="number"
-                   min="0"
-                   max="1440">
-            <mat-icon matSuffix>access_time</mat-icon>
+                   [matDatepicker]="solvedDatePicker"
+                   formControlName="solvedDate"
+                   readonly>
+            <mat-datepicker-toggle matSuffix [for]="solvedDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #solvedDatePicker></mat-datepicker>
           </mat-form-field>
-        </div>
 
-        <!-- Solved Date (only show if status is Solved) -->
-        <mat-form-field appearance="outline" class="full-width" *ngIf="showSolvedDate">
-          <mat-label>Solved Date</mat-label>
-          <input matInput
-                 [matDatepicker]="solvedDatePicker"
-                 formControlName="solvedDate"
-                 readonly>
-          <mat-datepicker-toggle matSuffix [for]="solvedDatePicker"></mat-datepicker-toggle>
-          <mat-datepicker #solvedDatePicker></mat-datepicker>
-        </mat-form-field>
+          <!-- Notes -->
+          <mat-form-field appearance="outline" class="full-width notes-field">
+            <mat-label>Notes</mat-label>
+            <textarea matInput
+                      formControlName="notes"
+                      rows="3"
+                      placeholder="Add your notes, approach, solution details, or key insights..."></textarea>
+            <mat-icon matSuffix>notes</mat-icon>
+            <mat-hint>Share your approach, key insights, or things to remember</mat-hint>
+          </mat-form-field>
 
-        <!-- Difficulty Rating Slider -->
-        <div class="slider-section">
-          <label class="slider-label">Personal Difficulty Rating</label>
-          <mat-slider
-            min="1"
-            max="10"
-            step="1"
-            showTickMarks
-            discrete
-            formControlName="personalRating">
-            <input matSliderThumb formControlName="personalRating">
-          </mat-slider>
-          <div class="slider-labels">
-            <span>Very Easy</span>
-            <span>Very Hard</span>
-          </div>
-        </div>
+        </form>
+      </mat-dialog-content>
 
-        <!-- Notes -->
-        <mat-form-field appearance="outline" class="full-width notes-field">
-          <mat-label>Notes</mat-label>
-          <textarea matInput
-                    formControlName="notes"
-                    rows="4"
-                    placeholder="Add your notes, approach, solution details, or key insights..."></textarea>
-          <mat-icon matSuffix>notes</mat-icon>
-          <mat-hint>Share your approach, key insights, or things to remember</mat-hint>
-        </mat-form-field>
-
-        <!-- Advanced Options -->
-        <div class="advanced-section">
-          <button type="button"
-                  mat-button
-                  (click)="showAdvanced = !showAdvanced"
-                  class="toggle-advanced">
-            <mat-icon>{{ showAdvanced ? 'expand_less' : 'expand_more' }}</mat-icon>
-            {{ showAdvanced ? 'Hide' : 'Show' }} Advanced Options
-          </button>
-
-          <div class="advanced-options" [class.show]="showAdvanced">
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Company Tag</mat-label>
-                <mat-select formControlName="companyTag" multiple>
-                  <mat-option *ngFor="let company of commonCompanies" [value]="company">
-                    {{ company }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Priority</mat-label>
-                <mat-select formControlName="priority">
-                  <mat-option value="Low">Low</mat-option>
-                  <mat-option value="Medium">Medium</mat-option>
-                  <mat-option value="High">High</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-
-            <div class="checkbox-options">
-              <mat-checkbox formControlName="isBookmarked">
-                <mat-icon>bookmark</mat-icon>
-                Bookmark this problem
-              </mat-checkbox>
-
-              <mat-checkbox formControlName="needsReview">
-                <mat-icon>flag</mat-icon>
-                Needs review later
-              </mat-checkbox>
-            </div>
-          </div>
-        </div>
-
-      </form>
-    </mat-dialog-content>
-
-    <mat-dialog-actions align="end" class="dialog-actions">
-      <button mat-button (click)="onCancel()" [disabled]="isLoading">
-        Cancel
-      </button>
-      <button mat-button
-              color="accent"
-              (click)="saveDraft()"
-              [disabled]="isLoading || problemForm.pristine"
-              *ngIf="!data">
-        <mat-icon>save</mat-icon>
-        Save as Draft
-      </button>
-      <button mat-raised-button
-              color="primary"
-              (click)="onSave()"
-              [disabled]="problemForm.invalid || isLoading">
-        <mat-spinner *ngIf="isLoading" diameter="16"></mat-spinner>
-        <mat-icon *ngIf="!isLoading">{{ data ? 'save' : 'add' }}</mat-icon>
-        {{ isLoading ? 'Saving...' : (data ? 'Update Problem' : 'Add Problem') }}
-      </button>
-    </mat-dialog-actions>
+      <mat-dialog-actions align="end" class="dialog-actions">
+        <button mat-button (click)="onCancel()" [disabled]="isLoading">
+          Cancel
+        </button>
+        <button mat-raised-button
+                color="primary"
+                (click)="onSave()"
+                [disabled]="problemForm.invalid || isLoading"
+                class="save-button">
+          <mat-spinner *ngIf="isLoading" diameter="16"></mat-spinner>
+          <mat-icon *ngIf="!isLoading">{{ data ? 'save' : 'add' }}</mat-icon>
+          <span>{{ isLoading ? 'Saving...' : (data ? 'Update Problem' : 'Add Problem') }}</span>
+        </button>
+      </mat-dialog-actions>
+    </div>
   `,
   styles: [`
+    .dialog-container {
+      width: 100%;
+      max-width: 600px;
+      min-width: 500px;
+    }
+
     .dialog-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 1rem 1.5rem 0;
+      margin-bottom: 1rem;
     }
 
     .dialog-header h2 {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
       margin: 0;
       font-weight: 500;
+      font-size: 1.5rem;
+    }
+
+    .dialog-header h2 mat-icon {
+      width: 24px;
+      height: 24px;
+      font-size: 24px;
+      line-height: 24px;
     }
 
     .close-button {
@@ -379,7 +286,7 @@ const COMMON_TAGS = [
     }
 
     .dialog-content {
-      padding: 1rem 1.5rem !important;
+      padding: 0 1.5rem !important;
       max-height: 70vh;
       overflow-y: auto;
     }
@@ -387,14 +294,14 @@ const COMMON_TAGS = [
     .problem-form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      min-width: 600px;
-      max-width: 800px;
+      gap: 1.25rem;
+      width: 100%;
     }
 
     .form-row {
       display: flex;
       gap: 1rem;
+      align-items: flex-start;
     }
 
     .form-row mat-form-field {
@@ -403,10 +310,12 @@ const COMMON_TAGS = [
 
     .id-field {
       flex: 0 0 140px;
+      min-width: 140px;
     }
 
     .title-field {
       flex: 1;
+      min-width: 200px;
     }
 
     .full-width {
@@ -421,136 +330,104 @@ const COMMON_TAGS = [
       margin: -0.5rem 0 0.5rem 0;
     }
 
+    .fetch-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .fetch-button mat-icon,
+    .fetch-button mat-spinner {
+      margin: 0 !important;
+    }
+
     .fetch-hint {
       font-size: 0.8rem;
       color: rgba(0, 0, 0, 0.6);
+      line-height: 1.4;
     }
 
     .difficulty-option, .status-option {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
+      padding: 0.25rem 0;
+    }
+
+    .difficulty-option mat-icon, .status-option mat-icon {
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
+      line-height: 20px;
+      margin: 0;
     }
 
     .difficulty-option.easy mat-icon { color: #4CAF50; }
-    .difficulty-option.medium mat-icon { color: #FFC107; }
+    .difficulty-option.medium mat-icon { color: #FF9800; }
     .difficulty-option.hard mat-icon { color: #F44336; }
 
     .status-option.solved mat-icon { color: #4CAF50; }
-    .status-option.attempted mat-icon { color: #FFC107; }
+    .status-option.attempted mat-icon { color: #FF9800; }
     .status-option.not-attempted mat-icon { color: #9E9E9E; }
     .status-option.reviewed mat-icon { color: #3F51B5; }
 
-    .tags-section {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .tag-suggestions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .suggestion-label {
-      font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
-      margin-right: 0.5rem;
-    }
-
-    .suggestion-chip {
-      font-size: 0.75rem;
-      min-height: 28px;
-    }
-
-    .slider-section {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin: 0.5rem 0;
-    }
-
-    .slider-label {
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: rgba(0, 0, 0, 0.7);
-    }
-
-    .slider-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      color: rgba(0, 0, 0, 0.6);
-      margin-top: -0.5rem;
-    }
-
     .notes-field textarea {
       min-height: 80px;
-    }
-
-    .advanced-section {
-      border-top: 1px solid rgba(0, 0, 0, 0.1);
-      padding-top: 1rem;
-    }
-
-    .toggle-advanced {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .advanced-options {
-      display: none;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .advanced-options.show {
-      display: flex;
-    }
-
-    .checkbox-options {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .checkbox-options mat-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      resize: vertical;
     }
 
     .dialog-actions {
-      padding: 1rem 1.5rem;
-      gap: 0.5rem;
+      padding: 1.5rem;
+      gap: 1rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      margin-top: 1rem;
     }
 
-    .dialog-actions button {
+    .save-button {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
+      min-width: 140px;
     }
 
-    @media (max-width: 700px) {
-      .problem-form {
-        min-width: 300px;
+    .save-button mat-icon,
+    .save-button mat-spinner {
+      margin: 0 !important;
+    }
+
+    /* Dark theme overrides for the form */
+    :host-context(.dark-theme) {
+      .fetch-hint {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .dialog-actions {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .dialog-container {
+        min-width: 280px;
+        max-width: 90vw;
       }
 
       .form-row {
         flex-direction: column;
-        gap: 0;
+        gap: 1rem;
       }
 
       .id-field {
         flex: 1;
+        min-width: auto;
       }
 
       .dialog-content {
-        padding: 1rem !important;
+        padding: 0 1rem !important;
+        max-height: 60vh;
       }
 
       .dialog-header {
@@ -560,6 +437,11 @@ const COMMON_TAGS = [
       .dialog-actions {
         padding: 1rem;
         flex-wrap: wrap;
+      }
+
+      .save-button {
+        min-width: auto;
+        flex: 1;
       }
     }
   `]

@@ -105,49 +105,64 @@ import { Observable } from 'rxjs';
   `,
   styles: [`
     .statistics-container {
-      padding: 2rem;
+      padding: 2rem 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     .page-title {
       margin-bottom: 2rem;
-      color: var(--mdc-theme-on-surface);
+      font-size: 2.5rem;
+      font-weight: 400;
+      line-height: 1.2;
     }
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
-      margin-bottom: 2rem;
+      margin-bottom: 3rem;
     }
 
     .stat-card {
       text-align: center;
     }
 
+    .stat-card .mat-mdc-card-header {
+      padding-bottom: 8px;
+    }
+
+    .stat-card .mat-mdc-card-content {
+      padding-top: 8px;
+    }
+
     .stat-value {
-      font-size: 2rem;
-      font-weight: bold;
+      font-size: 2.5rem;
+      font-weight: 300;
       margin: 1rem 0;
+      line-height: 1.1;
     }
 
     .solved-avatar {
-      background-color: #4caf50;
+      background-color: #4caf50 !important;
+      color: white !important;
     }
 
     .streak-avatar {
-      background-color: #ff9800;
+      background-color: #ff9800 !important;
+      color: white !important;
     }
 
     .difficulty-stats {
       grid-column: 1 / -1;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
+      gap: 1.5rem;
+      margin-top: 1rem;
     }
 
     .difficulty-card {
       text-align: center;
-      padding: 1rem;
     }
 
     .difficulty-card.easy {
@@ -165,30 +180,86 @@ import { Observable } from 'rxjs';
     .difficulty-label {
       font-weight: 500;
       margin-bottom: 0.5rem;
+      font-size: 1rem;
+      line-height: 1.4;
     }
 
     .difficulty-count {
-      font-size: 1.5rem;
-      font-weight: bold;
+      font-size: 2rem;
+      font-weight: 300;
+      line-height: 1.2;
     }
 
     .insights-section {
       margin-top: 3rem;
     }
 
+    .insights-section h3 {
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
     .insights-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
     }
 
     .insight-card {
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .insight-card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-4px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .insight-card .mat-mdc-card-content p {
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      .statistics-container {
+        padding: 1rem 0.5rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .difficulty-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .insights-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .page-title {
+        font-size: 2rem;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+      }
+
+      .difficulty-count {
+        font-size: 1.5rem;
+      }
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .insight-card:hover {
+        box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+      }
     }
   `]
 })

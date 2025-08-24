@@ -46,18 +46,67 @@ $dark-theme: mat.define-theme((
   --surface-color: #121212;
   --on-surface-color: #ffffff;
   --background-color: #121212;
+  --card-background: #1e1e1e;
+  --surface-variant: #2d2d2d;
+
+  // Override body background for dark theme
+  body {
+    background-color: #121212 !important;
+    color: #ffffff !important;
+  }
+
+  // Dark theme card backgrounds
+  .mat-mdc-card {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+  }
+
+  // Dark theme toolbar
+  .mat-toolbar {
+    background-color: #1e1e1e !important;
+  }
+
+  // Dark theme table
+  .mat-mdc-table {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+  }
+
+  .mat-mdc-header-row {
+    background-color: #2d2d2d !important;
+  }
+
+  .mat-mdc-row:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  // Dark theme dialogs
+  .mat-mdc-dialog-container {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+  }
+
+  // Dark theme form fields
+  .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+      background-color: transparent !important;
+    }
+  }
 }
 
 // Global styles
 html, body {
   height: 100%;
   margin: 0;
+  padding: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+  line-height: 1.5;
 }
 
 body {
-  background-color: var(--background-color, #fafafa);
-  color: var(--on-surface-color, rgba(0, 0, 0, 0.87));
+  background-color: #fafafa;
+  color: rgba(0, 0, 0, 0.87);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -66,43 +115,68 @@ body {
   padding: 0 16px;
 }
 
-// Utility classes
-.mt-4 { margin-top: 1rem; }
-.mb-4 { margin-bottom: 1rem; }
-.p-4 { padding: 1rem; }
+// Fix Material Design avatar centering
+.mat-mdc-card-avatar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+}
 
-// Dark theme specific styles
-.dark-theme {
-  .header-content p,
-  .welcome-section p,
-  .stat-label,
-  .activity-time,
-  .more-tags {
-    color: rgba(255, 255, 255, 0.7) !important;
-  }
+.mat-mdc-card-avatar mat-icon {
+  margin: 0 !important;
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 24px !important;
+  line-height: 24px !important;
+}
 
-  .problem-row:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-  }
+// Fix button icon alignment
+.mat-mdc-button, .mat-mdc-raised-button, .mat-mdc-outlined-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
 
-  .activity-item {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-  }
-
-  .stat-icon {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-  }
-
-  .empty-state {
-    color: rgba(255, 255, 255, 0.7) !important;
-  }
-
-  .empty-state h3 {
-    color: rgba(255, 255, 255, 0.9) !important;
+  mat-icon {
+    margin: 0 !important;
+    line-height: 1 !important;
   }
 }
 
-// Custom component styles
+// Fix spacing issues
+.mat-mdc-card-content {
+  padding: 16px !important;
+  line-height: 1.6 !important;
+}
+
+.mat-mdc-card-header {
+  padding: 16px 16px 0 16px !important;
+  align-items: center !important;
+
+  .mat-mdc-card-header-text {
+    margin: 0 !important;
+    line-height: 1.4 !important;
+  }
+}
+
+// Fix table spacing
+.mat-mdc-table {
+  .mat-mdc-cell, .mat-mdc-header-cell {
+    padding: 12px 8px !important;
+    line-height: 1.4 !important;
+  }
+}
+
+// Utility classes
+.mt-4 { margin-top: 1rem !important; }
+.mb-4 { margin-bottom: 1rem !important; }
+.p-4 { padding: 1rem !important; }
+
+// Custom component styles with proper contrast
 .difficulty-easy {
   background-color: #4CAF50 !important;
   color: white !important;
