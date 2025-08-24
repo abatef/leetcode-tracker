@@ -1,12 +1,30 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
+import { HeaderComponent } from './components/header/header';
+import { ThemeService } from './services/theme';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, HeaderComponent],
+  template: `
+    <div [class.dark-theme]="isDarkMode">
+      <app-header></app-header>
+      <main class="container mt-4">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+  `
 })
-export class App {
-  protected readonly title = signal('leetcode-tracker');
+export class AppComponent implements OnInit {
+  isDarkMode = false;
+
+  constructor(private themeService: ThemeService) {}
+
+  ngOnInit() {
+    this.themeService.isDarkMode$.subscribe(isDark => {
+      this.isDarkMode = isDark;
+    });
+  }
 }
