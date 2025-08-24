@@ -19,6 +19,7 @@ import { AllTagsDialogComponent } from '../tags-dialog/tags-dialog';
 import { TimestampsDialogComponent } from '../timestamps-dialog/timestamps-dialog';
 import { Observable } from 'rxjs';
 import { MatChipsModule } from '@angular/material/chips';
+import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
 
 @Component({
   selector: 'app-problem-list',
@@ -71,6 +72,16 @@ import { MatChipsModule } from '@angular/material/chips';
             <mat-option value="Attempted">Attempted</mat-option>
             <mat-option value="Solved">Solved</mat-option>
             <mat-option value="Reviewed">Reviewed</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Company</mat-label>
+          <mat-select (selectionChange)="filterByCompany($event.value)" [value]="''">
+            <mat-option value="">All Companies</mat-option>
+            <mat-option *ngFor="let company of availableCompanies" [value]="company">
+              {{ company }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
       </div>
@@ -126,6 +137,20 @@ import { MatChipsModule } from '@angular/material/chips';
             </td>
           </ng-container>
 
+          <!-- Companies Column -->
+          <ng-container matColumnDef="companies">
+            <th mat-header-cell *matHeaderCellDef>Companies</th>
+            <td mat-cell *matCellDef="let problem">
+              <div class="tags-container" *ngIf="problem.companies && problem.companies.length > 0">
+                <mat-chip *ngFor="let company of problem.companies.slice(0, 2)" class="company-chip">{{ company }}</mat-chip>
+                <span class="more-tags" *ngIf="problem.companies.length > 2">
+                  +{{ problem.companies.length - 2 }} more
+                </span>
+              </div>
+              <span *ngIf="!problem.companies || problem.companies.length === 0" class="no-companies">—</span>
+            </td>
+          </ng-container>
+
           <!-- Attempts Column -->
           <ng-container matColumnDef="attempts">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Attempts</th>
@@ -157,6 +182,10 @@ import { MatChipsModule } from '@angular/material/chips';
                 <button mat-menu-item (click)="viewAllTags(problem)" *ngIf="problem.tags.length > 3">
                   <mat-icon>local_offer</mat-icon>
                   <span>View All Tags</span>
+                </button>
+                <button mat-menu-item (click)="viewCompanies(problem)">
+                  <mat-icon>business</mat-icon>
+                  <span>Companies</span>
                 </button>
                 <button mat-menu-item (click)="viewTimestamps(problem)">
                   <mat-icon>schedule</mat-icon>
@@ -342,6 +371,19 @@ import { MatChipsModule } from '@angular/material/chips';
       font-size: 1rem;
     }
 
+    .company-chip {
+      background-color: rgba(33, 150, 243, 0.1) !important;
+      color: #1976d2 !important;
+      font-size: 0.7rem !important;
+      height: 24px !important;
+      margin: 0 !important;
+    }
+
+    .no-companies {
+      font-size: 0.75rem;
+      color: rgba(0, 0, 0, 0.4);
+    }
+
     @media (max-width: 768px) {
       .problem-list-container {
         padding: 1rem 0.5rem;
@@ -427,15 +469,25 @@ import { MatChipsModule } from '@angular/material/chips';
     :host-context(.dark-theme) .empty-state h3 {
       color: rgba(255, 255, 255, 0.9);
     }
+
+    :host-context(.dark-theme) .company-chip {
+      background-color: rgba(33, 150, 243, 0.2) !important;
+      color: #64b5f6 !important;
+    }
+
+    :host-context(.dark-theme) .no-companies {
+      color: rgba(255, 255, 255, 0.4);
+    }
   `]
 })
 export class ProblemListComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  displayedColumns: string[] = ['id', 'title', 'difficulty', 'status', 'tags', 'attempts', 'timeSpent', 'actions'];
+  displayedColumns: string[] = ['id', 'title', 'difficulty', 'status', 'tags', 'companies', 'attempts', 'timeSpent', 'actions'];
   dataSource = new MatTableDataSource<Problem>();
   problems: Problem[] = [];
+  availableCompanies: string[] = [];
 
   constructor(
     private leetcodeService: LeetcodeService,
@@ -447,12 +499,23 @@ export class ProblemListComponent implements OnInit {
     this.leetcodeService.problems$.subscribe(problems => {
       this.problems = problems;
       this.dataSource.data = problems;
+      this.updateAvailableCompanies();
     });
   }
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+  }
+
+  private updateAvailableCompanies(): void {
+    const companiesSet = new Set<string>();
+    this.problems.forEach(problem => {
+      if (problem.companies && problem.companies.length > 0) {
+        problem.companies.forEach(company => companiesSet.add(company));
+      }
+    });
+    this.availableCompanies = Array.from(companiesSet).sort();
   }
 
   applyFilter(event: Event): void {
@@ -475,6 +538,16 @@ export class ProblemListComponent implements OnInit {
   filterByStatus(status: string): void {
     if (status) {
       this.dataSource.data = this.problems.filter(p => p.status === status);
+    } else {
+      this.dataSource.data = this.problems;
+    }
+  }
+
+  filterByCompany(company: string): void {
+    if (company) {
+      this.dataSource.data = this.problems.filter(p =>
+        p.companies && p.companies.includes(company)
+      );
     } else {
       this.dataSource.data = this.problems;
     }
@@ -525,6 +598,23 @@ export class ProblemListComponent implements OnInit {
       width: '500px',
       maxWidth: '90vw',
       data: problem
+    });
+  }
+
+  viewCompanies(problem: Problem): void {
+    const dialogRef = this.dialog.open(CompaniesDialogComponent, {
+      width: '700px',
+      maxWidth: '90vw',
+      data: problem
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== undefined) {
+        this.leetcodeService.updateProblem(problem.id!, { companies: result });
+        this.snackBar.open('Companies updated successfully!', 'Close', {
+          duration: 3000
+        });
+      }
     });
   }
 

@@ -14,7 +14,8 @@ export interface Problem {
   updatedAt?: Date;
   solvedDate?: Date | null;
   lastAttemptDate?: Date | null;
-  firstAttemptDate?: Date | null; // Add this new field
+  firstAttemptDate?: Date | null;
+  companies: string[]; // Add this new field
 }
 
 export interface UserStats {

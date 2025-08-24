@@ -144,7 +144,6 @@ export class LeetcodeService {
 
     console.log('Adding problem with data:', problem);
 
-    // Clean the data to remove undefined values
     const cleanData: any = {
       leetcodeId: problem.leetcodeId,
       title: problem.title,
@@ -155,6 +154,7 @@ export class LeetcodeService {
       attempts: problem.attempts || 0,
       timeSpent: problem.timeSpent || 0,
       notes: problem.notes || '',
+      companies: problem.companies || [], // Add companies field
       userId: user.uid,
       createdAt: new Date(),
       updatedAt: new Date()

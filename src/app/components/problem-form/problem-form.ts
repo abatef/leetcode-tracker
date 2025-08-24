@@ -245,9 +245,11 @@ const COMMON_TAGS = [
                 (click)="onSave()"
                 [disabled]="problemForm.invalid || isLoading"
                 class="save-button">
-          <mat-spinner *ngIf="isLoading" diameter="16"></mat-spinner>
-          <mat-icon *ngIf="!isLoading">{{ data ? 'save' : 'add' }}</mat-icon>
-          <span>{{ isLoading ? 'Saving...' : (data ? 'Update Problem' : 'Add Problem') }}</span>
+          <div class="button-content">
+            <mat-spinner *ngIf="isLoading" diameter="16" class="button-spinner"></mat-spinner>
+            <mat-icon *ngIf="!isLoading">{{ data ? 'save' : 'add' }}</mat-icon>
+            <span>{{ isLoading ? 'Saving...' : (data ? 'Update Problem' : 'Add Problem') }}</span>
+          </div>
         </button>
       </mat-dialog-actions>
     </div>
@@ -439,11 +441,29 @@ const COMMON_TAGS = [
     }
 
     .save-button {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
       min-width: 140px;
       height: 40px;
+      position: relative;
+    }
+
+    .button-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      height: 100%;
+    }
+
+    .button-spinner {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .save-button[disabled] .button-content > :not(.button-spinner) {
+      opacity: 0;
     }
 
     /* Custom scrollbar for textarea */
@@ -766,11 +786,11 @@ export class ProblemFormComponent implements OnInit {
         timeSpent: formValue.timeSpent || 0,
         solvedDate: formValue.status === 'Solved' ? (formValue.solvedDate || new Date()) : null,
         lastAttemptDate: (formValue.status === 'Attempted' || formValue.status === 'Solved') ? new Date() : null,
-        firstAttemptDate: null // This will be set by the service if needed
+        firstAttemptDate: null,
+        companies: this.data?.companies || [] // Add companies field
       };
 
       if (this.data) {
-        // For updates, preserve existing firstAttemptDate
         if (this.data.firstAttemptDate) {
           problemData.firstAttemptDate = this.data.firstAttemptDate;
         }
