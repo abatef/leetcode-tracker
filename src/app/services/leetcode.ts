@@ -55,6 +55,7 @@ export class LeetcodeService {
           updatedAt: data['updatedAt']?.toDate() || new Date(),
           solvedDate: data['solvedDate']?.toDate() || null,
           lastAttemptDate: data['lastAttemptDate']?.toDate() || null,
+          firstAttemptDate: data['firstAttemptDate']?.toDate() || null, // Add this line
         } as Problem);
       });
       this.problemsSubject.next(problems);
@@ -159,6 +160,11 @@ export class LeetcodeService {
       updatedAt: new Date()
     };
 
+    // Set firstAttemptDate if status is Attempted or Solved and it's not already set
+    if ((problem.status === 'Attempted' || problem.status === 'Solved') && !problem.firstAttemptDate) {
+      cleanData.firstAttemptDate = new Date();
+    }
+
     // Only add optional dates if they exist
     if (problem.solvedDate) {
       cleanData.solvedDate = problem.solvedDate;
@@ -166,6 +172,10 @@ export class LeetcodeService {
 
     if (problem.lastAttemptDate) {
       cleanData.lastAttemptDate = problem.lastAttemptDate;
+    }
+
+    if (problem.firstAttemptDate) {
+      cleanData.firstAttemptDate = problem.firstAttemptDate;
     }
 
     console.log('Final problem data:', cleanData);
@@ -181,6 +191,10 @@ export class LeetcodeService {
   }
 
   async updateProblem(problemId: string, updates: Partial<Problem>): Promise<void> {
+    // Get current problem to check previous status
+    const currentProblems = this.problemsSubject.value;
+    const currentProblem = currentProblems.find(p => p.id === problemId);
+
     // Clean updates to remove undefined values
     const cleanUpdates: any = {
       updatedAt: new Date()
@@ -191,6 +205,21 @@ export class LeetcodeService {
         cleanUpdates[key] = updates[key as keyof Problem];
       }
     });
+
+    // Track first attempt date
+    if (currentProblem && updates.status) {
+      const wasNotAttempted = currentProblem.status === 'Not Attempted';
+      const nowAttempted = updates.status === 'Attempted' || updates.status === 'Solved';
+
+      if (wasNotAttempted && nowAttempted && !currentProblem.firstAttemptDate) {
+        cleanUpdates.firstAttemptDate = new Date();
+      }
+    }
+
+    // Update lastAttemptDate when status changes to Attempted or Solved
+    if (updates.status && (updates.status === 'Attempted' || updates.status === 'Solved')) {
+      cleanUpdates.lastAttemptDate = new Date();
+    }
 
     const problemRef = doc(this.firestore, 'problems', problemId);
     await updateDoc(problemRef, cleanUpdates);

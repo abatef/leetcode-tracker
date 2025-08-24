@@ -15,6 +15,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { Problem } from '../../models/problem';
+import { LeetcodeService } from '../../services/leetcode';
 
 // Common LeetCode problem tags for autocomplete
 const COMMON_TAGS = [
@@ -582,7 +583,8 @@ export class ProblemFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<ProblemFormComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: Problem | null
+    @Inject(MAT_DIALOG_DATA) public data: Problem | null,
+    private leetcodeService: LeetcodeService // Add this line
   ) {
     this.problemForm = this.fb.group({
       leetcodeId: ['', [Validators.required, Validators.min(1)]],
@@ -600,6 +602,9 @@ export class ProblemFormComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.data) {
+      this.selectedTags = [...(this.data.tags || [])];
+      this.showSolvedDate = this.data.status === 'Solved';
+
       this.problemForm.patchValue({
         leetcodeId: this.data.leetcodeId,
         title: this.data.title,
@@ -612,8 +617,6 @@ export class ProblemFormComponent implements OnInit {
         solvedDate: this.data.solvedDate,
         autoFetch: false
       });
-      this.selectedTags = [...this.data.tags];
-      this.showSolvedDate = this.data.status === 'Solved';
     }
 
     this.problemForm.get('status')?.valueChanges.subscribe(status => {
@@ -624,11 +627,8 @@ export class ProblemFormComponent implements OnInit {
     });
 
     this.problemForm.get('leetcodeId')?.valueChanges.subscribe(() => {
-      if (this.problemForm.get('autoFetch')?.value && !this.data) {
-        const leetcodeId = this.problemForm.get('leetcodeId')?.value;
-        if (leetcodeId && leetcodeId > 0) {
-          setTimeout(() => this.fetchProblemDetails(), 500);
-        }
+      if (this.problemForm.get('autoFetch')?.value) {
+        this.fetchProblemDetails();
       }
     });
   }
@@ -751,25 +751,37 @@ export class ProblemFormComponent implements OnInit {
     if (this.problemForm.invalid) return;
 
     this.isLoading = true;
+
     try {
       const formValue = this.problemForm.value;
-      const problemData = {
+      const problemData: Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'> = {
         leetcodeId: formValue.leetcodeId,
         title: formValue.title,
         difficulty: formValue.difficulty,
         status: formValue.status,
         url: formValue.url,
-        tags: [...this.selectedTags],
-        attempts: formValue.attempts,
-        timeSpent: formValue.timeSpent,
-        notes: formValue.notes,
-        solvedDate: formValue.status === 'Solved' ? formValue.solvedDate : undefined,
-        lastAttemptDate: formValue.status !== 'Not Attempted' ? new Date() : undefined
+        tags: this.selectedTags,
+        notes: formValue.notes || '',
+        attempts: formValue.attempts || 0,
+        timeSpent: formValue.timeSpent || 0,
+        solvedDate: formValue.status === 'Solved' ? (formValue.solvedDate || new Date()) : null,
+        lastAttemptDate: (formValue.status === 'Attempted' || formValue.status === 'Solved') ? new Date() : null,
+        firstAttemptDate: null // This will be set by the service if needed
       };
 
-      this.dialogRef.close(problemData);
+      if (this.data) {
+        // For updates, preserve existing firstAttemptDate
+        if (this.data.firstAttemptDate) {
+          problemData.firstAttemptDate = this.data.firstAttemptDate;
+        }
+        await this.leetcodeService.updateProblem(this.data.id!, problemData);
+      } else {
+        await this.leetcodeService.addProblem(problemData);
+      }
+
+      this.dialogRef.close(true);
     } catch (error) {
-      console.error('Failed to save problem:', error);
+      console.error('Error saving problem:', error);
     } finally {
       this.isLoading = false;
     }
