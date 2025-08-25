@@ -317,16 +317,26 @@ const POPULAR_TOPICS = [
           </div>
         </div>
       </div>
+
+      <!-- Import Error -->
+      <div class="import-error" *ngIf="importError">
+        <mat-divider></mat-divider>
+        <div class="error-message">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ importError }}</span>
+        </div>
+      </div>
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Cancel</button>
       <button mat-raised-button
               color="primary"
-              [disabled]="!selectedProblem"
+              [disabled]="!selectedProblem || importLoading"
               (click)="importSelectedProblem()">
-        <mat-icon>add</mat-icon>
-        Import Problem
+        <mat-spinner diameter="20" *ngIf="importLoading"></mat-spinner>
+        <mat-icon *ngIf="!importLoading">add</mat-icon>
+        {{ importLoading ? 'Importing...' : 'Import Problem' }}
       </button>
     </mat-dialog-actions>
   `,
@@ -879,6 +889,34 @@ const POPULAR_TOPICS = [
     .results-list::-webkit-scrollbar-thumb:hover {
       background: rgba(103, 80, 164, 0.5);
     }
+
+    .import-error {
+      margin-top: 1rem;
+    }
+
+    .import-error .error-message {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid rgba(244, 67, 54, 0.2);
+      border-radius: 8px;
+      color: #d32f2f;
+      margin: 1rem 0;
+    }
+
+    .import-error .error-message mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    :host-context(.dark-theme) .import-error .error-message {
+      background: rgba(244, 67, 54, 0.2);
+      border-color: rgba(244, 67, 54, 0.3);
+      color: #ff6b6b;
+    }
   `]
 })
 export class SearchDialogComponent implements OnInit {
@@ -905,6 +943,8 @@ export class SearchDialogComponent implements OnInit {
 
   searchLoading = false;
   randomLoading = false;
+  importLoading = false;
+  importError: string | null = null;
   searchError: string | null = null;
   randomError: string | null = null;
   hasSearched = false;
@@ -1108,34 +1148,80 @@ export class SearchDialogComponent implements OnInit {
     }
   }
 
+  importSelectedProblem(): Promise<void> {
+    if (!this.selectedProblem) {
+      return Promise.resolve();
+    }
+
+    this.importLoading = true;
+    this.importError = null; // Clear previous errors
+
+    try {
+      // Check if problem already exists
+      const existingProblems = this.userProblems;
+      const existingProblem = existingProblems.find(p => p.leetcodeId === this.selectedProblem!.id);
+
+      if (existingProblem) {
+        this.importError = `Problem "${this.selectedProblem.title}" is already in your list.`;
+        this.importLoading = false;
+        return Promise.resolve();
+      }
+
+      // Convert SearchResult to the format expected by LeetcodeService.addProblem
+      const problemToAdd: Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'> = {
+        leetcodeId: this.selectedProblem.id,
+        title: this.selectedProblem.title,
+        difficulty: this.selectedProblem.difficulty as 'Easy' | 'Medium' | 'Hard',
+        status: 'Not Attempted',
+        url: `https://leetcode.com/problems/${this.selectedProblem.titleSlug}/`,
+        tags: this.selectedProblem.tags || [],
+        attempts: 0,
+        timeSpent: 0,
+        notes: '',
+        companies: [],
+        solvedDate: null,
+        lastAttemptDate: null,
+        firstAttemptDate: null,
+        firstSolvedDate: null
+      };
+
+      console.log('Importing problem:', problemToAdd);
+
+      return this.leetcodeService.addProblem(problemToAdd).then(() => {
+        // Close dialog with success indication
+        this.dialogRef.close({
+          success: true,
+          problem: problemToAdd,
+          message: `"${problemToAdd.title}" has been added to your problem list!`
+        });
+      }).catch((error: any) => {
+        console.error('Error importing problem:', error);
+        this.importError = error.message || 'Failed to import problem. Please try again.';
+      }).finally(() => {
+        this.importLoading = false;
+      });
+
+    } catch (error: any) {
+      console.error('Error importing problem:', error);
+      this.importError = error.message || 'Failed to import problem. Please try again.';
+      this.importLoading = false;
+      return Promise.resolve();
+    }
+  }
+
   selectProblem(problem: SearchResult): void {
     this.selectedProblem = problem;
+    this.importError = null; // Clear any previous import errors
   }
 
   selectRandomProblem(): void {
     if (this.randomProblem) {
       this.selectedProblem = this.randomProblem;
+      this.importError = null; // Clear any previous import errors
     }
   }
 
   trackByProblem(index: number, problem: SearchResult): any {
     return problem.id;
-  }
-
-  importSelectedProblem(): void {
-    if (this.selectedProblem) {
-      // Convert SearchResult to LeetCodeProblem format
-      const leetcodeProblem: LeetCodeProblem = {
-        id: this.selectedProblem.id,
-        questionFrontendId: this.selectedProblem.id.toString(),
-        title: this.selectedProblem.title,
-        titleSlug: this.selectedProblem.titleSlug,
-        difficulty: this.selectedProblem.difficulty,
-        tags: this.selectedProblem.tags,
-        isPaidOnly: this.selectedProblem.isPaidOnly
-      };
-
-      this.dialogRef.close(leetcodeProblem);
-    }
   }
 }
