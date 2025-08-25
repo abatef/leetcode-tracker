@@ -38,127 +38,7 @@ $dark-theme: mat.define-theme((
 // Apply the light theme by default
 @include mat.all-component-themes($theme);
 
-// Apply dark theme when .dark-theme class is present
-.dark-theme {
-  @include mat.all-component-colors($dark-theme);
-
-  // Force all text to be white in dark theme
-  * {
-    color: white !important;
-  }
-
-  // Custom dark theme variables
-  --surface-color: #121212;
-  --on-surface-color: #ffffff;
-  --background-color: #121212;
-  --card-background: #1e1e1e;
-  --surface-variant: #2d2d2d;
-
-  // Override body background for dark theme
-  body {
-    background-color: #121212 !important;
-    color: #ffffff !important;
-  }
-
-  // Dark theme card backgrounds
-  .mat-mdc-card {
-    background-color: #1e1e1e !important;
-    color: #ffffff !important;
-  }
-
-  // Dark theme toolbar
-  .mat-toolbar {
-    background-color: #1e1e1e !important;
-  }
-
-  // Dark theme table
-  .mat-mdc-table {
-    background-color: #1e1e1e !important;
-    color: #ffffff !important;
-  }
-
-  .mat-mdc-header-row {
-    background-color: #2d2d2d !important;
-  }
-
-  .mat-mdc-row:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-  }
-
-  .mat-mdc-cell, .mat-mdc-header-cell {
-    color: #ffffff !important;
-  }
-
-  // Dark theme dialogs
-  .mat-mdc-dialog-container {
-    background-color: #1e1e1e !important;
-    color: #ffffff !important;
-  }
-
-  // Dark theme form fields
-  .mat-mdc-form-field {
-    .mat-mdc-text-field-wrapper {
-      background-color: transparent !important;
-    }
-  }
-
-  // Dark theme buttons
-  .mat-mdc-button, .mat-mdc-raised-button, .mat-mdc-outlined-button {
-    color: #ffffff !important;
-  }
-
-  // Dark theme menu
-  .mat-mdc-menu-panel {
-    background-color: #1e1e1e !important;
-  }
-
-  .mat-mdc-menu-item {
-    color: #ffffff !important;
-  }
-
-  // Dark theme select options
-  .mat-mdc-option {
-    background-color: #1e1e1e !important;
-    color: #ffffff !important;
-  }
-
-  // Dark theme progress bars
-  .mat-mdc-progress-bar {
-    background-color: #2d2d2d !important;
-  }
-
-  // Dark theme checkboxes
-  .mat-mdc-checkbox {
-    color: #ffffff !important;
-  }
-
-  // Specific overrides for better contrast
-  .more-tags {
-    color: rgba(255, 255, 255, 0.7) !important;
-  }
-
-  .title-link {
-    color: #9fa8da !important;
-  }
-
-  .activity-time {
-    color: rgba(255, 255, 255, 0.6) !important;
-  }
-
-  .stat-label {
-    color: rgba(255, 255, 255, 0.7) !important;
-  }
-
-  .empty-state {
-    color: rgba(255, 255, 255, 0.7) !important;
-  }
-
-  .empty-state h3 {
-    color: rgba(255, 255, 255, 0.9) !important;
-  }
-}
-
-// Global styles
+// Global styles FIRST
 html, body {
   height: 100%;
   margin: 0;
@@ -174,165 +54,565 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+// Dark Theme - Fixed with proper body background
+.dark-theme {
+  @include mat.all-component-colors($dark-theme);
+
+  // CSS Variables for consistent dark theme
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #404040;
+  --bg-surface: #262626;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-tertiary: #808080;
+  --border-color: #404040;
+  --accent-blue: #4a9eff;
+  --accent-blue-dark: #357abd;
+
+  // FIXED: Proper body background targeting
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+// MORE SPECIFIC: Target body when dark-theme is applied
+body.dark-theme {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.dark-theme {
+  // Cards
+  .mat-mdc-card {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+
+  // Toolbar
+  .mat-toolbar {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  // Tables
+  .mat-mdc-table {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+
+  .mat-mdc-header-row {
+    background-color: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .mat-mdc-row {
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .mat-mdc-row:hover {
+    background-color: var(--bg-tertiary);
+  }
+
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    color: var(--text-primary);
+    border-bottom-color: var(--border-color);
+  }
+
+  // Dialogs
+  .mat-mdc-dialog-container {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+
+  .mat-mdc-dialog-title {
+    color: var(--text-primary);
+  }
+
+  .mat-mdc-dialog-content {
+    color: var(--text-primary);
+  }
+
+  // Form fields
+  .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+
+    .mat-mdc-floating-label {
+      color: var(--text-secondary);
+    }
+
+    &.mat-focused .mat-mdc-floating-label {
+      color: var(--accent-blue);
+    }
+
+    &.mat-focused .mat-mdc-text-field-wrapper {
+      border-color: var(--accent-blue);
+    }
+
+    input,
+    textarea {
+      color: var(--text-primary);
+      background-color: transparent;
+    }
+
+    .mat-mdc-form-field-hint {
+      color: var(--text-secondary);
+    }
+
+    .mat-mdc-form-field-error {
+      color: #ff6b6b;
+    }
+  }
+
+  // Buttons
+  .mat-mdc-button {
+    color: var(--text-primary);
+  }
+
+  .mat-mdc-raised-button {
+    background-color: var(--accent-blue);
+    color: white;
+  }
+
+  .mat-mdc-outlined-button {
+    border-color: var(--border-color);
+    color: var(--text-primary);
+
+    &:hover {
+      background-color: var(--bg-surface);
+    }
+  }
+
+  // Menus and dropdowns
+  .mat-mdc-menu-panel {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+  }
+
+  .mat-mdc-menu-item {
+    color: var(--text-primary);
+
+    &:hover {
+      background-color: var(--bg-tertiary);
+    }
+  }
+
+  // Select dropdowns
+  .mat-mdc-select-panel {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+  }
+
+  .mat-mdc-option {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+
+    &:hover,
+    &.mat-mdc-option-active {
+      background-color: var(--bg-tertiary);
+    }
+  }
+
+  // Progress bars
+  .mat-mdc-progress-bar {
+    background-color: var(--bg-tertiary);
+
+    .mdc-linear-progress__bar-inner {
+      border-color: var(--accent-blue);
+    }
+  }
+
+  // Checkboxes
+  .mat-mdc-checkbox {
+    --mdc-checkbox-unselected-icon-color: #{var(--text-secondary)};
+    --mdc-checkbox-selected-icon-color: #{var(--accent-blue)};
+  }
+
+  // Chips
+  .mat-mdc-chip {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+
+  // Dividers
+  .mat-divider {
+    border-color: var(--border-color);
+  }
+
+  // Custom component styles
+  .stat-label {
+    color: var(--text-secondary);
+  }
+
+  .stat-value {
+    color: var(--text-primary);
+  }
+
+  .empty-state {
+    color: var(--text-secondary);
+
+    h3 {
+      color: var(--text-primary);
+    }
+  }
+
+  .activity-time {
+    color: var(--text-secondary);
+  }
+
+  .title-link {
+    color: var(--accent-blue);
+
+    &:hover {
+      color: var(--accent-blue-dark);
+    }
+  }
+
+  .more-tags {
+    color: var(--text-secondary);
+  }
+
+  .difficulty-label,
+  .difficulty-count {
+    color: var(--text-primary);
+  }
+
+  .problem-id {
+    background-color: var(--bg-surface);
+    color: var(--accent-blue);
+    border: 1px solid var(--border-color);
+  }
+
+  .timestamp-title {
+    color: var(--text-primary);
+  }
+
+  .timestamp-date {
+    color: var(--text-secondary);
+  }
+
+  .timestamp-relative {
+    color: var(--text-tertiary);
+  }
+
+  .company-name {
+    color: var(--text-primary);
+  }
+
+  .notes-text {
+    color: var(--text-primary);
+
+    em {
+      color: var(--text-secondary);
+    }
+
+    code {
+      background-color: var(--bg-surface);
+      color: #87ceeb;
+      border: 1px solid var(--border-color);
+    }
+  }
+
+  // Page titles and headings
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+  }
+
+  // General text colors
+  p, span, div {
+    color: var(--text-primary);
+  }
+
+  // Welcome section
+  .welcome-section p {
+    color: var(--text-secondary);
+  }
+
+  // Filter hints
+  .filter-hint {
+    background-color: rgba(74, 158, 255, 0.1);
+    color: var(--accent-blue);
+    border: 1px solid rgba(74, 158, 255, 0.3);
+  }
+
+  // Timeline stats
+  .timeline-stats {
+    background-color: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+  }
+
+  // Company items
+  .company-item {
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+
+    &:hover {
+      border-color: var(--accent-blue);
+      background-color: var(--bg-tertiary);
+    }
+
+    &.selected {
+      border-color: var(--accent-blue);
+      background-color: rgba(74, 158, 255, 0.1);
+    }
+  }
+
+  // Tags and companies chips
+  .tag-chip,
+  .company-chip {
+    background-color: var(--bg-surface);
+    color: var(--accent-blue);
+    border: 1px solid var(--border-color);
+  }
+
+  // Section headings
+  .selected-companies h4,
+  .companies-section h4 {
+    color: var(--text-primary);
+  }
+
+  // Empty states
+  .no-companies,
+  .no-activity {
+    color: var(--text-tertiary);
+  }
+
+  // Problem list borders
+  .problem-info {
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .selected-companies {
+    border-top: 1px solid var(--border-color);
+  }
+
+  // Difficulty badges
+  .difficulty-easy {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid #4ade80;
+  }
+
+  .difficulty-medium {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid #fbbf24;
+  }
+
+  .difficulty-hard {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid #f87171;
+  }
+
+  // Status badges
+  .status-not-attempted {
+    background-color: var(--bg-surface);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+  }
+
+  .status-attempted {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid #fbbf24;
+  }
+
+  .status-solved {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid #4ade80;
+  }
+
+  .status-reviewed {
+    background-color: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+    border: 1px solid #a78bfa;
+  }
+
+  // Chart container
+  .chart-container {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+
+    .chart-header h3 {
+      color: var(--text-primary);
+    }
+  }
+
+  // Progress chart specific
+  .legend-item,
+  .stat-item {
+    color: var(--text-primary);
+  }
+
+  .stat-label {
+    color: var(--text-secondary);
+  }
+
+  // Icon colors
+  .mat-icon {
+    color: var(--text-secondary);
+  }
+
+  // Primary icons
+  .mat-toolbar .mat-icon,
+  .mat-mdc-card-header .mat-icon,
+  .primary .mat-icon {
+    color: var(--accent-blue);
+  }
+
+  // Success icons
+  .solved-avatar .mat-icon,
+  .success .mat-icon {
+    color: #4ade80;
+  }
+
+  // Warning icons
+  .streak-avatar .mat-icon,
+  .warning .mat-icon {
+    color: #fbbf24;
+  }
+
+  // Info icons
+  .info .mat-icon {
+    color: var(--accent-blue);
+  }
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 16px;
 }
 
-// Fix Material Design avatar centering
+// Material Design fixes without excessive !important
 .mat-mdc-card-avatar {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 50% !important;
-  flex-shrink: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .mat-mdc-card-avatar mat-icon {
-  margin: 0 !important;
-  width: 24px !important;
-  height: 24px !important;
-  font-size: 24px !important;
-  line-height: 24px !important;
+  margin: 0;
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+  line-height: 24px;
 }
 
-// Fix button icon alignment
-.mat-mdc-button, .mat-mdc-raised-button, .mat-mdc-outlined-button {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 0.5rem !important;
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 
   mat-icon {
-    margin: 0 !important;
-    line-height: 1 !important;
+    margin: 0;
+    line-height: 1;
   }
 }
 
-// Fix spacing issues
 .mat-mdc-card-content {
-  padding: 16px !important;
-  line-height: 1.6 !important;
+  padding: 16px;
+  line-height: 1.6;
 }
 
 .mat-mdc-card-header {
-  padding: 16px 16px 0 16px !important;
-  align-items: center !important;
+  padding: 16px 16px 0 16px;
+  align-items: center;
 
   .mat-mdc-card-header-text {
-    margin: 0 !important;
-    line-height: 1.4 !important;
+    margin: 0;
+    line-height: 1.4;
   }
 }
 
-// **CRITICAL TABLE ALIGNMENT FIX**
+// Table alignment fixes (keep these specific !important rules)
 .mat-mdc-table {
-  width: 100% !important;
-  display: table !important;
-  table-layout: fixed !important;
-  border-collapse: separate !important;
-  border-spacing: 0 !important;
+  width: 100%;
+  display: table;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .mat-mdc-header-row,
 .mat-mdc-row {
-  display: table-row !important;
+  display: table-row;
 }
 
 .mat-mdc-header-cell,
 .mat-mdc-cell {
-  display: table-cell !important;
-  padding: 8px 16px !important;
-  vertical-align: middle !important;
-  border-bottom: none !important;
-  box-sizing: border-box !important;
-  position: relative !important;
+  display: table-cell;
+  padding: 8px 16px;
+  vertical-align: middle;
+  border-bottom: none;
+  box-sizing: border-box;
+  position: relative;
 }
 
-// Force uniform column widths for proper alignment
-.mat-column-id {
-  width: 80px !important;
-}
-
-.mat-column-title {
-  width: 200px !important;
-}
-
-.mat-column-difficulty {
-  width: 120px !important;
-}
-
-.mat-column-status {
-  width: 120px !important;
-}
-
-.mat-column-tags {
-  width: 180px !important;
-}
-
-.mat-column-companies {
-  width: 150px !important;
-}
-
+// Column widths (these need !important for table layout)
+.mat-column-id { width: 80px !important; }
+.mat-column-title { width: 200px !important; }
+.mat-column-difficulty { width: 120px !important; }
+.mat-column-status { width: 120px !important; }
+.mat-column-tags { width: 180px !important; }
+.mat-column-companies { width: 150px !important; }
 .mat-column-attempts {
   width: 100px !important;
   text-align: center !important;
 }
-
 .mat-column-timeSpent {
   width: 120px !important;
   text-align: center !important;
 }
-
 .mat-column-actions {
   width: 80px !important;
   text-align: center !important;
 }
 
 .mat-mdc-header-row {
-  box-shadow: none !important;
-  background-color: rgba(0, 0, 0, 0.04) !important;
+  box-shadow: none;
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .mat-mdc-row {
-  box-shadow: none !important;
-  transition: background-color 0.2s ease !important;
+  box-shadow: none;
+  transition: background-color 0.2s ease;
 }
 
 .mat-mdc-row:hover {
-  background-color: rgba(0, 0, 0, 0.02) !important;
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
-// Fix Material chip styling
+// Material chip styling
 .mat-mdc-chip {
-  --mdc-chip-container-shape: 14px !important;
-  --mdc-chip-label-text-size: 12px !important;
-  --mdc-chip-container-height: 28px !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.25px !important;
+  --mdc-chip-container-shape: 14px;
+  --mdc-chip-label-text-size: 12px;
+  --mdc-chip-container-height: 28px;
+  font-weight: 500;
+  letter-spacing: 0.25px;
 }
 
-// Dark theme table fixes
-.dark-theme {
-  .mat-mdc-header-row {
-    background-color: rgba(255, 255, 255, 0.04) !important;
-  }
-
-  .mat-mdc-row:hover {
-    background-color: rgba(255, 255, 255, 0.02) !important;
-  }
-}
-
-// Remove ALL the custom .mat-mdc-form-field styles and replace with minimal fixes only:
-
-// Remove all the custom form field styles and just keep these essential fixes:
+// Form field fixes
 .mat-mdc-form-field {
   width: 100%;
 
-  // Only fix the textarea specific case
   &.textarea-field {
     .mat-mdc-text-field-wrapper {
       min-height: 120px;
@@ -345,24 +625,13 @@ body {
   }
 }
 
-// Keep the dark theme support
-.dark-theme .mat-mdc-form-field {
-  .mat-mdc-floating-label {
-    color: rgba(255, 255, 255, 0.6) !important;
-  }
-
-  &.mat-focused .mat-mdc-floating-label {
-    color: var(--mdc-theme-primary) !important;
-  }
-}
-
 // Import Google Fonts
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap');
 
-// Custom Material You Scrollbar
+// Scrollbar styling
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -374,24 +643,15 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(103, 80, 164, 0.3);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
   transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(103, 80, 164, 0.5);
+  background: rgba(0, 0, 0, 0.3);
 }
 
-::-webkit-scrollbar-thumb:active {
-  background: rgba(103, 80, 164, 0.7);
-}
-
-::-webkit-scrollbar-corner {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-// Dark theme scrollbar
 .dark-theme {
   ::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.05);
@@ -404,20 +664,12 @@ body {
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
   }
-
-  ::-webkit-scrollbar-thumb:active {
-    background: rgba(255, 255, 255, 0.4);
-  }
-
-  ::-webkit-scrollbar-corner {
-    background: rgba(255, 255, 255, 0.05);
-  }
 }
 
 // Firefox scrollbar support
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(103, 80, 164, 0.3) rgba(0, 0, 0, 0.05);
+  scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
 }
 
 .dark-theme * {
