@@ -228,24 +228,82 @@ body {
   }
 }
 
-// Material Design 3 Table Styling
+// **CRITICAL TABLE ALIGNMENT FIX**
 .mat-mdc-table {
-  font-family: 'Google Sans', 'Roboto', sans-serif !important;
+  width: 100% !important;
+  display: table !important;
+  table-layout: fixed !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
 }
 
+.mat-mdc-header-row,
+.mat-mdc-row {
+  display: table-row !important;
+}
+
+.mat-mdc-header-cell,
+.mat-mdc-cell {
+  display: table-cell !important;
+  padding: 8px 16px !important;
+  vertical-align: middle !important;
+  border-bottom: none !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+
+// Force uniform column widths for proper alignment
+.mat-column-id {
+  width: 80px !important;
+}
+
+.mat-column-title {
+  width: 200px !important;
+}
+
+.mat-column-difficulty {
+  width: 120px !important;
+}
+
+.mat-column-status {
+  width: 120px !important;
+}
+
+.mat-column-tags {
+  width: 180px !important;
+}
+
+.mat-column-companies {
+  width: 150px !important;
+}
+
+.mat-column-attempts {
+  width: 100px !important;
+  text-align: center !important;
+}
+
+.mat-column-timeSpent {
+  width: 120px !important;
+  text-align: center !important;
+}
+
+.mat-column-actions {
+  width: 80px !important;
+  text-align: center !important;
+}
+
 .mat-mdc-header-row {
   box-shadow: none !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
 }
 
 .mat-mdc-row {
   box-shadow: none !important;
+  transition: background-color 0.2s ease !important;
 }
 
-.mat-mdc-cell, .mat-mdc-header-cell {
-  border-bottom: none !important;
-  vertical-align: middle !important;
+.mat-mdc-row:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
 }
 
 // Fix Material chip styling
@@ -257,31 +315,15 @@ body {
   letter-spacing: 0.25px !important;
 }
 
-// Material Design ripple effects
-.mat-mdc-row {
-  position: relative;
-  overflow: hidden;
-}
-
-.mat-mdc-row::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: transparent;
-  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-}
-
-.mat-mdc-row:hover::before {
-  background: rgba(103, 80, 164, 0.04);
-}
-
 // Dark theme table fixes
-.dark-theme .mat-mdc-row:hover::before {
-  background: rgba(255, 255, 255, 0.05);
+.dark-theme {
+  .mat-mdc-header-row {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+  }
+
+  .mat-mdc-row:hover {
+    background-color: rgba(255, 255, 255, 0.02) !important;
+  }
 }
 
 // Remove ALL the custom .mat-mdc-form-field styles and replace with minimal fixes only:

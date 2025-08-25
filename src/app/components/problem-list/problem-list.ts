@@ -257,8 +257,87 @@ import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
       margin-bottom: 1rem;
     }
 
+    /* FIX: Proper table alignment */
     .problems-table {
       width: 100%;
+      table-layout: fixed;
+    }
+
+    /* FIX: Ensure header and row cells have consistent padding */
+    .mat-mdc-header-cell,
+    .mat-mdc-cell {
+      padding: 8px 16px !important;
+      border-bottom: none !important;
+      vertical-align: middle !important;
+    }
+
+    /* FIX: Specific column widths to ensure alignment */
+    .mat-column-id {
+      flex: 0 0 80px !important;
+      width: 80px !important;
+    }
+
+    .mat-column-title {
+      flex: 1 1 200px !important;
+      min-width: 200px !important;
+    }
+
+    .mat-column-difficulty {
+      flex: 0 0 120px !important;
+      width: 120px !important;
+    }
+
+    .mat-column-status {
+      flex: 0 0 120px !important;
+      width: 120px !important;
+    }
+
+    .mat-column-tags {
+      flex: 1 1 180px !important;
+      min-width: 180px !important;
+    }
+
+    .mat-column-companies {
+      flex: 0 0 150px !important;
+      width: 150px !important;
+    }
+
+    .mat-column-attempts {
+      flex: 0 0 100px !important;
+      width: 100px !important;
+      text-align: center !important;
+    }
+
+    .mat-column-timeSpent {
+      flex: 0 0 120px !important;
+      width: 120px !important;
+      text-align: center !important;
+    }
+
+    .mat-column-actions {
+      flex: 0 0 80px !important;
+      width: 80px !important;
+      text-align: center !important;
+    }
+
+    /* FIX: Remove any conflicting table styles */
+    .mat-mdc-table {
+      border-collapse: separate !important;
+      border-spacing: 0 !important;
+    }
+
+    .mat-mdc-header-row {
+      background-color: rgba(0, 0, 0, 0.04) !important;
+      box-shadow: none !important;
+    }
+
+    .mat-mdc-row {
+      box-shadow: none !important;
+      transition: background-color 0.2s ease;
+    }
+
+    .mat-mdc-row:hover {
+      background-color: rgba(0, 0, 0, 0.02) !important;
     }
 
     .title-link {
@@ -279,6 +358,7 @@ import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      display: inline-block;
     }
 
     .difficulty-easy {
@@ -301,6 +381,7 @@ import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
       border-radius: 12px;
       font-size: 0.75rem;
       font-weight: 500;
+      display: inline-block;
     }
 
     .status-not-attempted {
@@ -407,12 +488,68 @@ import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
         font-size: 2rem;
         text-align: center;
       }
+
+      /* FIX: Mobile responsive table */
+      .problems-table {
+        table-layout: auto;
+      }
+
+      .mat-column-id {
+        flex: 0 0 60px !important;
+        width: 60px !important;
+      }
+
+      .mat-column-title {
+        flex: 1 1 150px !important;
+        min-width: 150px !important;
+      }
+
+      .mat-column-difficulty {
+        flex: 0 0 80px !important;
+        width: 80px !important;
+      }
+
+      .mat-column-status {
+        flex: 0 0 80px !important;
+        width: 80px !important;
+      }
+
+      .mat-column-tags {
+        display: none !important;
+      }
+
+      .mat-column-companies {
+        display: none !important;
+      }
+
+      .mat-column-attempts {
+        flex: 0 0 60px !important;
+        width: 60px !important;
+      }
+
+      .mat-column-timeSpent {
+        flex: 0 0 60px !important;
+        width: 60px !important;
+      }
+
+      .mat-column-actions {
+        flex: 0 0 60px !important;
+        width: 60px !important;
+      }
     }
 
     /* Dark theme support */
     :host-context(.dark-theme) .table-container {
       background: #1e1e1e;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    :host-context(.dark-theme) .mat-mdc-header-row {
+      background-color: rgba(255, 255, 255, 0.04) !important;
+    }
+
+    :host-context(.dark-theme) .mat-mdc-row:hover {
+      background-color: rgba(255, 255, 255, 0.02) !important;
     }
 
     :host-context(.dark-theme) .difficulty-easy {
