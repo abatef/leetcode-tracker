@@ -1,0 +1,16 @@
+{
+    "/api/leetcode/*": {
+        "target": "https://leetcode.com",
+        "secure": true,
+        "changeOrigin": true,
+        "logLevel": "debug",
+        "pathRewrite": {
+            "^/api/leetcode": ""
+        },
+        "headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Referer": "https://leetcode.com/",
+            "Origin": "https://leetcode.com"
+        }
+    }
+}

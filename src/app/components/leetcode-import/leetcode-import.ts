@@ -14,7 +14,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { LeetCodeApiService, LeetCodeProblem, LeetCodeDailyChallenge } from '../../services/leetcode-api';
 import { LeetcodeService } from '../../services/leetcode';
 import { Problem } from '../../models/problem';
-import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-leetcode-import',
@@ -112,17 +111,19 @@ import { take } from 'rxjs/operators';
                      *ngIf="getDifficulty(randomProblem.difficulty)">
                   {{ getDifficulty(randomProblem.difficulty) }}
                 </div>
-                @if (randomProblem.id) {
-                  <div class="problem-id">
-                    #{{ randomProblem.id }}
-                  </div>
-                }
+                <div class="problem-id" *ngIf="randomProblem.id || randomProblem.questionFrontendId">
+                  #{{ randomProblem.id || randomProblem.questionFrontendId }}
+                </div>
               </div>
               <div class="tags-container" *ngIf="randomProblem.tags?.length">
                 <mat-chip *ngFor="let tag of randomProblem.tags?.slice(0, 3)">{{ tag }}</mat-chip>
                 <span *ngIf="randomProblem.tags && randomProblem.tags.length > 3" class="more-tags">
                   +{{ randomProblem.tags.length - 3 }} more
                 </span>
+              </div>
+              <div class="premium-badge" *ngIf="randomProblem.isPaidOnly">
+                <mat-icon>star</mat-icon>
+                <span>Premium</span>
               </div>
             </div>
             <div class="error-info" *ngIf="randomError">
@@ -171,7 +172,13 @@ import { take } from 'rxjs/operators';
                      *ngIf="getDifficulty(searchedProblem.difficulty)">
                   {{ getDifficulty(searchedProblem.difficulty) }}
                 </div>
-                <span class="problem-id" *ngIf="searchedProblem.id">#{{ searchedProblem.id }}</span>
+                <span class="problem-id" *ngIf="searchedProblem.id || searchedProblem.questionFrontendId">
+                  #{{ searchedProblem.id || searchedProblem.questionFrontendId }}
+                </span>
+                <div class="premium-badge" *ngIf="searchedProblem.isPaidOnly">
+                  <mat-icon>star</mat-icon>
+                  <span>Premium</span>
+                </div>
               </div>
               <div class="tags-container" *ngIf="searchedProblem.tags?.length">
                 <mat-chip *ngFor="let tag of searchedProblem.tags?.slice(0, 4)">{{ tag }}</mat-chip>
@@ -299,6 +306,24 @@ import { take } from 'rxjs/operators';
       font-size: 0.8rem;
       font-weight: 500;
       border: 1px solid rgba(103, 80, 164, 0.2);
+    }
+
+    .premium-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #000;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .premium-badge mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
     }
 
     .tags-container {
@@ -459,8 +484,8 @@ export class LeetcodeImportComponent {
   getButtonText(): string {
     if (this.dailyLoading) return 'Loading...';
     if (this.importingDaily) return 'Adding...';
-    if (this.dailyChallengeError) return 'Error - Try Again';
-    if (!this.dailyChallenge) return 'Load Challenge';
+    if (this.dailyChallengeError) return 'Retry';
+    if (!this.dailyChallenge) return 'Load Daily Challenge';
     return 'Import Daily Challenge';
   }
 
@@ -470,24 +495,14 @@ export class LeetcodeImportComponent {
 
     this.leetcodeApiService.getDailyChallenge().subscribe({
       next: (challenge) => {
-        console.log('Daily challenge response:', challenge);
-
-        // Validate the response structure
-        if (!challenge || !challenge.question) {
-          this.dailyChallengeError = 'Invalid daily challenge data received';
-          this.dailyChallenge = null;
-        } else {
-          this.dailyChallenge = challenge;
-          this.dailyChallengeError = null;
-        }
-
+        this.dailyChallenge = challenge;
         this.dailyLoading = false;
+        console.log('Daily challenge loaded:', challenge);
       },
       error: (error) => {
-        console.error('Error fetching daily challenge:', error);
-        this.dailyChallengeError = error.message || 'Failed to fetch daily challenge';
-        this.dailyChallenge = null;
+        this.dailyChallengeError = error.message || 'Failed to load daily challenge';
         this.dailyLoading = false;
+        console.error('Error fetching daily challenge:', error);
       }
     });
   }
@@ -502,16 +517,14 @@ export class LeetcodeImportComponent {
 
     this.leetcodeApiService.getRandomProblem(this.selectedDifficulty || undefined).subscribe({
       next: (problem) => {
-        console.log('Random problem response:', problem);
         this.randomProblem = problem;
-        this.randomError = null;
         this.randomLoading = false;
+        console.log('Random problem loaded:', problem);
       },
       error: (error) => {
-        console.error('Error fetching random problem:', error);
-        this.randomError = error.message || 'Failed to fetch random problem';
-        this.randomProblem = null;
+        this.randomError = error.message || 'Failed to load random problem';
         this.randomLoading = false;
+        console.error('Error fetching random problem:', error);
       }
     });
   }
@@ -524,16 +537,14 @@ export class LeetcodeImportComponent {
 
     this.leetcodeApiService.getProblem(this.searchQuery.trim()).subscribe({
       next: (problem) => {
-        console.log('Search problem response:', problem);
         this.searchedProblem = problem;
-        this.searchError = null;
         this.searchLoading = false;
+        console.log('Problem found:', problem);
       },
       error: (error) => {
-        console.error('Error searching problem:', error);
         this.searchError = error.message || 'Problem not found';
-        this.searchedProblem = null;
         this.searchLoading = false;
+        console.error('Error searching problem:', error);
       }
     });
   }
@@ -544,16 +555,33 @@ export class LeetcodeImportComponent {
     this.importingDaily = true;
 
     try {
-      // Fetch full problem details using the title slug
-      const problem = await this.leetcodeApiService.getProblem(this.dailyChallenge.question.titleSlug).toPromise();
-      if (problem) {
-        await this.importProblem(problem);
-      } else {
-        throw new Error('Could not fetch problem details');
-      }
+      // Convert daily challenge to problem format
+      const problemData: LeetCodeProblem = {
+        id: parseInt(this.dailyChallenge.question.questionFrontendId),
+        questionId: this.dailyChallenge.question.questionId,
+        questionFrontendId: this.dailyChallenge.question.questionFrontendId,
+        title: this.dailyChallenge.question.title,
+        titleSlug: this.dailyChallenge.question.titleSlug,
+        difficulty: this.dailyChallenge.question.difficulty,
+        isPaidOnly: this.dailyChallenge.question.isPaidOnly,
+        tags: [],
+        companies: []
+      };
+
+      await this.importProblem(problemData);
+
+      this.snackBar.open('Daily challenge imported successfully!', 'Close', {
+        duration: 3000,
+        panelClass: ['success-snackbar']
+      });
+
+      this.dialogRef.close(true);
     } catch (error) {
       console.error('Error importing daily challenge:', error);
-      this.snackBar.open('Failed to import daily challenge', 'Close', { duration: 3000 });
+      this.snackBar.open('Failed to import daily challenge', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
     } finally {
       this.importingDaily = false;
     }
@@ -566,9 +594,19 @@ export class LeetcodeImportComponent {
 
     try {
       await this.importProblem(this.randomProblem);
+
+      this.snackBar.open('Random problem imported successfully!', 'Close', {
+        duration: 3000,
+        panelClass: ['success-snackbar']
+      });
+
+      this.dialogRef.close(true);
     } catch (error) {
       console.error('Error importing random problem:', error);
-      this.snackBar.open('Failed to import problem', 'Close', { duration: 3000 });
+      this.snackBar.open('Failed to import random problem', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
     } finally {
       this.importingRandom = false;
     }
@@ -581,108 +619,26 @@ export class LeetcodeImportComponent {
 
     try {
       await this.importProblem(this.searchedProblem);
+
+      this.snackBar.open('Problem imported successfully!', 'Close', {
+        duration: 3000,
+        panelClass: ['success-snackbar']
+      });
+
+      this.dialogRef.close(true);
     } catch (error) {
       console.error('Error importing searched problem:', error);
-      this.snackBar.open('Failed to import problem', 'Close', { duration: 3000 });
+      this.snackBar.open('Failed to import problem', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
     } finally {
       this.importingSearched = false;
     }
   }
 
   private async importProblem(apiProblem: LeetCodeProblem): Promise<void> {
-    try {
-      console.log('Raw API problem data:', apiProblem);
-
-      // More flexible validation - check for essential data
-      if (!apiProblem || typeof apiProblem !== 'object') {
-        throw new Error('Invalid problem object received');
-      }
-
-      // Extract problem ID - try multiple possible field names
-      const problemId = apiProblem.id ||
-                       apiProblem.questionId ||
-                       apiProblem.frontendQuestionId ||
-                       apiProblem.questionFrontendId;
-
-      // Extract title - try multiple possible field names
-      const problemTitle = apiProblem.title ||
-                          apiProblem.questionTitle ||
-                          'Unknown Problem';
-
-      if (!problemId && !problemTitle) {
-        console.error('Problem validation failed - missing both ID and title:', apiProblem);
-        throw new Error('Problem is missing essential data (ID and title)');
-      }
-
-      // Create a more robust problem data object
-      const problemData: Partial<Problem> = {
-        leetcodeId: problemId ? Number(problemId) : Math.floor(Math.random() * 10000), // fallback ID
-        title: problemTitle,
-        difficulty: this.getDifficulty(apiProblem.difficulty) as 'Easy' | 'Medium' | 'Hard' || 'Medium',
-        status: 'Not Attempted',
-        tags: Array.isArray(apiProblem.tags) ? apiProblem.tags : [],
-        companies: Array.isArray(apiProblem.companies) ? apiProblem.companies : [],
-        url: apiProblem.titleSlug ?
-             this.leetcodeApiService.getLeetCodeUrl(apiProblem.titleSlug) :
-             `https://leetcode.com/problems/${problemTitle.toLowerCase().replace(/\s+/g, '-')}/`,
-        notes: '',
-        attempts: 0,
-        timeSpent: 0
-      };
-
-      console.log('Processed problem data:', problemData);
-
-      // Validate the processed data
-      if (!problemData.leetcodeId || !problemData.title || !problemData.difficulty) {
-        console.error('Processed problem validation failed:', problemData);
-        throw new Error('Failed to process problem data correctly');
-      }
-
-      // Check for duplicates
-      const currentProblems = await this.leetcodeService.problems$.pipe(
-        take(1)
-      ).toPromise() || [];
-
-      const isDuplicate = currentProblems.some(p =>
-        p.leetcodeId === problemData.leetcodeId ||
-        p.title.toLowerCase() === problemData.title!.toLowerCase()
-      );
-
-      if (isDuplicate) {
-        throw new Error(`Problem "${problemData.title}" already exists in your tracker`);
-      }
-
-      await this.leetcodeService.addProblem(problemData as Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'>);
-
-      this.snackBar.open(`"${problemData.title}" imported successfully!`, 'Close', {
-        duration: 3000,
-        panelClass: 'success-snackbar'
-      });
-
-      this.dialogRef.close(true);
-    } catch (error) {
-      console.error('Error importing problem:', error);
-
-      // More specific error messages
-      let errorMessage = 'Failed to import problem';
-      if (error instanceof Error) {
-        if (error.message.includes('already exists')) {
-          errorMessage = error.message;
-        } else if (error.message.includes('Invalid problem')) {
-          errorMessage = 'Invalid problem data received from LeetCode API';
-        } else if (error.message.includes('missing essential data')) {
-          errorMessage = 'Problem is missing required information';
-        } else {
-          errorMessage = error.message;
-        }
-      }
-
-      this.snackBar.open(errorMessage, 'Close', {
-        duration: 4000,
-        panelClass: 'error-snackbar'
-      });
-
-      throw error; // Re-throw to be handled by the calling method
-    }
+    const problemData = this.leetcodeApiService.convertApiProblemToLocal(apiProblem);
+    await this.leetcodeService.addProblem(problemData as Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'>);
   }
 }

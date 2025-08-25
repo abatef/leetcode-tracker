@@ -144,90 +144,153 @@ export class LeetcodeService {
     });
   }
 
-  private createAction(action: string, field?: string, oldValue?: any, newValue?: any, description?: string): ProblemAction {
-    const user = this.authService.getCurrentUser();
-    return {
-      timestamp: new Date(),
-      action: action as any,
-      details: {
-        field,
-        oldValue,
-        newValue,
-        description
-      },
-      userId: user?.uid
-    };
+  // ...existing code...
+
+async addProblem(problem: Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<void> {
+  const user = this.authService.getCurrentUser();
+  if (!user) {
+    console.error('User not authenticated');
+    throw new Error('User not authenticated');
   }
 
-  async addProblem(problem: Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<void> {
-    const user = this.authService.getCurrentUser();
-    if (!user) {
-      console.error('User not authenticated');
-      throw new Error('User not authenticated');
-    }
+  console.log('Adding problem with data:', problem);
 
-    console.log('Adding problem with data:', problem);
+  // Clean the data and ensure no undefined values
+  const cleanData: any = {
+    leetcodeId: problem.leetcodeId || 0,
+    title: problem.title || 'Unknown Problem',
+    difficulty: problem.difficulty || 'Medium',
+    status: problem.status || 'Not Attempted',
+    url: problem.url || '',
+    tags: Array.isArray(problem.tags) ? problem.tags.filter(tag => tag && typeof tag === 'string') : [],
+    attempts: typeof problem.attempts === 'number' ? problem.attempts : 0,
+    timeSpent: typeof problem.timeSpent === 'number' ? problem.timeSpent : 0,
+    notes: problem.notes || '',
+    companies: Array.isArray(problem.companies) ? problem.companies.filter(company => company && typeof company === 'string') : [],
+    userId: user.uid,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    actionHistory: []
+  };
 
-    const cleanData: any = {
-      leetcodeId: problem.leetcodeId,
-      title: problem.title,
-      difficulty: problem.difficulty,
-      status: problem.status,
-      url: problem.url,
-      tags: problem.tags || [],
-      attempts: problem.attempts || 0,
-      timeSpent: problem.timeSpent || 0,
-      notes: problem.notes || '',
-      companies: problem.companies || [],
-      userId: user.uid,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      actionHistory: []
-    };
+  // Create initial action
+  const initialAction = this.createAction(
+    'created',
+    undefined,
+    undefined,
+    undefined,
+    `Problem "${cleanData.title}" was added`
+  );
+  cleanData.actionHistory.push(initialAction);
 
-    // Create initial action
-    const initialAction = this.createAction('created', undefined, undefined, undefined, `Problem "${problem.title}" was added`);
-    cleanData.actionHistory.push(initialAction);
-
-    // Set firstAttemptDate if status is Attempted or Solved and it's not already set
-    if ((problem.status === 'Attempted' || problem.status === 'Solved') && !problem.firstAttemptDate) {
-      cleanData.firstAttemptDate = new Date();
-      const attemptAction = this.createAction('status_changed', 'status', 'Not Attempted', problem.status, `Status changed to ${problem.status}`);
-      cleanData.actionHistory.push(attemptAction);
-    }
-
-    // Set firstSolvedDate if status is Solved
-    if (problem.status === 'Solved') {
-      cleanData.firstSolvedDate = new Date();
-      cleanData.solvedDate = new Date();
-      const solvedAction = this.createAction('status_changed', 'status', undefined, 'Solved', 'Problem solved for the first time');
-      cleanData.actionHistory.push(solvedAction);
-    }
-
-    // Only add optional dates if they exist
-    if (problem.solvedDate) {
-      cleanData.solvedDate = problem.solvedDate;
-    }
-
-    if (problem.lastAttemptDate) {
-      cleanData.lastAttemptDate = problem.lastAttemptDate;
-    }
-
-    if (problem.firstAttemptDate) {
-      cleanData.firstAttemptDate = problem.firstAttemptDate;
-    }
-
-    console.log('Final problem data:', cleanData);
-
-    try {
-      const problemsRef = collection(this.firestore, 'problems');
-      const docRef = await addDoc(problemsRef, cleanData);
-      console.log('Problem added successfully with ID:', docRef.id);
-    } catch (error) {
-      console.error('Error adding problem to Firestore:', error);
-      throw error;
-    }
+  // Set firstAttemptDate if status is Attempted or Solved and it's not already set
+  if ((cleanData.status === 'Attempted' || cleanData.status === 'Solved') && !problem.firstAttemptDate) {
+    cleanData.firstAttemptDate = new Date();
+    const attemptAction = this.createAction(
+      'status_changed',
+      'status',
+      'Not Attempted',
+      cleanData.status,
+      `Status changed to ${cleanData.status}`
+    );
+    cleanData.actionHistory.push(attemptAction);
   }
+
+  // Set firstSolvedDate if status is Solved
+  if (cleanData.status === 'Solved') {
+    cleanData.firstSolvedDate = new Date();
+    cleanData.solvedDate = new Date();
+    const solvedAction = this.createAction(
+      'status_changed',
+      'status',
+      undefined,
+      'Solved',
+      'Problem solved for the first time'
+    );
+    cleanData.actionHistory.push(solvedAction);
+  }
+
+  // Only add optional dates if they exist and are valid
+  if (problem.solvedDate && problem.solvedDate instanceof Date) {
+    cleanData.solvedDate = problem.solvedDate;
+  }
+
+  if (problem.lastAttemptDate && problem.lastAttemptDate instanceof Date) {
+    cleanData.lastAttemptDate = problem.lastAttemptDate;
+  }
+
+  if (problem.firstAttemptDate && problem.firstAttemptDate instanceof Date) {
+    cleanData.firstAttemptDate = problem.firstAttemptDate;
+  }
+
+  // Final cleaning to remove any undefined values
+  const firebaseData = this.removeUndefinedFields(cleanData);
+
+  console.log('Final problem data for Firestore:', firebaseData);
+
+  try {
+    const problemsRef = collection(this.firestore, 'problems');
+    const docRef = await addDoc(problemsRef, firebaseData);
+    console.log('Problem added successfully with ID:', docRef.id);
+  } catch (error) {
+    console.error('Error adding problem to Firestore:', error);
+    throw error;
+  }
+}
+
+/**
+ * Recursively remove undefined fields from an object
+ */
+private removeUndefinedFields(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return null;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj
+      .map(item => this.removeUndefinedFields(item))
+      .filter(item => item !== undefined);
+  }
+
+  if (typeof obj === 'object' && obj instanceof Date) {
+    return obj;
+  }
+
+  if (typeof obj === 'object') {
+    const cleaned: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        const cleanedValue = this.removeUndefinedFields(value);
+        if (cleanedValue !== undefined) {
+          cleaned[key] = cleanedValue;
+        }
+      }
+    }
+    return cleaned;
+  }
+
+  return obj;
+}
+
+/**
+ * Create action with proper data cleaning
+ */
+private createAction(action: string, field?: string, oldValue?: any, newValue?: any, description?: string): ProblemAction {
+  const user = this.authService.getCurrentUser();
+  return {
+    timestamp: new Date(),
+    action: action as any,
+    details: {
+      field: field || undefined,
+      oldValue: oldValue !== undefined ? oldValue : undefined,
+      newValue: newValue !== undefined ? newValue : undefined,
+      description: description || undefined
+    },
+    userId: user?.uid
+  };
+}
+
+// ...existing code...
 
   async updateProblem(problemId: string, updates: Partial<Problem>): Promise<void> {
     // Get current problem to check previous status

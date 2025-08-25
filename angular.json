@@ -64,7 +64,8 @@
               "buildTarget": "leetcode-tracker:build:production"
             },
             "development": {
-              "buildTarget": "leetcode-tracker:build:development"
+              "buildTarget": "leetcode-tracker:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
