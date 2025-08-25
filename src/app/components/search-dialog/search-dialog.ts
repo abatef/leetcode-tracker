@@ -20,6 +20,7 @@ import { Observable } from 'rxjs';
 interface SearchFilters {
   keyword: string;
   difficulty: 'Easy' | 'Medium' | 'Hard' | '';
+  tag: string;
   searchScope: 'leetcode' | 'user';
 }
 
@@ -74,6 +75,7 @@ export class SearchDialogComponent implements OnInit {
   searchFilters: SearchFilters = {
     keyword: '',
     difficulty: '',
+    tag: '',
     searchScope: 'leetcode'
   };
 
@@ -140,7 +142,8 @@ export class SearchDialogComponent implements OnInit {
   }
 
   async searchProblems(): Promise<void> {
-    if (!this.searchFilters.keyword.trim()) {
+    // Allow search if either keyword or tag is provided
+    if (!this.searchFilters.keyword.trim() && !this.searchFilters.tag) {
       return;
     }
 
@@ -171,18 +174,22 @@ export class SearchDialogComponent implements OnInit {
   private searchInUserList(): void {
     const keyword = this.searchFilters.keyword.toLowerCase().trim();
     const difficulty = this.searchFilters.difficulty;
+    const tag = this.searchFilters.tag.toLowerCase().trim();
 
     let filteredProblems = this.userProblems.filter(problem => {
       // Search in title, tags, and companies
-      const matchesKeyword =
+      const matchesKeyword = !keyword ||
         problem.title.toLowerCase().includes(keyword) ||
-        problem.tags.some(tag => tag.toLowerCase().includes(keyword)) ||
+        problem.tags.some(t => t.toLowerCase().includes(keyword)) ||
         problem.companies.some(company => company.toLowerCase().includes(keyword));
 
       // Filter by difficulty if specified
       const matchesDifficulty = !difficulty || problem.difficulty === difficulty;
 
-      return matchesKeyword && matchesDifficulty;
+      // Filter by tag if specified
+      const matchesTag = !tag || problem.tags.some(t => t.toLowerCase().includes(tag));
+
+      return matchesKeyword && matchesDifficulty && matchesTag;
     });
 
     // Convert to SearchResult format
@@ -201,10 +208,21 @@ export class SearchDialogComponent implements OnInit {
   }
 
   private async searchInLeetCode(): Promise<void> {
-    const problems = await this.leetcodeApi.searchProblems(
-      this.searchFilters.keyword.trim(),
-      50
-    ).toPromise();
+    let problems: LeetCodeProblem[] | undefined;
+
+    if (this.searchFilters.tag && !this.searchFilters.keyword.trim()) {
+      // Search by tag only
+      problems = await this.leetcodeApi.getProblemsByTag(
+        this.searchFilters.tag,
+        50
+      ).toPromise();
+    } else if (this.searchFilters.keyword.trim()) {
+      // Search by keyword
+      problems = await this.leetcodeApi.searchProblems(
+        this.searchFilters.keyword.trim(),
+        50
+      ).toPromise();
+    }
 
     if (problems) {
       // Filter by difficulty if specified
@@ -212,6 +230,13 @@ export class SearchDialogComponent implements OnInit {
       if (this.searchFilters.difficulty) {
         filteredProblems = problems.filter(p =>
           p.difficulty === this.searchFilters.difficulty
+        );
+      }
+
+      // Filter by tag if specified and we searched by keyword
+      if (this.searchFilters.tag && this.searchFilters.keyword.trim()) {
+        filteredProblems = filteredProblems.filter(p =>
+          p.tags?.some(tag => tag.toLowerCase().includes(this.searchFilters.tag.toLowerCase()))
         );
       }
 

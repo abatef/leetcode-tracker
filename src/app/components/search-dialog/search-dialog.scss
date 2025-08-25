@@ -53,28 +53,31 @@ h2[mat-dialog-title] {
       margin-bottom: 1rem;
     }
 
-    .search-form .search-input {
-      flex: 1;
+    .search-input {
+      width: 100%;
     }
 
-    .search-form > div:last-of-type {
-      display: flex;
-      gap: 1rem;
-      align-items: flex-end;
-      flex-wrap: wrap;
-    }
-
+    .filters-row,
     .random-filters {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) auto;
+      align-items: center; // center-align everything in the row
       gap: 1rem;
-      align-items: flex-end;
-      flex-wrap: wrap;
     }
 
-    .topic-select,
-    .difficulty-select {
-      min-width: 200px;
-      flex: 1;
+    // Remove extra subscript/hint height so fields are 56px tall (like buttons)
+    .filters-row .mat-mdc-form-field-subscript-wrapper,
+    .random-filters .mat-mdc-form-field-subscript-wrapper {
+      display: none !important;
+      height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    // Remove unintended bottom spacing from mat-form-fields inside these rows
+    .filters-row .mat-mdc-form-field,
+    .random-filters .mat-mdc-form-field {
+      margin-bottom: 0 !important;
     }
 
     .search-button,
@@ -83,13 +86,22 @@ h2[mat-dialog-title] {
       min-width: 140px;
       display: flex;
       align-items: center;
-      justify-content: center; // Add this to center content
+      justify-content: center;
       gap: 0.5rem;
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    // Subtle vertical nudge so buttons align with field outlines
+    .filters-row .search-button,
+    .random-filters .random-button {
+      position: relative;
+      top: -9px; // tweak to -2px or -4px if preferred
     }
 
     .search-button mat-spinner,
     .random-button mat-spinner {
-      margin-right: 0.5rem; // Add spacing between spinner and text
+      margin-right: 0.5rem;
     }
 
     // Add specific styles for the dialog action buttons
@@ -102,10 +114,6 @@ h2[mat-dialog-title] {
 
     mat-dialog-actions button mat-spinner {
       margin-right: 0.5rem;
-    }
-
-    .random-button {
-      align-self: flex-start;
     }
 
     .results-container,
@@ -413,16 +421,16 @@ h2[mat-dialog-title] {
     }
 
     .button-content mat-spinner {
-      flex-shrink: 0; // Prevent spinner from shrinking
+      flex-shrink: 0;
     }
 
     .button-content span {
-      white-space: nowrap; // Prevent text wrapping
+      white-space: nowrap;
     }
 
     // Ensure proper alignment for all dialog buttons
     mat-dialog-actions button .button-content {
-      min-height: 20px; // Consistent height for button content
+      min-height: 20px;
     }
 
     // Dark theme styles
@@ -505,6 +513,34 @@ h2[mat-dialog-title] {
       color: #ff6b6b;
     }
 
+    .import-error {
+      margin-top: 1rem;
+    }
+
+    .import-error .error-message {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid rgba(244, 67, 54, 0.2);
+      border-radius: 8px;
+      color: #d32f2f;
+      margin: 1rem 0;
+    }
+
+    .import-error .error-message mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    :host-context(.dark-theme) .import-error .error-message {
+      background: rgba(244, 67, 54, 0.2);
+      border-color: rgba(244, 67, 54, 0.3);
+      color: #ff6b6b;
+    }
+
     // Mobile responsive
     @media (max-width: 800px) {
       mat-dialog-content {
@@ -512,9 +548,9 @@ h2[mat-dialog-title] {
         max-width: 95vw;
       }
 
-      .search-form > div:last-of-type,
+      .filters-row,
       .random-filters {
-        flex-direction: column;
+        grid-template-columns: 1fr; // stack vertically on mobile
         align-items: stretch;
       }
 
@@ -522,6 +558,12 @@ h2[mat-dialog-title] {
       .random-button {
         height: 48px;
         width: 100%;
+        align-self: stretch;
+      }
+
+      .filters-row .search-button,
+      .random-filters .random-button {
+        top: 0; // reset nudge on mobile
       }
 
       .problem-header {
@@ -584,32 +626,4 @@ h2[mat-dialog-title] {
 
     .results-list::-webkit-scrollbar-thumb:hover {
       background: rgba(103, 80, 164, 0.5);
-    }
-
-    .import-error {
-      margin-top: 1rem;
-    }
-
-    .import-error .error-message {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 1rem;
-      background: rgba(244, 67, 54, 0.1);
-      border: 1px solid rgba(244, 67, 54, 0.2);
-      border-radius: 8px;
-      color: #d32f2f;
-      margin: 1rem 0;
-    }
-
-    .import-error .error-message mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
-
-    :host-context(.dark-theme) .import-error .error-message {
-      background: rgba(244, 67, 54, 0.2);
-      border-color: rgba(244, 67, 54, 0.3);
-      color: #ff6b6b;
     }

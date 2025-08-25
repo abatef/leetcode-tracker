@@ -32,6 +32,7 @@
         </mat-checkbox>
       </div>
 
+      <!-- Keyword Input -->
       <mat-form-field appearance="outline" class="search-input">
         <mat-label>Search keyword</mat-label>
         <input
@@ -49,29 +50,43 @@
         </mat-hint>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="difficulty-select">
-        <mat-label>Difficulty</mat-label>
-        <mat-select [(value)]="searchFilters.difficulty">
-          <mat-option value="">Any Difficulty</mat-option>
-          <mat-option value="Easy">Easy</mat-option>
-          <mat-option value="Medium">Medium</mat-option>
-          <mat-option value="Hard">Hard</mat-option>
-        </mat-select>
-      </mat-form-field>
+      <!-- Filters and Search Button Row -->
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="tag-select">
+          <mat-label>Tag (Optional)</mat-label>
+          <mat-select [(value)]="searchFilters.tag">
+            <mat-option value="">Any Tag</mat-option>
+            <mat-option *ngFor="let topic of availableTopics" [value]="topic">
+              {{ topic }}
+            </mat-option>
+          </mat-select>
+          <mat-hint>Filter by specific topic/tag</mat-hint>
+        </mat-form-field>
 
-      <button
-        mat-raised-button
-        color="primary"
-        (click)="searchProblems()"
-        [disabled]="!searchFilters.keyword.trim() || searchLoading"
-        class="search-button"
-      >
-        <span class="button-content">
-          <mat-spinner diameter="20" *ngIf="searchLoading"></mat-spinner>
-          <mat-icon *ngIf="!searchLoading">search</mat-icon>
-          <span>{{ searchLoading ? 'Searching...' : 'Search' }}</span>
-        </span>
-      </button>
+        <mat-form-field appearance="outline" class="difficulty-select">
+          <mat-label>Difficulty</mat-label>
+          <mat-select [(value)]="searchFilters.difficulty">
+            <mat-option value="">Any Difficulty</mat-option>
+            <mat-option value="Easy">Easy</mat-option>
+            <mat-option value="Medium">Medium</mat-option>
+            <mat-option value="Hard">Hard</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="searchProblems()"
+          [disabled]="(!searchFilters.keyword.trim() && !searchFilters.tag) || searchLoading"
+          class="search-button"
+        >
+          <span class="button-content">
+            <mat-spinner diameter="20" *ngIf="searchLoading"></mat-spinner>
+            <mat-icon *ngIf="!searchLoading">search</mat-icon>
+            <span>{{ searchLoading ? 'Searching...' : 'Search' }}</span>
+          </span>
+        </button>
+      </div>
     </div>
 
     <!-- Search Results -->
@@ -169,21 +184,21 @@
             <mat-option value="Hard">Hard</mat-option>
           </mat-select>
         </mat-form-field>
-      </div>
 
-      <button
-        mat-raised-button
-        color="accent"
-        (click)="getRandomProblem()"
-        [disabled]="randomLoading"
-        class="random-button"
-      >
-        <span class="button-content">
-          <mat-spinner diameter="20" *ngIf="randomLoading"></mat-spinner>
-          <mat-icon *ngIf="!randomLoading">shuffle</mat-icon>
-          <span>{{ randomLoading ? 'Finding...' : 'Get Random Problem' }}</span>
-        </span>
-      </button>
+        <button
+          mat-raised-button
+          color="accent"
+          (click)="getRandomProblem()"
+          [disabled]="randomLoading"
+          class="random-button"
+        >
+          <span class="button-content">
+            <mat-spinner diameter="20" *ngIf="randomLoading"></mat-spinner>
+            <mat-icon *ngIf="!randomLoading">shuffle</mat-icon>
+            <span>{{ randomLoading ? 'Finding...' : 'Get Random Problem' }}</span>
+          </span>
+        </button>
+      </div>
     </div>
 
     <!-- Random Problem Result -->
