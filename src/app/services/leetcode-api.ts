@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
+import { Problem } from '../models/problem';
 
 export interface LeetCodeProblem {
   id?: number;
@@ -790,23 +791,20 @@ export class LeetCodeApiService {
   /**
    * Convert API problem to our Problem model
    */
-  convertApiProblemToLocal(apiProblem: LeetCodeProblem): Partial<import('../models/problem').Problem> {
-    // Ensure we have valid data and provide proper defaults
-    const problemId = apiProblem.id ||
-                     (apiProblem.questionId ? parseInt(apiProblem.questionId) : null) ||
-                     (apiProblem.questionFrontendId ? parseInt(apiProblem.questionFrontendId) : null);
-
+  convertApiProblemToLocal(apiProblem: LeetCodeProblem): Partial<Problem> {
     return {
-      leetcodeId: problemId || Math.floor(Math.random() * 10000),
+      leetcodeId: parseInt(apiProblem.questionFrontendId || apiProblem.id?.toString() || '0') || 0,
       title: apiProblem.title || 'Unknown Problem',
       difficulty: this.normalizeDifficulty(apiProblem.difficulty),
       status: 'Not Attempted',
-      tags: Array.isArray(apiProblem.tags) ? apiProblem.tags.filter(tag => tag) : [],
-      companies: Array.isArray(apiProblem.companies) ? apiProblem.companies.filter(company => company) : [],
-      url: this.getLeetCodeUrl(apiProblem.titleSlug || 'unknown'),
+      tags: apiProblem.tags || [],
+      url: this.getLeetCodeUrl(apiProblem.titleSlug),
       notes: '',
       attempts: 0,
-      timeSpent: 0
+      timeSpent: 0,
+      companies: apiProblem.companies || [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
   }
 
@@ -814,43 +812,30 @@ export class LeetCodeApiService {
    * Normalize difficulty string
    */
   private normalizeDifficulty(difficulty: any): 'Easy' | 'Medium' | 'Hard' {
-    if (!difficulty) return 'Medium';
-
-    const difficultyStr = String(difficulty).toLowerCase();
-
-    if (difficultyStr.includes('easy')) return 'Easy';
-    if (difficultyStr.includes('medium')) return 'Medium';
-    if (difficultyStr.includes('hard')) return 'Hard';
-
-    // Default fallback
-    return 'Medium';
+    if (typeof difficulty === 'string') {
+      const normalized = difficulty.toLowerCase();
+      if (normalized === 'easy') return 'Easy';
+      if (normalized === 'medium') return 'Medium';
+      if (normalized === 'hard') return 'Hard';
+    }
+    return 'Medium'; // Default fallback
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('LeetCode GraphQL API Error:', error);
+    console.error('LeetCode API Error:', error);
 
-    let errorMessage = 'An error occurred while fetching data from LeetCode API';
+    let errorMessage = 'An error occurred while fetching data from LeetCode';
 
-    if (error.error?.errors?.length > 0) {
-      // GraphQL specific error
-      const graphqlError = error.error.errors[0];
-      errorMessage = graphqlError.message || 'GraphQL query failed';
-    } else if (error.error?.message) {
-      errorMessage = error.error.message;
-    } else if (error.message) {
-      errorMessage = error.message;
-    } else if (error.status === 0) {
-      errorMessage = 'Unable to connect to LeetCode API. Please check your internet connection.';
-    } else if (error.status === 404) {
-      errorMessage = 'Problem not found';
-    } else if (error.status === 400) {
-      errorMessage = 'Invalid search query. Please try a different search term.';
-    } else if (error.status === 429) {
-      errorMessage = 'Rate limited. Please try again later.';
+    if (error.status === 0) {
+      errorMessage = 'Network error. Please check your internet connection.';
     } else if (error.status >= 500) {
-      errorMessage = 'LeetCode API server error. Please try again later.';
+      errorMessage = 'LeetCode service is temporarily unavailable. Please try again later.';
+    } else if (error.status === 429) {
+      errorMessage = 'Rate limit exceeded. Please wait a moment before trying again.';
+    } else if (error.status >= 400) {
+      errorMessage = 'Invalid request. Please check your search parameters.';
     }
 
-    return throwError(() => new Error(errorMessage));
+    throw new Error(errorMessage);
   }
 }

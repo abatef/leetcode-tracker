@@ -20,6 +20,7 @@ import { TimestampsDialogComponent } from '../timestamps-dialog/timestamps-dialo
 import { Observable } from 'rxjs';
 import { MatChipsModule } from '@angular/material/chips';
 import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
+import { SearchDialogComponent } from '../search-dialog/search-dialog';
 
 @Component({
   selector: 'app-problem-list',
@@ -41,10 +42,23 @@ import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
     <div class="problem-list-container">
       <div class="header-section">
         <h2>Problems</h2>
-        <button mat-raised-button color="primary" (click)="addProblem()">
-          <mat-icon>add</mat-icon>
-          Add Problem
-        </button>
+        <div class="header-actions">
+          <button mat-raised-button color="primary" (click)="addProblem()">
+            <mat-icon>add</mat-icon>
+            Add Problem
+          </button>
+
+          <!-- New Search Button -->
+          <button mat-raised-button color="accent" (click)="openSearchDialog()">
+            <mat-icon>search</mat-icon>
+            Search Problems
+          </button>
+
+          <button mat-raised-button (click)="openImportDialog()">
+            <mat-icon>cloud_download</mat-icon>
+            Import from LeetCode
+          </button>
+        </div>
       </div>
 
       <div class="filters-section">
@@ -236,6 +250,20 @@ import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
       font-size: 2.5rem;
       font-weight: 400;
       line-height: 1.2;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-actions button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 140px;
+      justify-content: center;
     }
 
     .filters-section {
@@ -690,6 +718,23 @@ export class ProblemListComponent implements OnInit {
     }
   }
 
+  openSearchDialog(): void {
+    const dialogRef = this.dialog.open(SearchDialogComponent, {
+      width: '90vw',
+      maxWidth: '900px',
+      maxHeight: '90vh',
+      disableClose: false,
+      autoFocus: false
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.action === 'edit') {
+        // Open edit dialog for the selected problem
+        this.openEditDialog(result.problem);
+      }
+    });
+  }
+
   addProblem(): void {
     const dialogRef = this.dialog.open(ProblemFormComponent, {
       width: '600px',
@@ -777,5 +822,28 @@ export class ProblemListComponent implements OnInit {
         });
       }
     }
+  }
+
+  openImportDialog(): void {
+    // TODO: Implement import functionality
+    this.snackBar.open('Import feature coming soon!', 'Close', {
+      duration: 3000
+    });
+  }
+
+  private openEditDialog(problem: Problem): void {
+    const dialogRef = this.dialog.open(ProblemFormComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      data: problem
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.snackBar.open('Problem updated successfully!', 'Close', {
+          duration: 3000
+        });
+      }
+    });
   }
 }
