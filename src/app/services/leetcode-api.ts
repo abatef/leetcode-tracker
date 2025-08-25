@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
-import { map, catchError, switchMap } from 'rxjs/operators';
+import { map, catchError, switchMap, retry, timeout } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 import { Problem } from '../models/problem';
 
 export interface LeetCodeProblem {
@@ -103,16 +104,13 @@ export interface LeetCodeUserProfile {
   providedIn: 'root'
 })
 export class LeetCodeApiService {
-  // Use local proxy in development, direct API in production
-  private readonly graphqlUrl = this.isProduction()
-    ? 'https://leetcode.com/graphql'
-    : '/api/leetcode/graphql';
+  private readonly graphqlUrl: string;
 
-  constructor(private http: HttpClient) {}
-
-  private isProduction(): boolean {
-    return window.location.hostname !== 'localhost' &&
-           window.location.hostname !== '127.0.0.1';
+  constructor(private http: HttpClient) {
+    this.graphqlUrl = environment.production
+      ? `${environment.apiUrl}/graphql`
+      : '/api/leetcode/graphql';
+      console.log('GraphQL API URL:', this.graphqlUrl);
   }
 
   /**
@@ -595,13 +593,11 @@ export class LeetCodeApiService {
   }
 
   /**
-   * Execute GraphQL query
+   * Execute GraphQL query with better error handling and retries
    */
   private executeGraphQLQuery(query: string, variables: any): Observable<any> {
     const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      'Referer': 'https://leetcode.com/'
+      'Content-Type': 'application/json'
     });
 
     const body = {
@@ -609,7 +605,14 @@ export class LeetCodeApiService {
       variables: variables
     };
 
-    return this.http.post(this.graphqlUrl, body, { headers });
+    console.log(`Making request to: ${this.graphqlUrl}`);
+    console.log('Request body:', body);
+
+    return this.http.post(this.graphqlUrl, body, { headers }).pipe(
+      timeout(10000), // 10 second timeout
+      retry(2), // Retry up to 2 times
+      catchError(this.handleError)
+    );
   }
 
   /**
@@ -822,20 +825,20 @@ export class LeetCodeApiService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('LeetCode API Error:', error);
+    console.error('API Error:', error);
 
-    let errorMessage = 'An error occurred while fetching data from LeetCode';
+    let errorMessage = 'An error occurred while fetching data';
 
     if (error.status === 0) {
-      errorMessage = 'Network error. Please check your internet connection.';
+      errorMessage = 'Network error - please check your connection';
     } else if (error.status >= 500) {
-      errorMessage = 'LeetCode service is temporarily unavailable. Please try again later.';
+      errorMessage = 'Server error - please try again later';
     } else if (error.status === 429) {
-      errorMessage = 'Rate limit exceeded. Please wait a moment before trying again.';
-    } else if (error.status >= 400) {
-      errorMessage = 'Invalid request. Please check your search parameters.';
+      errorMessage = 'Too many requests - please wait a moment';
+    } else if (error.error?.message) {
+      errorMessage = error.error.message;
     }
 
-    throw new Error(errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }
