@@ -1,5 +1,4 @@
-
-    .problem-list-container {
+.problem-list-container {
       padding: 2rem 1rem;
       max-width: 1200px;
       margin: 0 auto;
@@ -215,11 +214,144 @@
     .more-tags {
       font-size: 0.75rem;
       color: rgba(0, 0, 0, 0.6);
-      margin-left: 0.25rem;
     }
 
-    .delete-action {
-      color: #f44336;
+    // Modern Material UI action menu styles
+    ::ng-deep .mat-mdc-menu-panel {
+      min-width: 200px !important;
+      max-width: 280px !important;
+      border-radius: 12px !important;
+      box-shadow: 0 8px 10px -5px rgba(0, 0, 0, 0.2),
+                  0 16px 24px 2px rgba(0, 0, 0, 0.14),
+                  0 6px 30px 5px rgba(0, 0, 0, 0.12) !important;
+      border: none !important;
+      padding: 8px 0 !important;
+      overflow: hidden !important; // Fix for horizontal scrollbar
+    }
+
+    ::ng-deep .mat-mdc-menu-content {
+      padding: 0 !important;
+      overflow: hidden !important; // Fix for horizontal scrollbar
+      box-sizing: border-box !important;
+    }
+
+    ::ng-deep .mat-mdc-menu-item {
+      min-height: 44px !important;
+      line-height: 44px !important;
+      padding: 0 16px !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      letter-spacing: 0.25px !important;
+      color: rgba(0, 0, 0, 0.87) !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      margin: 0 4px !important; // Reduced margin to prevent overflow
+      border-radius: 6px !important; // Slightly reduced border radius
+      box-sizing: border-box !important;
+      width: calc(100% - 8px) !important; // Ensure proper width calculation
+      display: flex !important;
+      align-items: center !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+    }
+
+    ::ng-deep .mat-mdc-menu-item:hover {
+      background-color: rgba(0, 0, 0, 0.04) !important;
+      color: rgba(0, 0, 0, 0.87) !important;
+    }
+
+    ::ng-deep .mat-mdc-menu-item:focus {
+      background-color: rgba(0, 0, 0, 0.08) !important;
+      outline: none !important;
+    }
+
+    ::ng-deep .mat-mdc-menu-item .mat-icon {
+      color: rgba(0, 0, 0, 0.6) !important;
+      margin-right: 12px !important;
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-shrink: 0 !important; // Prevent icon from shrinking
+    }
+
+    ::ng-deep .mat-mdc-menu-item span {
+      flex: 1 !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    // Special styling for delete action
+    ::ng-deep .mat-mdc-menu-item.delete-action {
+      color: #d32f2f !important;
+      margin-top: 4px !important;
+    }
+
+    ::ng-deep .mat-mdc-menu-item.delete-action:hover {
+      background-color: rgba(211, 47, 47, 0.04) !important;
+      color: #d32f2f !important;
+    }
+
+    ::ng-deep .mat-mdc-menu-item.delete-action:focus {
+      background-color: rgba(211, 47, 47, 0.08) !important;
+    }
+
+    ::ng-deep .mat-mdc-menu-item.delete-action .mat-icon {
+      color: #d32f2f !important;
+    }
+
+    // Divider styling
+    ::ng-deep .mat-mdc-menu-content .mat-divider {
+      margin: 8px 8px !important; // Reduced side margins to match menu items
+      border-top-color: rgba(0, 0, 0, 0.08) !important;
+      border-top-width: 1px !important;
+    }
+
+    // Dark theme overrides
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-menu-panel {
+      background: #2d2d2d !important;
+      box-shadow: 0 8px 10px -5px rgba(0, 0, 0, 0.4),
+                  0 16px 24px 2px rgba(0, 0, 0, 0.3),
+                  0 6px 30px 5px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-menu-item {
+      color: rgba(255, 255, 255, 0.87) !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-menu-item:hover {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      color: rgba(255, 255, 255, 0.87) !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-menu-item:focus {
+      background-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-menu-item .mat-icon {
+      color: rgba(255, 255, 255, 0.7) !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-menu-item.delete-action {
+      color: #ff6b6b !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-menu-item.delete-action:hover {
+      background-color: rgba(255, 107, 107, 0.08) !important;
+      color: #ff6b6b !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-menu-item.delete-action:focus {
+      background-color: rgba(255, 107, 107, 0.12) !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-menu-item.delete-action .mat-icon {
+      color: #ff6b6b !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-menu-content .mat-divider {
+      border-top-color: rgba(255, 255, 255, 0.12) !important;
     }
 
     .empty-state {
@@ -409,4 +541,33 @@
 
     :host-context(.dark-theme) .no-companies {
       color: rgba(255, 255, 255, 0.4);
+    }
+
+    // Dark theme menu styles
+    :host-context(.dark-theme) .action-menu-item mat-icon {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    :host-context(.dark-theme) .action-menu-item:hover {
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    :host-context(.dark-theme) .action-menu-item:focus {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    :host-context(.dark-theme) .delete-action {
+      color: #f48fb1;
+    }
+
+    :host-context(.dark-theme) .delete-action mat-icon {
+      color: #f48fb1;
+    }
+
+    :host-context(.dark-theme) .delete-action:hover {
+      background-color: rgba(244, 143, 177, 0.04);
+    }
+
+    :host-context(.dark-theme) .delete-action:focus {
+      background-color: rgba(244, 143, 177, 0.08);
     }

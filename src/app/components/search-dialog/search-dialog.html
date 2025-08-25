@@ -110,7 +110,6 @@
           <div
             class="result-item"
             *ngFor="let problem of searchResults; trackBy: trackByProblem"
-            (click)="selectProblem(problem)"
             [class.selected]="selectedProblem?.id === problem.id"
           >
             <div class="problem-header">
@@ -119,16 +118,38 @@
                 <h5 class="problem-title">{{ problem.title }}</h5>
               </div>
 
-              <div class="problem-difficulty">
-                <span
-                  class="difficulty-badge"
-                  [ngClass]="'difficulty-' + problem.difficulty.toLowerCase()"
-                >
-                  {{ problem.difficulty }}
-                </span>
-                <div class="premium-badge" *ngIf="problem.isPaidOnly">
-                  <mat-icon>star</mat-icon>
-                  <span>Premium</span>
+              <div class="problem-actions">
+                <div class="problem-difficulty">
+                  <span
+                    class="difficulty-badge"
+                    [ngClass]="'difficulty-' + problem.difficulty.toLowerCase()"
+                  >
+                    {{ problem.difficulty }}
+                  </span>
+                  <div class="premium-badge" *ngIf="problem.isPaidOnly">
+                    <mat-icon>star</mat-icon>
+                    <span>Premium</span>
+                  </div>
+                </div>
+
+                <div class="action-buttons">
+                  <button
+                    mat-icon-button
+                    (click)="viewProblemDetails(problem, $event)"
+                    matTooltip="View full problem details"
+                    class="details-button"
+                  >
+                    <mat-icon>info</mat-icon>
+                  </button>
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="selectProblem(problem)"
+                    class="select-button"
+                  >
+                    <mat-icon>add</mat-icon>
+                    <span>Select</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -239,16 +260,38 @@
               <h5 class="problem-title">{{ randomProblem.title }}</h5>
             </div>
 
-            <div class="problem-difficulty">
-              <span
-                class="difficulty-badge"
-                [ngClass]="'difficulty-' + randomProblem.difficulty.toLowerCase()"
-              >
-                {{ randomProblem.difficulty }}
-              </span>
-              <div class="premium-badge" *ngIf="randomProblem.isPaidOnly">
-                <mat-icon>star</mat-icon>
-                <span>Premium</span>
+            <div class="problem-actions">
+              <div class="problem-difficulty">
+                <span
+                  class="difficulty-badge"
+                  [ngClass]="'difficulty-' + randomProblem.difficulty.toLowerCase()"
+                >
+                  {{ randomProblem.difficulty }}
+                </span>
+                <div class="premium-badge" *ngIf="randomProblem.isPaidOnly">
+                  <mat-icon>star</mat-icon>
+                  <span>Premium</span>
+                </div>
+              </div>
+
+              <div class="action-buttons">
+                <button
+                  mat-icon-button
+                  (click)="viewProblemDetails(randomProblem, $event)"
+                  matTooltip="View full problem details"
+                  class="details-button"
+                >
+                  <mat-icon>info</mat-icon>
+                </button>
+                <button
+                  mat-raised-button
+                  color="primary"
+                  (click)="selectRandomProblem()"
+                  class="select-button"
+                >
+                  <mat-icon>add</mat-icon>
+                  <span>Select</span>
+                </button>
               </div>
             </div>
           </div>

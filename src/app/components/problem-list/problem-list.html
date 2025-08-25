@@ -151,27 +151,46 @@
             <mat-icon>more_vert</mat-icon>
           </button>
           <mat-menu #actionMenu="matMenu">
-            <button mat-menu-item (click)="editProblem(problem)">
+            <button mat-menu-item (click)="viewProblemDetails(problem)" class="action-menu-item">
+              <mat-icon>info</mat-icon>
+              <span>View Details</span>
+            </button>
+            <button mat-menu-item (click)="editProblem(problem)" class="action-menu-item">
               <mat-icon>edit</mat-icon>
               <span>Edit</span>
             </button>
-            <button mat-menu-item (click)="viewNotes(problem)" *ngIf="problem.notes">
+            <button
+              mat-menu-item
+              (click)="viewNotes(problem)"
+              *ngIf="problem.notes"
+              class="action-menu-item"
+            >
               <mat-icon>description</mat-icon>
               <span>View Notes</span>
             </button>
-            <button mat-menu-item (click)="viewAllTags(problem)" *ngIf="problem.tags.length > 3">
+            <button
+              mat-menu-item
+              (click)="viewAllTags(problem)"
+              *ngIf="problem.tags.length > 3"
+              class="action-menu-item"
+            >
               <mat-icon>local_offer</mat-icon>
               <span>View All Tags</span>
             </button>
-            <button mat-menu-item (click)="viewCompanies(problem)">
+            <button mat-menu-item (click)="viewCompanies(problem)" class="action-menu-item">
               <mat-icon>business</mat-icon>
               <span>Companies</span>
             </button>
-            <button mat-menu-item (click)="viewTimestamps(problem)">
+            <button mat-menu-item (click)="viewTimestamps(problem)" class="action-menu-item">
               <mat-icon>schedule</mat-icon>
               <span>View Timeline</span>
             </button>
-            <button mat-menu-item (click)="deleteProblem(problem)" class="delete-action">
+            <mat-divider></mat-divider>
+            <button
+              mat-menu-item
+              (click)="deleteProblem(problem)"
+              class="action-menu-item delete-action"
+            >
               <mat-icon>delete</mat-icon>
               <span>Delete</span>
             </button>

@@ -170,9 +170,9 @@ h2[mat-dialog-title] {
       padding: 1rem;
       border: 1px solid rgba(0, 0, 0, 0.1);
       border-radius: 8px;
-      cursor: pointer;
       transition: all 0.2s ease;
       background: rgba(0, 0, 0, 0.02);
+      cursor: default; // Remove pointer cursor since we have specific buttons now
     }
 
     .result-item:hover,
@@ -206,6 +206,76 @@ h2[mat-dialog-title] {
       min-width: 0;
     }
 
+    .problem-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .problem-difficulty {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .details-button {
+      color: rgba(0, 0, 0, 0.6);
+      transition: all 0.2s ease;
+    }
+
+    .details-button:hover {
+      color: #1976d2;
+      background-color: rgba(25, 118, 210, 0.1);
+    }
+
+    .select-button {
+      height: 36px;
+      min-width: auto;
+      padding: 0 12px;
+      font-size: 0.875rem;
+    }
+
+    .select-button mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-right: 4px;
+    }
+
+    // Remove the old click-to-select behavior styling since we now have buttons
+    .result-item,
+    .random-problem-item {
+      padding: 1rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      background: rgba(0, 0, 0, 0.02);
+      cursor: default; // Remove pointer cursor since we have specific buttons now
+    }
+
+    .result-item:hover,
+    .random-problem-item:hover {
+      border-color: rgba(103, 80, 164, 0.3);
+      background: rgba(103, 80, 164, 0.05);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-item.selected,
+    .random-problem-item.selected {
+      border-color: var(--mdc-theme-primary);
+      background: rgba(103, 80, 164, 0.1);
+      box-shadow: 0 2px 8px rgba(103, 80, 164, 0.2);
+    }
+
     .problem-id {
       background: rgba(103, 80, 164, 0.1);
       color: #5b21b6;
@@ -226,13 +296,6 @@ h2[mat-dialog-title] {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-    }
-
-    .problem-difficulty {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-shrink: 0;
     }
 
     .difficulty-badge {
@@ -569,32 +632,32 @@ h2[mat-dialog-title] {
       .problem-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .problem-actions {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .action-buttons {
+        flex-direction: row;
         gap: 0.5rem;
       }
 
-      .problem-id-title {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+      .select-button {
+        padding: 0 8px;
+        font-size: 0.8rem;
       }
 
-      .problem-title {
-        white-space: normal;
-        overflow: visible;
-        text-overflow: unset;
+      .select-button span {
+        display: none; // Hide text on mobile, show only icon
       }
 
-      .selected-header,
-      .random-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-      }
-
-      .selected-title {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+      .select-button mat-icon {
+        margin-right: 0;
       }
 
       .search-type-toggle mat-button-toggle {
@@ -626,4 +689,13 @@ h2[mat-dialog-title] {
 
     .results-list::-webkit-scrollbar-thumb:hover {
       background: rgba(103, 80, 164, 0.5);
+    }
+
+    // Add global dialog panel class styling
+    ::ng-deep .problem-details-dialog-container .mat-mdc-dialog-container {
+      padding: 0;
+    }
+
+    ::ng-deep .problem-details-dialog-container .mat-mdc-dialog-surface {
+      border-radius: 12px;
     }

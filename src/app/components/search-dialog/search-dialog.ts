@@ -12,10 +12,13 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { LeetCodeApiService, LeetCodeProblem } from '../../services/leetcode-api';
 import { LeetcodeService } from '../../services/leetcode';
 import { Problem } from '../../models/problem';
 import { Observable } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { ProblemDetailsDialogComponent } from '../problem-details-dialog/problem-details-dialog';
 
 interface SearchFilters {
   keyword: string;
@@ -64,7 +67,8 @@ const POPULAR_TOPICS = [
     MatChipsModule,
     MatDividerModule,
     MatButtonToggleModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatTooltipModule
   ],
   templateUrl: './search-dialog.html',
   styleUrls: ['./search-dialog.scss']
@@ -106,7 +110,8 @@ export class SearchDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<SearchDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private leetcodeApi: LeetCodeApiService,
-    private leetcodeService: LeetcodeService
+    private leetcodeService: LeetcodeService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -393,6 +398,23 @@ export class SearchDialogComponent implements OnInit {
       this.selectedProblem = this.randomProblem;
       this.importError = null; // Clear any previous import errors
     }
+  }
+
+  viewProblemDetails(problem: SearchResult, event: Event): void {
+    // Prevent the problem selection when clicking the details button
+    event.stopPropagation();
+
+    this.dialog.open(ProblemDetailsDialogComponent, {
+      width: '90vw',
+      maxWidth: '1000px',
+      height: '90vh',
+      maxHeight: '800px',
+      data: {
+        problemId: problem.id,
+        titleSlug: problem.titleSlug
+      },
+      panelClass: 'problem-details-dialog-container'
+    });
   }
 
   trackByProblem(index: number, problem: SearchResult): any {

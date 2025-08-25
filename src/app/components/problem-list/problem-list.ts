@@ -21,6 +21,8 @@ import { Observable } from 'rxjs';
 import { MatChipsModule } from '@angular/material/chips';
 import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
 import { SearchDialogComponent } from '../search-dialog/search-dialog';
+import { ProblemDetailsDialogComponent } from '../problem-details-dialog/problem-details-dialog';
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-problem-list',
@@ -36,7 +38,8 @@ import { SearchDialogComponent } from '../search-dialog/search-dialog';
     MatChipsModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDividerModule
   ],
   templateUrl: './problem-list.html',
   styleUrls: ['./problem-list.scss']
@@ -124,11 +127,37 @@ export class ProblemListComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result?.action === 'edit') {
-        // Open edit dialog for the selected problem
-        this.openEditDialog(result.problem);
+      if (result?.success) {
+        this.snackBar.open(result.message || 'Problem imported successfully!', 'Close', {
+          duration: 3000
+        });
       }
     });
+  }
+
+  viewProblemDetails(problem: Problem): void {
+    // Generate titleSlug from the problem title or use a default
+    const titleSlug = this.generateTitleSlug(problem.title);
+
+    this.dialog.open(ProblemDetailsDialogComponent, {
+      width: '90vw',
+      maxWidth: '1000px',
+      height: '90vh',
+      maxHeight: '800px',
+      data: {
+        problemId: problem.leetcodeId,
+        titleSlug: titleSlug
+      },
+      panelClass: 'problem-details-dialog-container'
+    });
+  }
+
+  private generateTitleSlug(title: string): string {
+    return title.toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
   }
 
   addProblem(): void {
