@@ -1,1 +1,315 @@
-<p>search-dialog works!</p>
+<h2 mat-dialog-title>
+  <mat-icon>search</mat-icon>
+  Search & Discover Problems
+</h2>
+
+<mat-dialog-content>
+  <!-- Search Type Toggle -->
+  <div class="search-type-toggle">
+    <mat-button-toggle-group [(value)]="searchType" (change)="onSearchTypeChange()">
+      <mat-button-toggle value="search">
+        <mat-icon>search</mat-icon>
+        Search Problems
+      </mat-button-toggle>
+      <mat-button-toggle value="random">
+        <mat-icon>shuffle</mat-icon>
+        Random Problem
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section" *ngIf="searchType === 'search'">
+    <div class="search-form">
+      <!-- Search Scope -->
+      <div class="search-scope">
+        <mat-checkbox
+          [(ngModel)]="searchInUserProblems"
+          (change)="onSearchScopeChange()"
+          color="primary"
+        >
+          Search only in my problems ({{ userProblemsCount }})
+        </mat-checkbox>
+      </div>
+
+      <mat-form-field appearance="outline" class="search-input">
+        <mat-label>Search keyword</mat-label>
+        <input
+          matInput
+          [(ngModel)]="searchFilters.keyword"
+          placeholder="Enter problem title, keyword, or tag"
+          (keyup.enter)="searchProblems()"
+        />
+        <mat-hint>
+          {{
+            searchInUserProblems
+              ? 'Search within your saved problems'
+              : 'Search by problem title, description keywords, or tags'
+          }}
+        </mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="difficulty-select">
+        <mat-label>Difficulty</mat-label>
+        <mat-select [(value)]="searchFilters.difficulty">
+          <mat-option value="">Any Difficulty</mat-option>
+          <mat-option value="Easy">Easy</mat-option>
+          <mat-option value="Medium">Medium</mat-option>
+          <mat-option value="Hard">Hard</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="searchProblems()"
+        [disabled]="!searchFilters.keyword.trim() || searchLoading"
+        class="search-button"
+      >
+        <span class="button-content">
+          <mat-spinner diameter="20" *ngIf="searchLoading"></mat-spinner>
+          <mat-icon *ngIf="!searchLoading">search</mat-icon>
+          <span>{{ searchLoading ? 'Searching...' : 'Search' }}</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Search Results -->
+    <div class="results-container" *ngIf="searchResults.length > 0 || searchError || hasSearched">
+      <mat-divider></mat-divider>
+
+      <!-- Error Message -->
+      <div class="error-message" *ngIf="searchError">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ searchError }}</span>
+      </div>
+
+      <!-- Search Results -->
+      <div class="search-results" *ngIf="searchResults.length > 0">
+        <div class="results-header">
+          <h4>Search Results ({{ searchResults.length }})</h4>
+          <span class="results-hint">Click on a problem to import it</span>
+        </div>
+
+        <div class="results-list">
+          <div
+            class="result-item"
+            *ngFor="let problem of searchResults; trackBy: trackByProblem"
+            (click)="selectProblem(problem)"
+            [class.selected]="selectedProblem?.id === problem.id"
+          >
+            <div class="problem-header">
+              <div class="problem-id-title">
+                <span class="problem-id">#{{ problem.id }}</span>
+                <h5 class="problem-title">{{ problem.title }}</h5>
+              </div>
+
+              <div class="problem-difficulty">
+                <span
+                  class="difficulty-badge"
+                  [ngClass]="'difficulty-' + problem.difficulty.toLowerCase()"
+                >
+                  {{ problem.difficulty }}
+                </span>
+                <div class="premium-badge" *ngIf="problem.isPaidOnly">
+                  <mat-icon>star</mat-icon>
+                  <span>Premium</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="problem-tags" *ngIf="problem.tags.length > 0">
+              <mat-chip *ngFor="let tag of problem.tags.slice(0, 4)" class="tag-chip">
+                {{ tag }}
+              </mat-chip>
+              <span *ngIf="problem.tags.length > 4" class="more-tags">
+                +{{ problem.tags.length - 4 }} more
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Results -->
+      <div class="no-results" *ngIf="!searchLoading && searchResults.length === 0 && hasSearched">
+        <mat-icon>search_off</mat-icon>
+        <h4>No problems found</h4>
+        <p>
+          {{
+            searchInUserProblems
+              ? 'No problems in your list match the search criteria'
+              : 'Try adjusting your search terms or removing filters'
+          }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Random Problem Section -->
+  <div class="random-section" *ngIf="searchType === 'random'">
+    <div class="random-form">
+      <div class="random-filters">
+        <mat-form-field appearance="outline" class="topic-select">
+          <mat-label>Topic (Optional)</mat-label>
+          <mat-select [(value)]="randomFilters.topic">
+            <mat-option value="">Any Topic</mat-option>
+            <mat-option *ngFor="let topic of availableTopics" [value]="topic">
+              {{ topic }}
+            </mat-option>
+          </mat-select>
+          <mat-hint>Select a specific topic to focus on</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="difficulty-select">
+          <mat-label>Difficulty</mat-label>
+          <mat-select [(value)]="randomFilters.difficulty">
+            <mat-option value="">Any Difficulty</mat-option>
+            <mat-option value="Easy">Easy</mat-option>
+            <mat-option value="Medium">Medium</mat-option>
+            <mat-option value="Hard">Hard</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <button
+        mat-raised-button
+        color="accent"
+        (click)="getRandomProblem()"
+        [disabled]="randomLoading"
+        class="random-button"
+      >
+        <span class="button-content">
+          <mat-spinner diameter="20" *ngIf="randomLoading"></mat-spinner>
+          <mat-icon *ngIf="!randomLoading">shuffle</mat-icon>
+          <span>{{ randomLoading ? 'Finding...' : 'Get Random Problem' }}</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Random Problem Result -->
+    <div class="random-result" *ngIf="randomProblem || randomError">
+      <mat-divider></mat-divider>
+
+      <!-- Error Message -->
+      <div class="error-message" *ngIf="randomError">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ randomError }}</span>
+      </div>
+
+      <!-- Random Problem Display -->
+      <div class="random-problem-display" *ngIf="randomProblem">
+        <div class="random-header">
+          <h4>Random Problem Found!</h4>
+          <div
+            class="random-filters-applied"
+            *ngIf="randomFilters.topic || randomFilters.difficulty"
+          >
+            <mat-chip *ngIf="randomFilters.topic" class="filter-chip">{{
+              randomFilters.topic
+            }}</mat-chip>
+            <mat-chip *ngIf="randomFilters.difficulty" class="filter-chip">{{
+              randomFilters.difficulty
+            }}</mat-chip>
+          </div>
+        </div>
+
+        <div
+          class="random-problem-item"
+          (click)="selectRandomProblem()"
+          [class.selected]="selectedProblem?.id === randomProblem.id"
+        >
+          <div class="problem-header">
+            <div class="problem-id-title">
+              <span class="problem-id">#{{ randomProblem.id }}</span>
+              <h5 class="problem-title">{{ randomProblem.title }}</h5>
+            </div>
+
+            <div class="problem-difficulty">
+              <span
+                class="difficulty-badge"
+                [ngClass]="'difficulty-' + randomProblem.difficulty.toLowerCase()"
+              >
+                {{ randomProblem.difficulty }}
+              </span>
+              <div class="premium-badge" *ngIf="randomProblem.isPaidOnly">
+                <mat-icon>star</mat-icon>
+                <span>Premium</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="problem-tags" *ngIf="randomProblem.tags.length > 0">
+            <mat-chip *ngFor="let tag of randomProblem.tags.slice(0, 5)" class="tag-chip">
+              {{ tag }}
+            </mat-chip>
+            <span *ngIf="randomProblem.tags.length > 5" class="more-tags">
+              +{{ randomProblem.tags.length - 5 }} more
+            </span>
+          </div>
+        </div>
+
+        <div class="random-actions">
+          <button mat-button (click)="getRandomProblem()" [disabled]="randomLoading">
+            <mat-icon>refresh</mat-icon>
+            Get Another
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Selected Problem Preview -->
+  <div class="selected-problem" *ngIf="selectedProblem">
+    <mat-divider></mat-divider>
+    <div class="selected-header">
+      <h4>Selected Problem</h4>
+      <span class="problem-url">{{
+        'https://leetcode.com/problems/' + selectedProblem.titleSlug
+      }}</span>
+    </div>
+
+    <div class="selected-info">
+      <div class="selected-title">
+        <span class="problem-id">#{{ selectedProblem.id }}</span>
+        <span class="title">{{ selectedProblem.title }}</span>
+        <span
+          class="difficulty-badge"
+          [ngClass]="'difficulty-' + selectedProblem.difficulty.toLowerCase()"
+        >
+          {{ selectedProblem.difficulty }}
+        </span>
+      </div>
+
+      <div class="selected-tags" *ngIf="selectedProblem.tags.length > 0">
+        <mat-chip *ngFor="let tag of selectedProblem.tags" class="tag-chip">
+          {{ tag }}
+        </mat-chip>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Error -->
+  <div class="import-error" *ngIf="importError">
+    <mat-divider></mat-divider>
+    <div class="error-message">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ importError }}</span>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="!selectedProblem || importLoading"
+    (click)="importSelectedProblem()"
+  >
+    <span class="button-content">
+      <mat-spinner diameter="20" *ngIf="importLoading"></mat-spinner>
+      <mat-icon *ngIf="!importLoading">add</mat-icon>
+      <span>{{ importLoading ? 'Importing...' : 'Import Problem' }}</span>
+    </span>
+  </button>
+</mat-dialog-actions>

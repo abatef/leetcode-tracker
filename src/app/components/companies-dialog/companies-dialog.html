@@ -1,1 +1,60 @@
-<p>companies-dialog works!</p>
+<h2 mat-dialog-title>
+  <mat-icon>business</mat-icon>
+  Companies
+</h2>
+
+<mat-dialog-content>
+  <div class="problem-info">
+    <h3>{{ data.title }}</h3>
+    <span class="problem-id">#{{ data.leetcodeId }}</span>
+  </div>
+
+  <div class="companies-section">
+    <h4>Select Companies</h4>
+    <div class="companies-grid">
+      <div
+        class="company-item"
+        *ngFor="let company of companies"
+        [class.selected]="selectedCompanies.includes(company.name)"
+        (click)="toggleCompany(company.name)"
+      >
+        <div class="company-checkbox">
+          <mat-checkbox
+            [checked]="selectedCompanies.includes(company.name)"
+            (change)="toggleCompany(company.name)"
+            color="primary"
+          >
+          </mat-checkbox>
+        </div>
+        <div class="company-logo">
+          <img
+            [src]="company.logo"
+            [alt]="company.name + ' logo'"
+            (error)="onImageError($event, company.name)"
+          />
+        </div>
+        <div class="company-name">{{ company.name }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="selected-companies" *ngIf="selectedCompanies.length > 0">
+    <h4>Selected Companies ({{ selectedCompanies.length }})</h4>
+    <div class="selected-companies-list">
+      <mat-chip *ngFor="let company of selectedCompanies" class="company-chip">
+        {{ company }}
+        <mat-icon (click)="removeCompany(company)" class="remove-company">close</mat-icon>
+      </mat-chip>
+    </div>
+  </div>
+
+  <div class="filter-hint" *ngIf="selectedCompanies.length > 0">
+    <mat-icon>info</mat-icon>
+    <span>You can filter problems by these companies in the Problems list</span>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSave()">Save Companies</button>
+</mat-dialog-actions>

@@ -1,1 +1,49 @@
-<p>login works!</p>
+<div class="login-container">
+  <div class="login-card-wrapper">
+    <mat-card class="login-card">
+      <mat-card-header class="login-header">
+        <div mat-card-avatar class="login-avatar">
+          <mat-icon>code</mat-icon>
+        </div>
+        <mat-card-title>LeetCode Tracker</mat-card-title>
+        <mat-card-subtitle>Track your coding journey</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="login-content">
+        <div class="welcome-text">
+          <h2>Welcome!</h2>
+          <p>Sign in to start tracking your LeetCode progress and build your coding streak.</p>
+        </div>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <mat-icon>analytics</mat-icon>
+            <span>Track your progress and statistics</span>
+          </div>
+          <div class="feature-item">
+            <mat-icon>local_fire_department</mat-icon>
+            <span>Build and maintain your streak</span>
+          </div>
+          <div class="feature-item">
+            <mat-icon>insights</mat-icon>
+            <span>Get insights and recommendations</span>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions class="login-actions">
+        <button
+          mat-raised-button
+          color="primary"
+          class="google-signin-btn"
+          (click)="signInWithGoogle()"
+          [disabled]="loading"
+        >
+          <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+          <mat-icon *ngIf="!loading">google</mat-icon>
+          <span>{{ loading ? 'Signing in...' : 'Continue with Google' }}</span>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

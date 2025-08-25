@@ -1,1 +1,203 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <!-- Welcome Section -->
+  <div class="welcome-section">
+    <h1>Dashboard</h1>
+    <p>Track your LeetCode progress and maintain your coding streak</p>
+  </div>
+
+  <!-- Daily Challenge Card -->
+  <mat-card class="daily-challenge-card" *ngIf="dailyChallenge">
+    <mat-card-header>
+      <div mat-card-avatar class="daily-avatar">
+        <mat-icon>today</mat-icon>
+      </div>
+      <mat-card-title>Daily Challenge</mat-card-title>
+      <mat-card-subtitle>{{ getCurrentDate() }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="daily-challenge-content">
+        <h3>{{ dailyChallenge.question.title }}</h3>
+        <div class="challenge-meta">
+          <div
+            class="difficulty-badge"
+            [ngClass]="'difficulty-' + dailyChallenge.question.difficulty.toLowerCase()"
+          >
+            {{ dailyChallenge.question.difficulty }}
+          </div>
+          <span class="problem-id">#{{ dailyChallenge.question.questionFrontendId }}</span>
+        </div>
+        <p class="challenge-description">
+          Complete today's daily challenge to maintain your streak!
+        </p>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-stroked-button (click)="viewDailyChallenge()" class="view-challenge-btn">
+        <mat-icon>open_in_new</mat-icon>
+        View on LeetCode
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="importDailyChallenge()"
+        [disabled]="importingDaily"
+        class="add-challenge-btn"
+      >
+        <mat-icon *ngIf="!importingDaily">add</mat-icon>
+        <mat-icon *ngIf="importingDaily" class="spinner-icon">hourglass_empty</mat-icon>
+        {{ importingDaily ? 'Adding...' : 'Add to Tracker' }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Loading State for Daily Challenge -->
+  <mat-card class="daily-challenge-card loading-card" *ngIf="!dailyChallenge && loadingDaily">
+    <mat-card-header>
+      <div mat-card-avatar class="daily-avatar">
+        <mat-icon>today</mat-icon>
+      </div>
+      <mat-card-title>Daily Challenge</mat-card-title>
+      <mat-card-subtitle>Loading today's challenge...</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="loading-content">
+        <div class="loading-skeleton title-skeleton"></div>
+        <div class="loading-skeleton meta-skeleton"></div>
+        <div class="loading-skeleton description-skeleton"></div>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-stroked-button disabled class="view-challenge-btn">
+        <mat-icon>open_in_new</mat-icon>
+        View on LeetCode
+      </button>
+      <button mat-raised-button disabled class="add-challenge-btn">
+        <mat-icon>add</mat-icon>
+        Add to Tracker
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Error State for Daily Challenge -->
+  <mat-card
+    class="daily-challenge-card error-card"
+    *ngIf="!dailyChallenge && !loadingDaily && dailyChallengeError"
+  >
+    <mat-card-header>
+      <div mat-card-avatar class="daily-avatar error-avatar">
+        <mat-icon>error_outline</mat-icon>
+      </div>
+      <mat-card-title>Daily Challenge</mat-card-title>
+      <mat-card-subtitle>Unable to load today's challenge</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="error-content">
+        <p>{{ dailyChallengeError }}</p>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-stroked-button (click)="loadDailyChallenge()" class="retry-btn">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="openLeetCodeDaily()"
+        class="open-leetcode-btn"
+      >
+        <mat-icon>open_in_new</mat-icon>
+        Open LeetCode
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <mat-card class="stat-card">
+      <mat-card-header>
+        <div mat-card-avatar class="total-avatar">
+          <mat-icon>quiz</mat-icon>
+        </div>
+        <mat-card-title>{{ metrics.totalProblems }}</mat-card-title>
+        <mat-card-subtitle>Total Problems</mat-card-subtitle>
+      </mat-card-header>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-header>
+        <div mat-card-avatar class="solved-avatar">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <mat-card-title>{{ metrics.solvedProblems }}</mat-card-title>
+        <mat-card-subtitle>Solved</mat-card-subtitle>
+      </mat-card-header>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-header>
+        <div mat-card-avatar class="streak-avatar">
+          <mat-icon>local_fire_department</mat-icon>
+        </div>
+        <mat-card-title>{{ metrics.streakDays }}</mat-card-title>
+        <mat-card-subtitle>Day Streak</mat-card-subtitle>
+      </mat-card-header>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-header>
+        <div mat-card-avatar class="progress-avatar">
+          <mat-icon>trending_up</mat-icon>
+        </div>
+        <mat-card-title>{{ getSuccessRate() }}%</mat-card-title>
+        <mat-card-subtitle>Success Rate</mat-card-subtitle>
+      </mat-card-header>
+    </mat-card>
+  </div>
+
+  <!-- Chart and Recent Activity -->
+  <div class="content-grid">
+    <div class="chart-section">
+      <app-progress-chart [problems]="problems"></app-progress-chart>
+    </div>
+
+    <div class="activity-section">
+      <mat-card class="activity-card">
+        <mat-card-header>
+          <mat-card-title>Recent Activity</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="activity-list" *ngIf="recentActivity.length > 0; else noActivity">
+            <div class="activity-item" *ngFor="let activity of recentActivity">
+              <div class="activity-icon" [ngClass]="'activity-' + activity.type">
+                <mat-icon>{{ getActivityIcon(activity.type) }}</mat-icon>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">{{ activity.problem.title }}</div>
+                <div class="activity-time">{{ getRelativeTime(activity.timestamp) }}</div>
+              </div>
+              <div class="activity-meta">
+                <div
+                  class="difficulty-badge"
+                  [ngClass]="'difficulty-' + activity.problem.difficulty.toLowerCase()"
+                >
+                  {{ activity.problem.difficulty }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noActivity>
+            <div class="empty-activity">
+              <mat-icon>timeline</mat-icon>
+              <p>No recent activity</p>
+              <button mat-raised-button color="primary" (click)="addProblem()">
+                <mat-icon>add</mat-icon>
+                Add Your First Problem
+              </button>
+            </div>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

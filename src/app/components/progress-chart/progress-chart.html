@@ -1,1 +1,49 @@
-<p>progress-chart works!</p>
+<div class="chart-container">
+  <div class="chart-header">
+    <h3>Progress Overview</h3>
+    <mat-button-toggle-group [(value)]="selectedPeriod" (change)="onPeriodChange()">
+      <mat-button-toggle value="7days">7 Days</mat-button-toggle>
+      <mat-button-toggle value="30days">30 Days</mat-button-toggle>
+      <mat-button-toggle value="90days">90 Days</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <div class="chart-content">
+    <canvas #chartCanvas></canvas>
+  </div>
+
+  <div class="chart-legend" *ngIf="chartData">
+    <div class="legend-item">
+      <div class="legend-color solved"></div>
+      <span>Problems Solved</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color attempted"></div>
+      <span>Problems Attempted</span>
+    </div>
+  </div>
+
+  <div class="chart-stats" *ngIf="chartStats">
+    <div class="stat-item">
+      <mat-icon>trending_up</mat-icon>
+      <div class="stat-content">
+        <span class="stat-value">{{ chartStats.totalSolved }}</span>
+        <span class="stat-label">Solved in Period</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <mat-icon>schedule</mat-icon>
+      <div class="stat-content">
+        <span class="stat-value">{{ chartStats.avgPerDay | number : '1.1-1' }}</span>
+        <span class="stat-label">Avg per Day</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <mat-icon>local_fire_department</mat-icon>
+      <div class="stat-content">
+        <span class="stat-value">{{ chartStats.bestDay }}</span>
+        <span class="stat-label">Best Day</span>
+      </div>
+    </div>
+  </div>
+</div>

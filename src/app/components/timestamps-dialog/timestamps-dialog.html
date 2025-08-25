@@ -1,1 +1,142 @@
-<p>timestamps-dialog works!</p>
+<h2 mat-dialog-title>
+  <mat-icon>history</mat-icon>
+  Problem Timeline
+</h2>
+
+<mat-dialog-content>
+  <div class="problem-info">
+    <h3>{{ data.title }}</h3>
+    <span class="problem-id">#{{ data.leetcodeId }}</span>
+  </div>
+
+  <div class="timeline-container">
+    <!-- Action History -->
+    <div class="timeline-section" *ngIf="actionHistory.length > 0">
+      <h4>Action History</h4>
+      <div class="action-timeline">
+        <div class="action-item" *ngFor="let action of actionHistory; trackBy: trackByAction">
+          <div class="action-icon" [ngClass]="getActionIconClass(action.action)">
+            <mat-icon>{{ getActionIcon(action.action) }}</mat-icon>
+          </div>
+          <div class="action-content">
+            <div class="action-title">
+              {{ action.details.description || getActionTitle(action.action) }}
+            </div>
+            <div class="action-date">{{ formatFullDate(action.timestamp) }}</div>
+            <div class="action-relative">{{ getRelativeTime(action.timestamp) }}</div>
+            <div
+              class="action-details"
+              *ngIf="action.details.field && action.details.oldValue !== undefined"
+            >
+              <mat-chip class="old-value">{{ formatValue(action.details.oldValue) }}</mat-chip>
+              <mat-icon class="arrow">arrow_forward</mat-icon>
+              <mat-chip class="new-value">{{ formatValue(action.details.newValue) }}</mat-chip>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Timestamps -->
+    <div class="timeline-section">
+      <h4>Key Timestamps</h4>
+      <div class="timestamps-list">
+        <div class="timestamp-item">
+          <div class="timestamp-icon created">
+            <mat-icon>add_circle</mat-icon>
+          </div>
+          <div class="timestamp-content">
+            <div class="timestamp-title">Problem Added</div>
+            <div class="timestamp-date">{{ formatFullDate(data.createdAt) }}</div>
+            <div class="timestamp-relative">{{ getRelativeTime(data.createdAt) }}</div>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="timestamp-item" *ngIf="data.firstAttemptDate">
+          <div class="timestamp-icon attempted">
+            <mat-icon>play_circle</mat-icon>
+          </div>
+          <div class="timestamp-content">
+            <div class="timestamp-title">First Attempt</div>
+            <div class="timestamp-date">{{ formatFullDate(data.firstAttemptDate) }}</div>
+            <div class="timestamp-relative">{{ getRelativeTime(data.firstAttemptDate) }}</div>
+          </div>
+        </div>
+
+        <mat-divider *ngIf="data.firstAttemptDate"></mat-divider>
+
+        <div class="timestamp-item" *ngIf="data.firstSolvedDate">
+          <div class="timestamp-icon first-solved">
+            <mat-icon>star</mat-icon>
+          </div>
+          <div class="timestamp-content">
+            <div class="timestamp-title">First Time Solved</div>
+            <div class="timestamp-date">{{ formatFullDate(data.firstSolvedDate) }}</div>
+            <div class="timestamp-relative">{{ getRelativeTime(data.firstSolvedDate) }}</div>
+          </div>
+        </div>
+
+        <mat-divider *ngIf="data.firstSolvedDate"></mat-divider>
+
+        <div
+          class="timestamp-item"
+          *ngIf="data.solvedDate && data.solvedDate !== data.firstSolvedDate"
+        >
+          <div class="timestamp-icon solved">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <div class="timestamp-content">
+            <div class="timestamp-title">Last Solved</div>
+            <div class="timestamp-date">{{ formatFullDate(data.solvedDate) }}</div>
+            <div class="timestamp-relative">{{ getRelativeTime(data.solvedDate) }}</div>
+          </div>
+        </div>
+
+        <mat-divider
+          *ngIf="data.solvedDate && data.solvedDate !== data.firstSolvedDate"
+        ></mat-divider>
+
+        <div class="timestamp-item" *ngIf="isUpdated()">
+          <div class="timestamp-icon updated">
+            <mat-icon>edit</mat-icon>
+          </div>
+          <div class="timestamp-content">
+            <div class="timestamp-title">Last Updated</div>
+            <div class="timestamp-date">{{ formatFullDate(data.updatedAt) }}</div>
+            <div class="timestamp-relative">{{ getRelativeTime(data.updatedAt) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="timeline-stats">
+    <div class="stat-item">
+      <mat-icon>timer</mat-icon>
+      <div class="stat-content">
+        <span class="stat-value">{{ getTotalDays() }}</span>
+        <span class="stat-label">Days since added</span>
+      </div>
+    </div>
+    <div class="stat-item" *ngIf="data.firstSolvedDate">
+      <mat-icon>trending_up</mat-icon>
+      <div class="stat-content">
+        <span class="stat-value">{{ getDaysToFirstSolve() }}</span>
+        <span class="stat-label">Days to first solve</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <mat-icon>update</mat-icon>
+      <div class="stat-content">
+        <span class="stat-value">{{ actionHistory.length }}</span>
+        <span class="stat-label">Total actions</span>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

@@ -1,1 +1,20 @@
-<p>tags-dialog works!</p>
+<h2 mat-dialog-title>
+  <mat-icon>local_offer</mat-icon>
+  All Tags
+</h2>
+
+<mat-dialog-content>
+  <div class="problem-info">
+    <h3>{{ data.title }}</h3>
+  </div>
+
+  <div class="all-tags">
+    <mat-chip *ngFor="let tag of data.tags" class="tag-chip">
+      {{ tag }}
+    </mat-chip>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

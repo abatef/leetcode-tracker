@@ -1,1 +1,207 @@
-<p>leetcode-import works!</p>
+`
+<h2 mat-dialog-title>
+  <mat-icon>cloud_download</mat-icon>
+  Import from LeetCode
+</h2>
+
+<mat-dialog-content>
+  <div class="import-options">
+    <!-- Daily Challenge -->
+    <mat-card class="import-card" (click)="fetchDailyChallenge()" [class.loading]="dailyLoading">
+      <mat-card-header>
+        <div mat-card-avatar class="daily-avatar">
+          <mat-icon>today</mat-icon>
+        </div>
+        <mat-card-title>Daily Challenge</mat-card-title>
+        <mat-card-subtitle>Import today's LeetCode daily challenge</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content *ngIf="dailyChallenge && dailyChallenge.question">
+        <div class="daily-info">
+          <h4>{{ dailyChallenge.question.title || 'Unknown Title' }}</h4>
+          <div
+            class="difficulty-badge"
+            [ngClass]="
+              'difficulty-' + getDifficulty(dailyChallenge.question.difficulty).toLowerCase()
+            "
+            *ngIf="getDifficulty(dailyChallenge.question.difficulty)"
+          >
+            {{ getDifficulty(dailyChallenge.question.difficulty) }}
+          </div>
+          <div class="problem-id" *ngIf="dailyChallenge.question.questionFrontendId">
+            #{{ dailyChallenge.question.questionFrontendId }}
+          </div>
+        </div>
+      </mat-card-content>
+      <mat-card-content *ngIf="dailyChallengeError">
+        <div class="error-info">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ dailyChallengeError }}</span>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="importDailyChallenge(); $event.stopPropagation()"
+          [disabled]="!dailyChallenge || dailyLoading || importingDaily || !!dailyChallengeError"
+        >
+          <mat-spinner diameter="16" *ngIf="dailyLoading || importingDaily"></mat-spinner>
+          <mat-icon *ngIf="!dailyLoading && !importingDaily">add</mat-icon>
+          {{ getButtonText() }}
+        </button>
+        <button
+          mat-button
+          (click)="retryDailyChallenge(); $event.stopPropagation()"
+          *ngIf="dailyChallengeError && !dailyLoading"
+        >
+          <mat-icon>refresh</mat-icon>
+          Retry
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Random Problem -->
+    <mat-card class="import-card">
+      <mat-card-header>
+        <div mat-card-avatar class="random-avatar">
+          <mat-icon>shuffle</mat-icon>
+        </div>
+        <mat-card-title>Random Problem</mat-card-title>
+        <mat-card-subtitle>Get a random problem by difficulty</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Difficulty</mat-label>
+          <mat-select [(value)]="selectedDifficulty">
+            <mat-option value="">Any Difficulty</mat-option>
+            <mat-option value="Easy">Easy</mat-option>
+            <mat-option value="Medium">Medium</mat-option>
+            <mat-option value="Hard">Hard</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <div class="random-problem-info" *ngIf="randomProblem">
+          <h4>{{ randomProblem.title }}</h4>
+          <div class="problem-meta">
+            <div
+              class="difficulty-badge"
+              [ngClass]="'difficulty-' + getDifficulty(randomProblem.difficulty).toLowerCase()"
+              *ngIf="getDifficulty(randomProblem.difficulty)"
+            >
+              {{ getDifficulty(randomProblem.difficulty) }}
+            </div>
+            <div class="problem-id" *ngIf="randomProblem.id || randomProblem.questionFrontendId">
+              #{{ randomProblem.id || randomProblem.questionFrontendId }}
+            </div>
+          </div>
+          <div class="tags-container" *ngIf="randomProblem.tags?.length">
+            <mat-chip *ngFor="let tag of randomProblem.tags?.slice(0, 3)">{{ tag }}</mat-chip>
+            <span *ngIf="randomProblem.tags && randomProblem.tags.length > 3" class="more-tags">
+              +{{ randomProblem.tags.length - 3 }} more
+            </span>
+          </div>
+          <div class="premium-badge" *ngIf="randomProblem.isPaidOnly">
+            <mat-icon>star</mat-icon>
+            <span>Premium</span>
+          </div>
+        </div>
+        <div class="error-info" *ngIf="randomError">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ randomError }}</span>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button (click)="fetchRandomProblem()" [disabled]="randomLoading">
+          <mat-spinner diameter="16" *ngIf="randomLoading"></mat-spinner>
+          <mat-icon *ngIf="!randomLoading">refresh</mat-icon>
+          {{ randomLoading ? 'Loading...' : 'Get Random' }}
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="importRandomProblem()"
+          [disabled]="!randomProblem || randomLoading || importingRandom"
+        >
+          <mat-spinner diameter="16" *ngIf="importingRandom"></mat-spinner>
+          <mat-icon *ngIf="!importingRandom">add</mat-icon>
+          {{ importingRandom ? 'Adding...' : 'Import Problem' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Search Problem -->
+    <mat-card class="import-card">
+      <mat-card-header>
+        <div mat-card-avatar class="search-avatar">
+          <mat-icon>search</mat-icon>
+        </div>
+        <mat-card-title>Search Problem</mat-card-title>
+        <mat-card-subtitle>Search by problem ID or title slug</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Problem ID or Title Slug</mat-label>
+          <input
+            matInput
+            [(ngModel)]="searchQuery"
+            placeholder="e.g., 1, two-sum, valid-parentheses"
+            (keyup.enter)="searchProblem()"
+          />
+          <mat-hint>Enter problem ID (number) or title slug (kebab-case)</mat-hint>
+        </mat-form-field>
+        <div class="search-result" *ngIf="searchedProblem">
+          <h4>{{ searchedProblem.title }}</h4>
+          <div class="problem-details">
+            <div
+              class="difficulty-badge"
+              [ngClass]="'difficulty-' + getDifficulty(searchedProblem.difficulty).toLowerCase()"
+              *ngIf="getDifficulty(searchedProblem.difficulty)"
+            >
+              {{ getDifficulty(searchedProblem.difficulty) }}
+            </div>
+            <span
+              class="problem-id"
+              *ngIf="searchedProblem.id || searchedProblem.questionFrontendId"
+            >
+              #{{ searchedProblem.id || searchedProblem.questionFrontendId }}
+            </span>
+            <div class="premium-badge" *ngIf="searchedProblem.isPaidOnly">
+              <mat-icon>star</mat-icon>
+              <span>Premium</span>
+            </div>
+          </div>
+          <div class="tags-container" *ngIf="searchedProblem.tags?.length">
+            <mat-chip *ngFor="let tag of searchedProblem.tags?.slice(0, 4)">{{ tag }}</mat-chip>
+            <span *ngIf="searchedProblem.tags && searchedProblem.tags.length > 4" class="more-tags">
+              +{{ searchedProblem.tags.length - 4 }} more
+            </span>
+          </div>
+        </div>
+        <div class="error-info" *ngIf="searchError">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ searchError }}</span>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button (click)="searchProblem()" [disabled]="!searchQuery || searchLoading">
+          <mat-spinner diameter="16" *ngIf="searchLoading"></mat-spinner>
+          <mat-icon *ngIf="!searchLoading">search</mat-icon>
+          {{ searchLoading ? 'Searching...' : 'Search' }}
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="importSearchedProblem()"
+          [disabled]="!searchedProblem || searchLoading || importingSearched"
+        >
+          <mat-spinner diameter="16" *ngIf="importingSearched"></mat-spinner>
+          <mat-icon *ngIf="!importingSearched">add</mat-icon>
+          {{ importingSearched ? 'Adding...' : 'Import Problem' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

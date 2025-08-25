@@ -1,1 +1,200 @@
-<p>notes-dialog works!</p>
+<h2 mat-dialog-title>
+  <mat-icon>description</mat-icon>
+  Problem Notes
+</h2>
+
+<mat-dialog-content>
+  <div class="problem-info">
+    <h3>{{ data.title }}</h3>
+    <span class="problem-id">#{{ data.leetcodeId }}</span>
+  </div>
+
+  <!-- View Mode -->
+  <div *ngIf="!isEditing" class="view-mode">
+    <div class="notes-text" [innerHTML]="formatNotes(data.notes)" *ngIf="data.notes"></div>
+
+    <div class="empty-notes" *ngIf="!data.notes">
+      <mat-icon>note_add</mat-icon>
+      <p>No notes available for this problem</p>
+      <p class="empty-hint">
+        Click "Edit Notes" to add your thoughts, solution approach, or key insights.
+      </p>
+    </div>
+  </div>
+
+  <!-- Edit Mode -->
+  <div *ngIf="isEditing" class="edit-mode">
+    <!-- Formatting Toolbar -->
+    <div class="formatting-toolbar">
+      <div class="toolbar-group">
+        <button
+          mat-icon-button
+          (click)="applyFormatting('bold')"
+          matTooltip="Bold (Ctrl+B)"
+          class="format-btn"
+        >
+          <mat-icon>format_bold</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          (click)="applyFormatting('italic')"
+          matTooltip="Italic (Ctrl+I)"
+          class="format-btn"
+        >
+          <mat-icon>format_italic</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          (click)="applyFormatting('code')"
+          matTooltip="Inline Code (Ctrl+K)"
+          class="format-btn"
+        >
+          <mat-icon>code</mat-icon>
+        </button>
+      </div>
+
+      <mat-divider [vertical]="true"></mat-divider>
+
+      <div class="toolbar-group">
+        <button mat-icon-button (click)="insertText('## ')" matTooltip="Heading" class="format-btn">
+          <mat-icon>title</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          (click)="insertText('- ')"
+          matTooltip="Bullet Point"
+          class="format-btn"
+        >
+          <mat-icon>format_list_bulleted</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          (click)="insertText('1. ')"
+          matTooltip="Numbered List"
+          class="format-btn"
+        >
+          <mat-icon>format_list_numbered</mat-icon>
+        </button>
+      </div>
+
+      <mat-divider [vertical]="true"></mat-divider>
+
+      <div class="toolbar-group">
+        <button
+          mat-icon-button
+          (click)="insertText('\\n\\n')"
+          matTooltip="Code Block"
+          class="format-btn"
+        >
+          <mat-icon>code_blocks</mat-icon>
+        </button>
+        <button mat-icon-button (click)="insertText('> ')" matTooltip="Quote" class="format-btn">
+          <mat-icon>format_quote</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          (click)="insertText('---\n')"
+          matTooltip="Horizontal Line"
+          class="format-btn"
+        >
+          <mat-icon>horizontal_rule</mat-icon>
+        </button>
+      </div>
+
+      <mat-divider [vertical]="true"></mat-divider>
+
+      <div class="toolbar-group">
+        <button
+          mat-icon-button
+          (click)="undoEdit()"
+          matTooltip="Undo (Ctrl+Z)"
+          [disabled]="undoStack.length === 0"
+          class="format-btn"
+        >
+          <mat-icon>undo</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          (click)="redoEdit()"
+          matTooltip="Redo (Ctrl+Y)"
+          [disabled]="redoStack.length === 0"
+          class="format-btn"
+        >
+          <mat-icon>redo</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width textarea-field">
+      <mat-label>Notes</mat-label>
+      <textarea
+        #notesTextarea
+        matInput
+        [(ngModel)]="editedNotes"
+        (ngModelChange)="onTextChange()"
+        (keydown)="onKeyDown($event)"
+        placeholder="Enter your notes here... Use the toolbar above for formatting."
+        rows="12"
+        spellcheck="true"
+      >
+      </textarea>
+      <mat-hint>
+        Use the toolbar above for formatting or keyboard shortcuts. Press Ctrl+Enter to save.
+      </mat-hint>
+    </mat-form-field>
+
+    <!-- Quick Templates -->
+    <div class="quick-templates">
+      <h4>Quick Templates:</h4>
+      <div class="template-buttons">
+        <button mat-stroked-button (click)="insertTemplate('approach')" class="template-btn">
+          <mat-icon>lightbulb</mat-icon>
+          Approach
+        </button>
+        <button mat-stroked-button (click)="insertTemplate('complexity')" class="template-btn">
+          <mat-icon>speed</mat-icon>
+          Complexity
+        </button>
+        <button mat-stroked-button (click)="insertTemplate('solution')" class="template-btn">
+          <mat-icon>build</mat-icon>
+          Solution
+        </button>
+        <button mat-stroked-button (click)="insertTemplate('mistakes')" class="template-btn">
+          <mat-icon>error_outline</mat-icon>
+          Mistakes
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Preview -->
+    <div class="preview-section" *ngIf="editedNotes">
+      <h4>Preview:</h4>
+      <div class="notes-preview" [innerHTML]="formatNotes(editedNotes)"></div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <!-- View Mode Actions -->
+  <ng-container *ngIf="!isEditing">
+    <button mat-button mat-dialog-close>Close</button>
+    <button mat-raised-button color="primary" (click)="startEditing()">
+      <mat-icon>edit</mat-icon>
+      Edit Notes
+    </button>
+  </ng-container>
+
+  <!-- Edit Mode Actions -->
+  <ng-container *ngIf="isEditing">
+    <button mat-button (click)="cancelEditing()" [disabled]="saving">Cancel</button>
+    <button mat-button (click)="clearNotes()" [disabled]="saving" class="clear-btn">
+      <mat-icon>clear</mat-icon>
+      Clear
+    </button>
+    <button mat-raised-button color="primary" (click)="saveNotes()" [disabled]="saving">
+      <mat-icon *ngIf="!saving">save</mat-icon>
+      <mat-icon *ngIf="saving" class="spinning">sync</mat-icon>
+      {{ saving ? 'Saving...' : 'Save Notes' }}
+    </button>
+  </ng-container>
+</mat-dialog-actions>

@@ -1,0 +1,296 @@
+
+    .form-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .form-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: var(--mdc-theme-primary);
+    }
+
+    .import-btn {
+      color: var(--mdc-theme-primary);
+      transition: background-color 0.2s ease;
+    }
+
+    .import-btn:hover {
+      background-color: rgba(103, 80, 164, 0.1);
+    }
+
+    .form-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 0;
+    }
+
+    .import-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.5rem;
+      background: rgba(0, 0, 0, 0.02);
+      border: 2px dashed rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .import-section:hover {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .import-from-leetcode-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      min-width: 200px;
+      justify-content: center;
+    }
+
+    .import-from-leetcode-btn mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      margin: 0;
+    }
+
+    .import-hint {
+      margin: 0;
+      font-size: 0.875rem;
+      color: rgba(0, 0, 0, 0.6);
+      text-align: center;
+      font-style: italic;
+    }
+
+    .full-width {
+      width: 100%;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .textarea-field .mat-mdc-text-field-wrapper {
+      min-height: 120px;
+    }
+
+    .textarea-field textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    mat-dialog-content {
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 0 24px;
+      margin: 0;
+    }
+
+    mat-dialog-actions {
+      padding: 16px 24px;
+      margin: 0;
+      gap: 0.5rem;
+    }
+
+    mat-chip-grid {
+      margin: 8px 0;
+    }
+
+    mat-chip-row {
+      margin: 0 8px 8px 0;
+    }
+
+    .notes-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .notes-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.6);
+      margin: 0;
+    }
+
+    .markup-toolbar {
+      display: flex;
+      gap: 0.25rem;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px 8px 0 0;
+      flex-wrap: wrap;
+    }
+
+    .markup-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+    }
+
+    .markup-btn:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    .markup-btn mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin: 0;
+    }
+
+    .notes-section .mat-mdc-form-field {
+      .mat-mdc-text-field-wrapper {
+        border-radius: 0 0 4px 4px;
+        border-top: none;
+      }
+    }
+
+    // Dark theme support
+    :host-context(.dark-theme) .form-header {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    :host-context(.dark-theme) .import-section {
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    :host-context(.dark-theme) .import-section:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    :host-context(.dark-theme) .import-hint {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    :host-context(.dark-theme) .notes-label {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    :host-context(.dark-theme) .markup-toolbar {
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    :host-context(.dark-theme) .markup-btn:hover {
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    // Responsive design
+    @media (max-width: 768px) {
+      .form-container {
+        max-width: 100%;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .form-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+
+      .import-from-leetcode-btn {
+        min-width: 100%;
+        padding: 1rem 2rem;
+      }
+
+      mat-dialog-content {
+        padding: 0 16px;
+      }
+
+      mat-dialog-actions {
+        padding: 16px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      mat-dialog-actions button {
+        width: 100%;
+        margin: 0.25rem 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .import-section {
+        padding: 1rem;
+        margin: 0 -0.5rem 1rem -0.5rem;
+      }
+
+      .import-from-leetcode-btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    // Enhanced scrollbar for dialog content
+    mat-dialog-content {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(103, 80, 164, 0.3) rgba(0, 0, 0, 0.05);
+    }
+
+    mat-dialog-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    mat-dialog-content::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 3px;
+    }
+
+    mat-dialog-content::-webkit-scrollbar-thumb {
+      background: rgba(103, 80, 164, 0.3);
+      border-radius: 3px;
+      transition: background-color 0.2s ease;
+    }
+
+    mat-dialog-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(103, 80, 164, 0.5);
+    }
+
+    :host-context(.dark-theme) mat-dialog-content {
+      scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+    }
+
+    :host-context(.dark-theme) mat-dialog-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    :host-context(.dark-theme) mat-dialog-content::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    :host-context(.dark-theme) mat-dialog-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }

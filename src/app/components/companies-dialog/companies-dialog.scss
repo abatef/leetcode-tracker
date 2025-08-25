@@ -1,0 +1,273 @@
+
+    h2[mat-dialog-title] {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0;
+    }
+
+    .problem-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .problem-info h3 {
+      margin: 0;
+      color: var(--mdc-theme-primary);
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .problem-id {
+      background: rgba(103, 80, 164, 0.1);
+      color: #5b21b6;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border: 1px solid rgba(103, 80, 164, 0.2);
+    }
+
+    mat-dialog-content {
+      min-width: 500px;
+      max-width: 700px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .companies-section h4 {
+      margin: 0 0 1rem 0;
+      color: rgba(0, 0, 0, 0.87);
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .companies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .company-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    .company-item:hover {
+      border-color: rgba(103, 80, 164, 0.3);
+      background: rgba(103, 80, 164, 0.05);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .company-item.selected {
+      border-color: var(--mdc-theme-primary);
+      background: rgba(103, 80, 164, 0.1);
+    }
+
+    .company-checkbox {
+      align-self: flex-start;
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .company-logo {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 8px;
+      background: white;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .company-logo img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+
+    .company-name {
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-align: center;
+      color: rgba(0, 0, 0, 0.87);
+    }
+
+    .selected-companies {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .selected-companies h4 {
+      margin: 0 0 1rem 0;
+      color: rgba(0, 0, 0, 0.87);
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .selected-companies-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .company-chip {
+      background: rgba(103, 80, 164, 0.1) !important;
+      color: #5b21b6 !important;
+      border: 1px solid rgba(103, 80, 164, 0.2) !important;
+      font-weight: 500 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 0.5rem !important;
+    }
+
+    .remove-company {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+
+    .remove-company:hover {
+      opacity: 1;
+    }
+
+    .filter-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: rgba(33, 150, 243, 0.1);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #1976d2;
+    }
+
+    .filter-hint mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    :host-context(.dark-theme) .problem-info {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    :host-context(.dark-theme) .problem-id {
+      background: rgba(255, 255, 255, 0.1);
+      color: #c4b5fd;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    :host-context(.dark-theme) .companies-section h4,
+    :host-context(.dark-theme) .selected-companies h4 {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    :host-context(.dark-theme) .company-item {
+      border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    :host-context(.dark-theme) .company-item:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    :host-context(.dark-theme) .company-item.selected {
+      border-color: var(--mdc-theme-primary);
+      background: rgba(103, 80, 164, 0.2);
+    }
+
+    :host-context(.dark-theme) .company-name {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    :host-context(.dark-theme) .selected-companies {
+      border-top-color: rgba(255, 255, 255, 0.1);
+    }
+
+    :host-context(.dark-theme) .company-chip {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: #c4b5fd !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    @media (max-width: 600px) {
+      mat-dialog-content {
+        min-width: 300px;
+        max-width: 90vw;
+      }
+
+      .problem-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .companies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 0.75rem;
+      }
+    }
+
+    mat-dialog-content {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(103, 80, 164, 0.3) rgba(0, 0, 0, 0.05);
+    }
+
+    mat-dialog-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    mat-dialog-content::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 3px;
+    }
+
+    mat-dialog-content::-webkit-scrollbar-thumb {
+      background: rgba(103, 80, 164, 0.3);
+      border-radius: 3px;
+      transition: background-color 0.2s ease;
+    }
+
+    mat-dialog-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(103, 80, 164, 0.5);
+    }
+
+    :host-context(.dark-theme) mat-dialog-content {
+      scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+    }
+
+    :host-context(.dark-theme) mat-dialog-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    :host-context(.dark-theme) mat-dialog-content::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    :host-context(.dark-theme) mat-dialog-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }

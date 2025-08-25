@@ -1,1 +1,69 @@
-<p>header works!</p>
+<mat-toolbar color="primary">
+  <div class="header-content">
+    <div class="left-section">
+      <mat-icon class="logo-icon">code</mat-icon>
+      <span class="app-title">LeetCode Tracker</span>
+    </div>
+
+    <nav class="nav-links" *ngIf="user$ | async">
+      <a mat-button routerLink="/dashboard" routerLinkActive="active">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a mat-button routerLink="/problems" routerLinkActive="active">
+        <mat-icon>list</mat-icon>
+        Problems
+      </a>
+      <a mat-button routerLink="/statistics" routerLinkActive="active">
+        <mat-icon>analytics</mat-icon>
+        Statistics
+      </a>
+    </nav>
+
+    <div class="right-section">
+      <button mat-icon-button (click)="toggleTheme()" title="Toggle theme" class="theme-toggle-btn">
+        <mat-icon>{{ (isDarkMode$ | async) ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+
+      <div *ngIf="user$ | async as user" class="user-section">
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
+          <div class="user-info">
+            <div class="user-avatar-container">
+              <img
+                [src]="user.photoURL"
+                [alt]="user.displayName"
+                class="user-avatar"
+                *ngIf="user.photoURL"
+              />
+              <mat-icon *ngIf="!user.photoURL" class="default-avatar">account_circle</mat-icon>
+            </div>
+            <span class="user-name">{{ user.displayName || 'User' }}</span>
+          </div>
+          <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
+        </button>
+
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item disabled>
+            <mat-icon>account_circle</mat-icon>
+            <span>{{ user.email }}</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="signOut()">
+            <mat-icon>logout</mat-icon>
+            <span>Sign Out</span>
+          </button>
+        </mat-menu>
+      </div>
+
+      <button
+        mat-raised-button
+        color="accent"
+        routerLink="/login"
+        *ngIf="!(user$ | async)"
+        class="sign-in-btn"
+      >
+        Sign In
+      </button>
+    </div>
+  </div>
+</mat-toolbar>

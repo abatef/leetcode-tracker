@@ -1,1 +1,211 @@
-<p>problem-form works!</p>
+<div class="form-container">
+  <div class="form-header">
+    <h2 mat-dialog-title>{{ isEdit ? 'Edit Problem' : 'Add New Problem' }}</h2>
+    <button
+      mat-icon-button
+      type="button"
+      (click)="openImportDialog()"
+      *ngIf="!isEdit"
+      class="import-btn"
+      matTooltip="Import from LeetCode"
+    >
+      <mat-icon>cloud_download</mat-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="problemForm" (ngSubmit)="onSubmit()">
+    <mat-dialog-content>
+      <div class="form-content">
+        <!-- Import Button - Moved to top with better styling -->
+        <div class="import-section" *ngIf="!isEdit">
+          <button
+            mat-raised-button
+            color="primary"
+            type="button"
+            (click)="openImportDialog()"
+            class="import-from-leetcode-btn"
+          >
+            <mat-icon>cloud_download</mat-icon>
+            Import from LeetCode
+          </button>
+          <p class="import-hint">Or add a problem manually below</p>
+        </div>
+
+        <!-- LeetCode ID -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>LeetCode Problem ID</mat-label>
+          <input matInput type="number" formControlName="leetcodeId" placeholder="e.g., 1" />
+          <mat-hint>The numerical ID from LeetCode</mat-hint>
+          <mat-error *ngIf="problemForm.get('leetcodeId')?.hasError('required')">
+            Problem ID is required
+          </mat-error>
+          <mat-error *ngIf="problemForm.get('leetcodeId')?.hasError('min')">
+            Problem ID must be a positive number
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Title -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Problem Title</mat-label>
+          <input matInput formControlName="title" placeholder="e.g., Two Sum" />
+          <mat-error *ngIf="problemForm.get('title')?.hasError('required')">
+            Title is required
+          </mat-error>
+        </mat-form-field>
+
+        <!-- URL -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>LeetCode URL</mat-label>
+          <input
+            matInput
+            formControlName="url"
+            placeholder="https://leetcode.com/problems/two-sum/"
+          />
+          <mat-error *ngIf="problemForm.get('url')?.hasError('required')">
+            URL is required
+          </mat-error>
+          <mat-error *ngIf="problemForm.get('url')?.hasError('pattern')">
+            Please enter a valid URL
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Difficulty and Status Row -->
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Difficulty</mat-label>
+            <mat-select formControlName="difficulty">
+              <mat-option value="Easy">Easy</mat-option>
+              <mat-option value="Medium">Medium</mat-option>
+              <mat-option value="Hard">Hard</mat-option>
+            </mat-select>
+            <mat-error *ngIf="problemForm.get('difficulty')?.hasError('required')">
+              Difficulty is required
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="status">
+              <mat-option value="Not Attempted">Not Attempted</mat-option>
+              <mat-option value="Attempted">Attempted</mat-option>
+              <mat-option value="Solved">Solved</mat-option>
+              <mat-option value="Reviewed">Reviewed</mat-option>
+            </mat-select>
+            <mat-error *ngIf="problemForm.get('status')?.hasError('required')">
+              Status is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Attempts and Time Spent Row -->
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Attempts</mat-label>
+            <input matInput type="number" formControlName="attempts" min="0" placeholder="0" />
+            <mat-hint>Number of times attempted</mat-hint>
+            <mat-error *ngIf="problemForm.get('attempts')?.hasError('min')">
+              Attempts must be 0 or greater
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Time Spent (minutes)</mat-label>
+            <input matInput type="number" formControlName="timeSpent" min="0" placeholder="0" />
+            <mat-hint>Total time spent in minutes</mat-hint>
+            <mat-error *ngIf="problemForm.get('timeSpent')?.hasError('min')">
+              Time must be 0 or greater
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Tags -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Tags</mat-label>
+          <mat-chip-grid #chipGrid>
+            <mat-chip-row *ngFor="let tag of selectedTags" (removed)="removeTag(tag)">
+              {{ tag }}
+              <button matChipRemove>
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip-row>
+          </mat-chip-grid>
+          <input
+            matInput
+            #tagInput
+            formControlName="tagInput"
+            [matAutocomplete]="auto"
+            [matChipInputFor]="chipGrid"
+            (matChipInputTokenEnd)="addTag($event)"
+            placeholder="Add tags..."
+          />
+          <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectTag($event)">
+            <mat-option *ngFor="let tag of filteredTags | async" [value]="tag">
+              {{ tag }}
+            </mat-option>
+          </mat-autocomplete>
+          <mat-hint>Common algorithm categories and data structures</mat-hint>
+        </mat-form-field>
+
+        <!-- Notes with Markup Toolbar -->
+        <div class="notes-section">
+          <label class="notes-label">Notes</label>
+          <div class="markup-toolbar">
+            <button
+              mat-icon-button
+              type="button"
+              (click)="applyFormat('bold')"
+              title="Bold"
+              class="markup-btn"
+            >
+              <mat-icon>format_bold</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              type="button"
+              (click)="applyFormat('italic')"
+              title="Italic"
+              class="markup-btn"
+            >
+              <mat-icon>format_italic</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              type="button"
+              (click)="applyFormat('code')"
+              title="Code"
+              class="markup-btn"
+            >
+              <mat-icon>code</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              type="button"
+              (click)="applyFormat('bullet')"
+              title="Bullet Point"
+              class="markup-btn"
+            >
+              <mat-icon>format_list_bulleted</mat-icon>
+            </button>
+          </div>
+          <mat-form-field appearance="outline" class="full-width textarea-field">
+            <textarea
+              matInput
+              #notesTextarea
+              formControlName="notes"
+              rows="4"
+              placeholder="Add your notes, approach, or key insights..."
+            ></textarea>
+            <mat-hint>Use the toolbar above for formatting</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" (click)="onCancel()">Cancel</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="problemForm.invalid">
+        {{ isEdit ? 'Update' : 'Add' }} Problem
+      </button>
+    </mat-dialog-actions>
+  </form>
+</div>
