@@ -103,7 +103,7 @@ export interface LeetCodeUserProfile {
   providedIn: 'root'
 })
 export class LeetCodeApiService {
-  private readonly baseUrl = 'https://alfa-leetcode-api.onrender.com';
+  private readonly baseUrl = 'https://alfa-leetcode-api-production-f3b1.up.railway.app';
 
   constructor(private http: HttpClient) {}
 

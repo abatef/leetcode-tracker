@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -61,7 +61,8 @@ const COMMON_TAGS = [
           <div class="form-content">
             <!-- Import Button - Moved to top with better styling -->
             <div class="import-section" *ngIf="!isEdit">
-              <button mat-outlined-button
+              <button mat-raised-button
+                      color="primary"
                       type="button"
                       (click)="openImportDialog()"
                       class="import-from-leetcode-btn">
@@ -197,15 +198,48 @@ const COMMON_TAGS = [
               <mat-hint>Common algorithm categories and data structures</mat-hint>
             </mat-form-field>
 
-            <!-- Notes -->
-            <mat-form-field appearance="outline" class="full-width textarea-field">
-              <mat-label>Notes</mat-label>
-              <textarea matInput
-                        formControlName="notes"
-                        rows="4"
-                        placeholder="Add your notes, approach, or key insights..."></textarea>
-              <mat-hint>Markdown formatting supported (**bold**, *italic*, \`code\`)</mat-hint>
-            </mat-form-field>
+            <!-- Notes with Markup Toolbar -->
+            <div class="notes-section">
+              <label class="notes-label">Notes</label>
+              <div class="markup-toolbar">
+                <button mat-icon-button
+                        type="button"
+                        (click)="applyFormat('bold')"
+                        title="Bold"
+                        class="markup-btn">
+                  <mat-icon>format_bold</mat-icon>
+                </button>
+                <button mat-icon-button
+                        type="button"
+                        (click)="applyFormat('italic')"
+                        title="Italic"
+                        class="markup-btn">
+                  <mat-icon>format_italic</mat-icon>
+                </button>
+                <button mat-icon-button
+                        type="button"
+                        (click)="applyFormat('code')"
+                        title="Code"
+                        class="markup-btn">
+                  <mat-icon>code</mat-icon>
+                </button>
+                <button mat-icon-button
+                        type="button"
+                        (click)="applyFormat('bullet')"
+                        title="Bullet Point"
+                        class="markup-btn">
+                  <mat-icon>format_list_bulleted</mat-icon>
+                </button>
+              </div>
+              <mat-form-field appearance="outline" class="full-width textarea-field">
+                <textarea matInput
+                          #notesTextarea
+                          formControlName="notes"
+                          rows="4"
+                          placeholder="Add your notes, approach, or key insights..."></textarea>
+                <mat-hint>Use the toolbar above for formatting</mat-hint>
+              </mat-form-field>
+            </div>
           </div>
         </mat-dialog-content>
 
@@ -270,16 +304,16 @@ const COMMON_TAGS = [
       align-items: center;
       gap: 0.75rem;
       padding: 1.5rem;
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-      border: 2px dashed rgba(103, 80, 164, 0.2);
+      background: rgba(0, 0, 0, 0.02);
+      border: 2px dashed rgba(0, 0, 0, 0.1);
       border-radius: 12px;
       margin-bottom: 1rem;
       transition: all 0.2s ease;
     }
 
     .import-section:hover {
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
-      border-color: rgba(103, 80, 164, 0.3);
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.2);
     }
 
     .import-from-leetcode-btn {
@@ -289,25 +323,8 @@ const COMMON_TAGS = [
       padding: 0.75rem 2rem;
       font-size: 1rem;
       font-weight: 500;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(103, 80, 164, 0.3);
-      transition: all 0.2s ease;
       min-width: 200px;
       justify-content: center;
-    }
-
-    .import-from-leetcode-btn:hover {
-      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-      box-shadow: 0 6px 16px rgba(103, 80, 164, 0.4);
-      transform: translateY(-1px);
-    }
-
-    .import-from-leetcode-btn:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 8px rgba(103, 80, 164, 0.3);
     }
 
     .import-from-leetcode-btn mat-icon {
@@ -365,23 +382,87 @@ const COMMON_TAGS = [
       margin: 0 8px 8px 0;
     }
 
+    .notes-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .notes-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.6);
+      margin: 0;
+    }
+
+    .markup-toolbar {
+      display: flex;
+      gap: 0.25rem;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px 8px 0 0;
+      flex-wrap: wrap;
+    }
+
+    .markup-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+    }
+
+    .markup-btn:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    .markup-btn mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin: 0;
+    }
+
+    .notes-section .mat-mdc-form-field {
+      .mat-mdc-text-field-wrapper {
+        border-radius: 0 0 4px 4px;
+        border-top: none;
+      }
+    }
+
     // Dark theme support
     :host-context(.dark-theme) .form-header {
       border-bottom-color: rgba(255, 255, 255, 0.1);
     }
 
     :host-context(.dark-theme) .import-section {
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.1);
     }
 
     :host-context(.dark-theme) .import-section:hover {
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
-      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
     :host-context(.dark-theme) .import-hint {
       color: rgba(255, 255, 255, 0.6);
+    }
+
+    :host-context(.dark-theme) .notes-label {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    :host-context(.dark-theme) .markup-toolbar {
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    :host-context(.dark-theme) .markup-btn:hover {
+      background-color: rgba(255, 255, 255, 0.04);
     }
 
     // Responsive design
@@ -484,6 +565,8 @@ export class ProblemFormComponent implements OnInit {
   selectedTags: string[] = [];
   allTags = COMMON_TAGS;
   filteredTags: Observable<string[]>;
+
+  @ViewChild('notesTextarea') notesTextarea!: ElementRef<HTMLTextAreaElement>;
 
   constructor(
     private fb: FormBuilder,
@@ -604,5 +687,54 @@ export class ProblemFormComponent implements OnInit {
 
   onCancel(): void {
     this.dialogRef.close(false);
+  }
+
+  applyFormat(format: 'bold' | 'italic' | 'code' | 'bullet'): void {
+    const textarea = this.notesTextarea.nativeElement;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    const beforeText = textarea.value.substring(0, start);
+    const afterText = textarea.value.substring(end);
+
+    let formattedText = '';
+    let cursorOffset = 0;
+
+    switch (format) {
+      case 'bold':
+        formattedText = selectedText ? `**${selectedText}**` : '**bold text**';
+        cursorOffset = selectedText ? 2 : 2;
+        break;
+      case 'italic':
+        formattedText = selectedText ? `*${selectedText}*` : '*italic text*';
+        cursorOffset = selectedText ? 1 : 1;
+        break;
+      case 'code':
+        formattedText = selectedText ? `\`${selectedText}\`` : '`code`';
+        cursorOffset = selectedText ? 1 : 1;
+        break;
+      case 'bullet':
+        formattedText = selectedText ? `• ${selectedText}` : '• bullet point';
+        cursorOffset = selectedText ? 2 : 2;
+        break;
+    }
+
+    const newValue = beforeText + formattedText + afterText;
+
+    // Update form control
+    this.problemForm.patchValue({ notes: newValue });
+
+    // Update textarea value and focus
+    textarea.value = newValue;
+    textarea.focus();
+
+    // Set cursor position
+    const newCursorPos = selectedText ?
+      start + formattedText.length :
+      start + cursorOffset;
+
+    setTimeout(() => {
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
   }
 }
