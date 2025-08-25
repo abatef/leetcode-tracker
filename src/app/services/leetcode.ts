@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, doc, addDoc, updateDoc, deleteDoc, query, where, orderBy, getDocs, onSnapshot } from '@angular/fire/firestore';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { Problem, UserStats } from '../models/problem';
+import { Problem, UserStats, ProblemAction } from '../models/problem';
 import { AuthService } from './auth';
 
 @Injectable({
@@ -55,12 +55,21 @@ export class LeetcodeService {
           updatedAt: data['updatedAt']?.toDate() || new Date(),
           solvedDate: data['solvedDate']?.toDate() || null,
           lastAttemptDate: data['lastAttemptDate']?.toDate() || null,
-          firstAttemptDate: data['firstAttemptDate']?.toDate() || null, // Add this line
+          firstAttemptDate: data['firstAttemptDate']?.toDate() || null,
+          firstSolvedDate: data['firstSolvedDate']?.toDate() || null,
+          actionHistory: this.parseActionHistory(data['actionHistory'] || [])
         } as Problem);
       });
       this.problemsSubject.next(problems);
       this.updateStats(problems);
     });
+  }
+
+  private parseActionHistory(actionHistory: any[]): ProblemAction[] {
+    return actionHistory.map(action => ({
+      ...action,
+      timestamp: action.timestamp?.toDate() || new Date()
+    }));
   }
 
   private updateStats(problems: Problem[]): void {
@@ -135,6 +144,21 @@ export class LeetcodeService {
     });
   }
 
+  private createAction(action: string, field?: string, oldValue?: any, newValue?: any, description?: string): ProblemAction {
+    const user = this.authService.getCurrentUser();
+    return {
+      timestamp: new Date(),
+      action: action as any,
+      details: {
+        field,
+        oldValue,
+        newValue,
+        description
+      },
+      userId: user?.uid
+    };
+  }
+
   async addProblem(problem: Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<void> {
     const user = this.authService.getCurrentUser();
     if (!user) {
@@ -154,15 +178,30 @@ export class LeetcodeService {
       attempts: problem.attempts || 0,
       timeSpent: problem.timeSpent || 0,
       notes: problem.notes || '',
-      companies: problem.companies || [], // Add companies field
+      companies: problem.companies || [],
       userId: user.uid,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      actionHistory: []
     };
+
+    // Create initial action
+    const initialAction = this.createAction('created', undefined, undefined, undefined, `Problem "${problem.title}" was added`);
+    cleanData.actionHistory.push(initialAction);
 
     // Set firstAttemptDate if status is Attempted or Solved and it's not already set
     if ((problem.status === 'Attempted' || problem.status === 'Solved') && !problem.firstAttemptDate) {
       cleanData.firstAttemptDate = new Date();
+      const attemptAction = this.createAction('status_changed', 'status', 'Not Attempted', problem.status, `Status changed to ${problem.status}`);
+      cleanData.actionHistory.push(attemptAction);
+    }
+
+    // Set firstSolvedDate if status is Solved
+    if (problem.status === 'Solved') {
+      cleanData.firstSolvedDate = new Date();
+      cleanData.solvedDate = new Date();
+      const solvedAction = this.createAction('status_changed', 'status', undefined, 'Solved', 'Problem solved for the first time');
+      cleanData.actionHistory.push(solvedAction);
     }
 
     // Only add optional dates if they exist
@@ -195,31 +234,106 @@ export class LeetcodeService {
     const currentProblems = this.problemsSubject.value;
     const currentProblem = currentProblems.find(p => p.id === problemId);
 
+    if (!currentProblem) {
+      throw new Error('Problem not found');
+    }
+
     // Clean updates to remove undefined values
     const cleanUpdates: any = {
       updatedAt: new Date()
     };
 
+    // Initialize action history if it doesn't exist
+    const currentActionHistory = currentProblem.actionHistory || [];
+    const newActions: ProblemAction[] = [];
+
     Object.keys(updates).forEach(key => {
-      if (updates[key as keyof Problem] !== undefined) {
-        cleanUpdates[key] = updates[key as keyof Problem];
+      if (updates[key as keyof Problem] !== undefined && key !== 'actionHistory') {
+        const oldValue = currentProblem[key as keyof Problem];
+        const newValue = updates[key as keyof Problem];
+
+        if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+          cleanUpdates[key] = newValue;
+
+          // Create action for this change
+          let actionType = 'status_changed';
+          let description = '';
+
+          switch (key) {
+            case 'status':
+              actionType = 'status_changed';
+              description = `Status changed from ${oldValue} to ${newValue}`;
+              break;
+            case 'notes':
+              actionType = 'notes_updated';
+              description = 'Notes updated';
+              break;
+            case 'tags':
+              actionType = 'tags_updated';
+              description = 'Tags updated';
+              break;
+            case 'companies':
+              actionType = 'companies_updated';
+              description = 'Companies updated';
+              break;
+            case 'attempts':
+              actionType = 'attempts_updated';
+              description = `Attempts changed from ${oldValue} to ${newValue}`;
+              break;
+            case 'timeSpent':
+              actionType = 'time_updated';
+              description = `Time spent changed from ${oldValue} to ${newValue} minutes`;
+              break;
+            default:
+              description = `${key} updated`;
+          }
+
+          newActions.push(this.createAction(actionType, key, oldValue, newValue, description));
+        }
       }
     });
 
-    // Track first attempt date
-    if (currentProblem && updates.status) {
+    // Handle status change logic
+    if (updates.status) {
       const wasNotAttempted = currentProblem.status === 'Not Attempted';
       const nowAttempted = updates.status === 'Attempted' || updates.status === 'Solved';
+      const wasSolved = currentProblem.status === 'Solved';
+      const nowSolved = updates.status === 'Solved';
 
+      // Track first attempt date
       if (wasNotAttempted && nowAttempted && !currentProblem.firstAttemptDate) {
         cleanUpdates.firstAttemptDate = new Date();
       }
+
+      // Update lastAttemptDate when status changes to Attempted or Solved
+      if (updates.status === 'Attempted' || updates.status === 'Solved') {
+        cleanUpdates.lastAttemptDate = new Date();
+      }
+
+      // Handle first time solved
+      if (!wasSolved && nowSolved) {
+        // This is the first time the problem is being marked as solved
+        if (!currentProblem.firstSolvedDate) {
+          cleanUpdates.firstSolvedDate = new Date();
+          cleanUpdates.solvedDate = new Date();
+
+          // Update the action description for first solve
+          const solveAction = newActions.find(action => action.details.field === 'status');
+          if (solveAction) {
+            solveAction.details.description = 'Problem solved for the first time';
+          }
+        } else {
+          // Problem was solved before, just update solvedDate
+          cleanUpdates.solvedDate = new Date();
+        }
+      } else if (wasSolved && !nowSolved) {
+        // Problem was unsolved
+        cleanUpdates.solvedDate = null;
+      }
     }
 
-    // Update lastAttemptDate when status changes to Attempted or Solved
-    if (updates.status && (updates.status === 'Attempted' || updates.status === 'Solved')) {
-      cleanUpdates.lastAttemptDate = new Date();
-    }
+    // Combine existing and new actions
+    cleanUpdates.actionHistory = [...currentActionHistory, ...newActions];
 
     const problemRef = doc(this.firestore, 'problems', problemId);
     await updateDoc(problemRef, cleanUpdates);
@@ -228,5 +342,12 @@ export class LeetcodeService {
   async deleteProblem(problemId: string): Promise<void> {
     const problemRef = doc(this.firestore, 'problems', problemId);
     await deleteDoc(problemRef);
+  }
+
+  // Helper method to get problem action history
+  getProblemActionHistory(problemId: string): ProblemAction[] {
+    const problems = this.problemsSubject.value;
+    const problem = problems.find(p => p.id === problemId);
+    return problem?.actionHistory || [];
   }
 }

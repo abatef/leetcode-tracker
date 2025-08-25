@@ -15,7 +15,22 @@ export interface Problem {
   solvedDate?: Date | null;
   lastAttemptDate?: Date | null;
   firstAttemptDate?: Date | null;
-  companies: string[]; // Add this new field
+  firstSolvedDate?: Date | null; // Add this for tracking first time solved
+  companies: string[];
+  actionHistory?: ProblemAction[]; // Add action history
+}
+
+export interface ProblemAction {
+  id?: string;
+  timestamp: Date;
+  action: 'created' | 'status_changed' | 'notes_updated' | 'tags_updated' | 'companies_updated' | 'attempts_updated' | 'time_updated';
+  details: {
+    field?: string;
+    oldValue?: any;
+    newValue?: any;
+    description?: string;
+  };
+  userId?: string;
 }
 
 export interface UserStats {
