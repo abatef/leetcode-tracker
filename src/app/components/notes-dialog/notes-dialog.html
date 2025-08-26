@@ -24,6 +24,46 @@
 
   <!-- Edit Mode -->
   <div *ngIf="isEditing" class="edit-mode">
+    <!-- AI Enhancement Section -->
+    <div class="ai-enhancement-section" *ngIf="editedNotes.trim()">
+      <div class="ai-header">
+        <mat-icon>auto_awesome</mat-icon>
+        <h4>AI Enhancement</h4>
+      </div>
+      <div class="ai-actions">
+        <button
+          mat-stroked-button
+          (click)="enhanceNotesWithAI('improve')"
+          [disabled]="aiProcessing"
+          class="ai-btn"
+        >
+          <mat-icon *ngIf="!aiProcessing">psychology</mat-icon>
+          <mat-icon *ngIf="aiProcessing" class="spinning">sync</mat-icon>
+          {{ aiProcessing ? 'Processing...' : 'Improve Notes' }}
+        </button>
+        <button
+          mat-stroked-button
+          (click)="enhanceNotesWithAI('rephrase')"
+          [disabled]="aiProcessing"
+          class="ai-btn"
+        >
+          <mat-icon *ngIf="!aiProcessing">translate</mat-icon>
+          <mat-icon *ngIf="aiProcessing" class="spinning">sync</mat-icon>
+          {{ aiProcessing ? 'Processing...' : 'Rephrase' }}
+        </button>
+        <button
+          mat-stroked-button
+          (click)="enhanceNotesWithAI('structure')"
+          [disabled]="aiProcessing"
+          class="ai-btn"
+        >
+          <mat-icon *ngIf="!aiProcessing">account_tree</mat-icon>
+          <mat-icon *ngIf="aiProcessing" class="spinning">sync</mat-icon>
+          {{ aiProcessing ? 'Processing...' : 'Structure' }}
+        </button>
+      </div>
+    </div>
+
     <!-- Formatting Toolbar -->
     <div class="formatting-toolbar">
       <div class="toolbar-group">
@@ -162,6 +202,25 @@
         <button mat-stroked-button (click)="insertTemplate('mistakes')" class="template-btn">
           <mat-icon>error_outline</mat-icon>
           Mistakes
+        </button>
+      </div>
+    </div>
+
+    <!-- AI Suggestion Display -->
+    <div class="ai-suggestion" *ngIf="aiSuggestion">
+      <div class="suggestion-header">
+        <mat-icon>lightbulb</mat-icon>
+        <h4>AI Suggestion</h4>
+        <button mat-icon-button (click)="dismissAISuggestion()" class="dismiss-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="suggestion-content" [innerHTML]="formatNotes(aiSuggestion)"></div>
+      <div class="suggestion-actions">
+        <button mat-button (click)="dismissAISuggestion()">Dismiss</button>
+        <button mat-raised-button color="primary" (click)="acceptAISuggestion()">
+          <mat-icon>check</mat-icon>
+          Accept Suggestion
         </button>
       </div>
     </div>

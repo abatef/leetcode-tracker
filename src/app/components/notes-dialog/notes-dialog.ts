@@ -10,6 +10,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { LeetcodeService } from '../../services/leetcode';
+import { AIService } from '../../services/ai.service';
 
 @Component({
   selector: 'app-notes-dialog',
@@ -35,6 +36,8 @@ export class NotesDialogComponent {
   isEditing = false;
   editedNotes = '';
   saving = false;
+  aiProcessing = false;
+  aiSuggestion = '';
 
   // Undo/Redo functionality
   undoStack: string[] = [];
@@ -45,6 +48,7 @@ export class NotesDialogComponent {
     public dialogRef: MatDialogRef<NotesDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private leetcodeService: LeetcodeService,
+    @Inject(AIService) private aiService: AIService,
     private snackBar: MatSnackBar
   ) {
     // Set up keyboard shortcuts
@@ -315,9 +319,7 @@ export class NotesDialogComponent {
     }
   }
 
-  // Add this method to handle the close button explicitly
   closeDialog(): void {
-    // Close without returning any value - this prevents updating the parent
     this.dialogRef.close();
   }
 
@@ -349,9 +351,7 @@ export class NotesDialogComponent {
         notes: trimmedNotes
       });
 
-      // Update the local data
       this.data.notes = trimmedNotes;
-
       this.isEditing = false;
       this.editedNotes = '';
       this.clearUndoStacks();
@@ -362,7 +362,6 @@ export class NotesDialogComponent {
         { duration: 3000 }
       );
 
-      // Return the updated notes to the parent component
       this.dialogRef.close(trimmedNotes);
 
     } catch (error) {
@@ -371,5 +370,105 @@ export class NotesDialogComponent {
     } finally {
       this.saving = false;
     }
+  }
+
+  async enhanceNotesWithAI(type: 'improve' | 'rephrase' | 'structure'): Promise<void> {
+    if (!this.editedNotes.trim()) {
+      this.snackBar.open('Please add some notes first before using AI enhancement.', 'Close', { duration: 3000 });
+      return;
+    }
+
+    this.aiProcessing = true;
+
+    try {
+      let prompt = '';
+      const context = `Problem: ${this.data.title}\nDifficulty: ${this.data.difficulty}\nTags: ${this.data.tags?.join(', ') || 'N/A'}`;
+
+      switch (type) {
+        case 'improve':
+          prompt = `Please improve and enhance the following LeetCode problem notes. Make them more comprehensive, clear, and educational while maintaining the original insights. Add any missing important details about the solution approach, time/space complexity analysis, or edge cases if appropriate.
+
+${context}
+
+Current Notes:
+${this.editedNotes}
+
+Please provide improved notes that are:
+- More detailed and comprehensive
+- Better structured and organized
+- Include proper complexity analysis if missing
+- Highlight key insights and patterns
+- Maintain the original author's voice and insights`;
+          break;
+
+        case 'rephrase':
+          prompt = `Please rephrase and rewrite the following LeetCode problem notes to make them clearer, more concise, and better organized while preserving all the important information and insights.
+
+${context}
+
+Current Notes:
+${this.editedNotes}
+
+Please provide rephrased notes that are:
+- Clearer and more concise
+- Better organized and structured
+- Use improved technical language
+- Maintain all original insights and information
+- Follow markdown formatting conventions`;
+          break;
+
+        case 'structure':
+          prompt = `Please restructure and organize the following LeetCode problem notes into a well-formatted, logical structure with proper headings, sections, and markdown formatting.
+
+${context}
+
+Current Notes:
+${this.editedNotes}
+
+Please provide structured notes with:
+- Clear headings and sections (## Approach, ## Complexity Analysis, ## Solution, etc.)
+- Proper markdown formatting
+- Logical flow of information
+- Bullet points and numbered lists where appropriate
+- Code blocks for algorithms/pseudocode if present
+- All original information preserved but better organized`;
+          break;
+      }
+
+      const enhancedNotes = await this.aiService.enhanceNotes(prompt);
+
+      if (enhancedNotes) {
+        this.aiSuggestion = enhancedNotes;
+        this.snackBar.open('AI suggestion generated! Review and accept if you like it.', 'Close', { duration: 4000 });
+      } else {
+        throw new Error('No response from AI service');
+      }
+
+    } catch (error) {
+      console.error('Error enhancing notes with AI:', error);
+      this.snackBar.open('Failed to enhance notes with AI. Please try again.', 'Close', { duration: 5000 });
+    } finally {
+      this.aiProcessing = false;
+    }
+  }
+
+  acceptAISuggestion(): void {
+    if (this.aiSuggestion) {
+      this.pushToUndoStack();
+      this.editedNotes = this.aiSuggestion;
+      this.aiSuggestion = '';
+      this.snackBar.open('AI suggestion applied to your notes!', 'Close', { duration: 3000 });
+
+      // Focus the textarea after accepting suggestion
+      setTimeout(() => {
+        if (this.notesTextarea) {
+          this.notesTextarea.nativeElement.focus();
+        }
+      }, 100);
+    }
+  }
+
+  dismissAISuggestion(): void {
+    this.aiSuggestion = '';
   }
 }
