@@ -1,5 +1,4 @@
-
-    h2[mat-dialog-title] {
+h2[mat-dialog-title] {
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -132,16 +131,76 @@
     }
 
     .action-details {
+      margin-top: 0.5rem;
+    }
+
+    .value-change {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-top: 0.5rem;
+      flex-wrap: wrap;
     }
 
     .action-details mat-chip {
       font-size: 0.75rem;
       height: 24px;
       --mdc-chip-container-height: 24px;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tags-details {
+      width: 100%;
+    }
+
+    .tags-change {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
+    .tags-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      width: 100%;
+    }
+
+    .tags-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.7);
+      margin-bottom: 0.25rem;
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      align-items: center;
+      width: 100%;
+    }
+
+    .tag-chip {
+      font-size: 0.7rem;
+      height: 22px;
+      --mdc-chip-container-height: 22px;
+      flex-shrink: 0;
+      max-width: none;
+      white-space: nowrap;
+      overflow: visible;
+    }
+
+    .no-tags {
+      font-size: 0.75rem;
+      color: rgba(0, 0, 0, 0.5);
+      font-style: italic;
+      padding: 0.125rem 0.5rem;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
     }
 
     .old-value {
@@ -161,6 +220,7 @@
       width: 16px;
       height: 16px;
       color: rgba(0, 0, 0, 0.5);
+      flex-shrink: 0;
     }
 
     .timestamps-list {
@@ -323,6 +383,15 @@
       color: rgba(255, 255, 255, 0.5);
     }
 
+    :host-context(.dark-theme) .tags-label {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    :host-context(.dark-theme) .no-tags {
+      color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
     // Responsive design
     @media (max-width: 600px) {
       mat-dialog-content {
@@ -342,10 +411,18 @@
         align-items: center;
       }
 
-      .action-details {
+      .value-change {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.25rem;
+      }
+
+      .action-details mat-chip {
+        max-width: none;
+      }
+
+      .tags-container {
+        max-width: 100%;
       }
     }
 

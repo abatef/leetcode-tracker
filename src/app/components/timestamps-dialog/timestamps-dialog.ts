@@ -66,6 +66,45 @@ export class TimestampsDialogComponent {
     return String(value);
   }
 
+  // New method to check if we should show value details
+  shouldShowValueDetails(action: string): boolean {
+    return action !== 'notes_updated';
+  }
+
+  // New method to format tags as array
+  formatTagsArray(value: any): string[] {
+    if (value === null || value === undefined) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') return value.split(',').map(tag => tag.trim()).filter(tag => tag);
+    return [];
+  }
+
+  // New method to check if action is tags related
+  isTagsAction(action: string): boolean {
+    return action === 'tags_updated';
+  }
+
+  // New method to get added and removed items
+  getAddedAndRemovedItems(oldValue: any, newValue: any): { added: string[], removed: string[] } {
+    const oldArray = this.formatTagsArray(oldValue);
+    const newArray = this.formatTagsArray(newValue);
+
+    const added = newArray.filter(item => !oldArray.includes(item));
+    const removed = oldArray.filter(item => !newArray.includes(item));
+
+    return { added, removed };
+  }
+
+  // New method to check if action is companies related
+  isCompaniesAction(action: string): boolean {
+    return action === 'companies_updated';
+  }
+
+  // New method to check if action is tags or companies related
+  isTagsOrCompaniesAction(action: string): boolean {
+    return action === 'tags_updated' || action === 'companies_updated';
+  }
+
   formatFullDate(date: Date | null | undefined): string {
     if (!date) return 'Not available';
     return date.toLocaleDateString('en-US', {

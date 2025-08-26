@@ -24,13 +24,83 @@
             </div>
             <div class="action-date">{{ formatFullDate(action.timestamp) }}</div>
             <div class="action-relative">{{ getRelativeTime(action.timestamp) }}</div>
+
+            <!-- Regular value changes (not notes, not tags, not companies) -->
             <div
               class="action-details"
-              *ngIf="action.details.field && action.details.oldValue !== undefined"
+              *ngIf="
+                action.details.field &&
+                action.details.oldValue !== undefined &&
+                shouldShowValueDetails(action.action) &&
+                !isTagsOrCompaniesAction(action.action)
+              "
             >
-              <mat-chip class="old-value">{{ formatValue(action.details.oldValue) }}</mat-chip>
-              <mat-icon class="arrow">arrow_forward</mat-icon>
-              <mat-chip class="new-value">{{ formatValue(action.details.newValue) }}</mat-chip>
+              <div class="value-change">
+                <mat-chip class="old-value">{{ formatValue(action.details.oldValue) }}</mat-chip>
+                <mat-icon class="arrow">arrow_forward</mat-icon>
+                <mat-chip class="new-value">{{ formatValue(action.details.newValue) }}</mat-chip>
+              </div>
+            </div>
+
+            <!-- Tags/Companies changes with added/removed sections -->
+            <div
+              class="action-details tags-details"
+              *ngIf="
+                action.details.field &&
+                action.details.oldValue !== undefined &&
+                isTagsOrCompaniesAction(action.action)
+              "
+            >
+              <div class="tags-change">
+                <div
+                  class="tags-section"
+                  *ngIf="
+                    getAddedAndRemovedItems(action.details.oldValue, action.details.newValue).added
+                      .length > 0
+                  "
+                >
+                  <span class="tags-label">{{
+                    isTagsAction(action.action) ? 'Tags Added:' : 'Companies Added:'
+                  }}</span>
+                  <div class="tags-container">
+                    <mat-chip
+                      class="new-value tag-chip"
+                      *ngFor="
+                        let item of getAddedAndRemovedItems(
+                          action.details.oldValue,
+                          action.details.newValue
+                        ).added
+                      "
+                    >
+                      {{ item }}
+                    </mat-chip>
+                  </div>
+                </div>
+                <div
+                  class="tags-section"
+                  *ngIf="
+                    getAddedAndRemovedItems(action.details.oldValue, action.details.newValue)
+                      .removed.length > 0
+                  "
+                >
+                  <span class="tags-label">{{
+                    isTagsAction(action.action) ? 'Tags Removed:' : 'Companies Removed:'
+                  }}</span>
+                  <div class="tags-container">
+                    <mat-chip
+                      class="old-value tag-chip"
+                      *ngFor="
+                        let item of getAddedAndRemovedItems(
+                          action.details.oldValue,
+                          action.details.newValue
+                        ).removed
+                      "
+                    >
+                      {{ item }}
+                    </mat-chip>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
