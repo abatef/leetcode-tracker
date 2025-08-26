@@ -1,7 +1,48 @@
 <div class="problem-list-container">
   <div class="header-section">
     <h2>Problems</h2>
-    <div class="header-actions">
+  </div>
+
+  <div class="filters-section">
+    <mat-form-field appearance="outline">
+      <mat-label>Search</mat-label>
+      <input matInput (keyup)="applyFilter($event)" placeholder="Search problems..." />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Difficulty</mat-label>
+      <mat-select (selectionChange)="filterByDifficulty($event.value)" [value]="''">
+        <mat-option value="">All</mat-option>
+        <mat-option value="Easy">Easy</mat-option>
+        <mat-option value="Medium">Medium</mat-option>
+        <mat-option value="Hard">Hard</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select (selectionChange)="filterByStatus($event.value)" [value]="''">
+        <mat-option value="">All</mat-option>
+        <mat-option value="Not Attempted">Not Attempted</mat-option>
+        <mat-option value="Attempted">Attempted</mat-option>
+        <mat-option value="Solved">Solved</mat-option>
+        <mat-option value="Reviewed">Reviewed</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Company</mat-label>
+      <mat-select (selectionChange)="filterByCompany($event.value)" [value]="''">
+        <mat-option value="">All Companies</mat-option>
+        <mat-option *ngFor="let company of availableCompanies" [value]="company">
+          {{ company }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Action Buttons moved to filters section -->
+    <div class="filter-actions">
       <button mat-raised-button color="primary" (click)="addProblem()">
         <mat-icon>add</mat-icon>
         Add Problem
@@ -10,11 +51,6 @@
       <button mat-raised-button color="accent" (click)="openSearchDialog()">
         <mat-icon>search</mat-icon>
         Search Problems
-      </button>
-
-      <button mat-raised-button (click)="openImportDialog()">
-        <mat-icon>cloud_download</mat-icon>
-        Import from LeetCode
       </button>
 
       <!-- Column Options Button -->
@@ -68,45 +104,6 @@
         </div>
       </mat-menu>
     </div>
-  </div>
-
-  <div class="filters-section">
-    <mat-form-field appearance="outline">
-      <mat-label>Search</mat-label>
-      <input matInput (keyup)="applyFilter($event)" placeholder="Search problems..." />
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Difficulty</mat-label>
-      <mat-select (selectionChange)="filterByDifficulty($event.value)" [value]="''">
-        <mat-option value="">All</mat-option>
-        <mat-option value="Easy">Easy</mat-option>
-        <mat-option value="Medium">Medium</mat-option>
-        <mat-option value="Hard">Hard</mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Status</mat-label>
-      <mat-select (selectionChange)="filterByStatus($event.value)" [value]="''">
-        <mat-option value="">All</mat-option>
-        <mat-option value="Not Attempted">Not Attempted</mat-option>
-        <mat-option value="Attempted">Attempted</mat-option>
-        <mat-option value="Solved">Solved</mat-option>
-        <mat-option value="Reviewed">Reviewed</mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Company</mat-label>
-      <mat-select (selectionChange)="filterByCompany($event.value)" [value]="''">
-        <mat-option value="">All Companies</mat-option>
-        <mat-option *ngFor="let company of availableCompanies" [value]="company">
-          {{ company }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
   </div>
 
   <div class="table-container" [class.resizing]="isResizing">

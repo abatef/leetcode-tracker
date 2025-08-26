@@ -54,14 +54,14 @@ export class ProblemListComponent implements OnInit {
   // Column definitions with visibility control and default widths
   columnDefinitions = [
     { key: 'id', label: 'ID', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 120 },
-    { key: 'title', label: 'Title', visible: true, clickable: false, width: 200, minWidth: 150, maxWidth: 400 },
+    { key: 'title', label: 'Title', visible: true, clickable: false, width: 250, minWidth: 150, maxWidth: 400 }, // Increased from 200
     { key: 'difficulty', label: 'Difficulty', visible: true, clickable: true, width: 120, minWidth: 100, maxWidth: 150 },
-    { key: 'status', label: 'Status', visible: true, clickable: true, width: 120, minWidth: 100, maxWidth: 150 },
-    { key: 'tags', label: 'Tags', visible: true, clickable: true, width: 180, minWidth: 120, maxWidth: 300 },
-    { key: 'companies', label: 'Companies', visible: true, clickable: true, width: 150, minWidth: 100, maxWidth: 200 },
+    { key: 'status', label: 'Status', visible: true, clickable: true, width: 130, minWidth: 100, maxWidth: 150 }, // Increased from 120
+    { key: 'tags', label: 'Tags', visible: true, clickable: true, width: 220, minWidth: 120, maxWidth: 300 }, // Increased from 180
+    { key: 'companies', label: 'Companies', visible: true, clickable: true, width: 180, minWidth: 100, maxWidth: 200 }, // Increased from 150
     { key: 'attempts', label: 'Attempts', visible: true, clickable: true, width: 100, minWidth: 80, maxWidth: 120 },
     { key: 'timeSpent', label: 'Time (min)', visible: true, clickable: true, width: 120, minWidth: 100, maxWidth: 150 },
-    { key: 'dateAdded', label: 'Date Added', visible: true, clickable: false, width: 120, minWidth: 100, maxWidth: 150 },
+    { key: 'dateAdded', label: 'Date Added', visible: true, clickable: false, width: 130, minWidth: 100, maxWidth: 150 }, // Increased from 120
     { key: 'notes', label: 'Notes', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 100 },
     { key: 'actions', label: 'Actions', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 100 }
   ];
@@ -319,13 +319,6 @@ export class ProblemListComponent implements OnInit {
     }
   }
 
-  openImportDialog(): void {
-    // TODO: Implement import functionality
-    this.snackBar.open('Import feature coming soon!', 'Close', {
-      duration: 3000
-    });
-  }
-
   private openEditDialog(problem: Problem): void {
     const dialogRef = this.dialog.open(ProblemFormComponent, {
       width: '600px',
@@ -458,9 +451,9 @@ export class ProblemListComponent implements OnInit {
           [...headerCells, ...cells].forEach(el => {
             const element = el as HTMLElement;
             element.style.width = `${col.width}px`;
-            element.style.minWidth = `${col.minWidth}px`;
+            element.style.minWidth = `${col.width}px`; // Set min-width to same as width
             element.style.maxWidth = `${col.maxWidth || 500}px`;
-            element.style.flex = `0 0 ${col.width}px`;
+            // Remove flex property to let table use natural sizing
           });
         }
       });
@@ -495,17 +488,17 @@ export class ProblemListComponent implements OnInit {
     // Reset both visibility and widths
     this.columnDefinitions.forEach(col => {
       col.visible = true;
-      // Reset to default widths
+      // Reset to default widths (updated values)
       switch (col.key) {
         case 'id': col.width = 80; break;
-        case 'title': col.width = 200; break;
+        case 'title': col.width = 250; break; // Updated
         case 'difficulty': col.width = 120; break;
-        case 'status': col.width = 120; break;
-        case 'tags': col.width = 180; break;
-        case 'companies': col.width = 150; break;
+        case 'status': col.width = 130; break; // Updated
+        case 'tags': col.width = 220; break; // Updated
+        case 'companies': col.width = 180; break; // Updated
         case 'attempts': col.width = 100; break;
         case 'timeSpent': col.width = 120; break;
-        case 'dateAdded': col.width = 120; break;
+        case 'dateAdded': col.width = 130; break; // Updated
         case 'notes': col.width = 80; break;
         case 'actions': col.width = 80; break;
       }
