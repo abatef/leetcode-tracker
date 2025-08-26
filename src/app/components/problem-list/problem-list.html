@@ -64,7 +64,7 @@
         <mat-divider></mat-divider>
         <div class="column-hint">
           <mat-icon>info</mat-icon>
-          <span>Click on column cells to quick edit</span>
+          <span>Click on column cells to quick edit. Drag column borders to resize.</span>
         </div>
       </mat-menu>
     </div>
@@ -109,17 +109,23 @@
     </mat-form-field>
   </div>
 
-  <div class="table-container">
-    <table mat-table [dataSource]="dataSource" matSort class="problems-table">
+  <div class="table-container" [class.resizing]="isResizing">
+    <table mat-table [dataSource]="dataSource" matSort class="problems-table resizable-table">
       <!-- ID Column -->
       <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="resizable-header">
+          ID
+          <div class="resize-handle" (mousedown)="onResizeStart($event, 'id')"></div>
+        </th>
         <td mat-cell *matCellDef="let problem">{{ problem.leetcodeId }}</td>
       </ng-container>
 
       <!-- Title Column -->
       <ng-container matColumnDef="title">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Title</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="resizable-header">
+          Title
+          <div class="resize-handle" (mousedown)="onResizeStart($event, 'title')"></div>
+        </th>
         <td mat-cell *matCellDef="let problem">
           <a [href]="problem.url" target="_blank" class="title-link">
             {{ problem.title }}
@@ -129,9 +135,9 @@
 
       <!-- Difficulty Column - Clickable -->
       <ng-container matColumnDef="difficulty">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="resizable-header">
           Difficulty
-          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+          <div class="resize-handle" (mousedown)="onResizeStart($event, 'difficulty')"></div>
         </th>
         <td
           mat-cell
@@ -148,9 +154,9 @@
 
       <!-- Status Column - Clickable -->
       <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="resizable-header">
           Status
-          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+          <div class="resize-handle" (mousedown)="onResizeStart($event, 'status')"></div>
         </th>
         <td
           mat-cell
@@ -170,9 +176,9 @@
 
       <!-- Tags Column - Clickable -->
       <ng-container matColumnDef="tags">
-        <th mat-header-cell *matHeaderCellDef>
+        <th mat-header-cell *matHeaderCellDef class="resizable-header">
           Tags
-          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+          <div class="resize-handle" (mousedown)="onResizeStart($event, 'tags')"></div>
         </th>
         <td
           mat-cell
@@ -182,9 +188,9 @@
           matTooltip="Click to edit tags"
         >
           <div class="tags-container">
-            <mat-chip *ngFor="let tag of problem.tags.slice(0, 3)">{{ tag }}</mat-chip>
-            <span class="more-tags" *ngIf="problem.tags.length > 3">
-              +{{ problem.tags.length - 3 }} more
+            <mat-chip *ngFor="let tag of problem.tags.slice(0, 2)">{{ tag }}</mat-chip>
+            <span class="more-tags" *ngIf="problem.tags.length > 2">
+              +{{ problem.tags.length - 2 }} more
             </span>
           </div>
         </td>
@@ -192,9 +198,9 @@
 
       <!-- Companies Column - Clickable -->
       <ng-container matColumnDef="companies">
-        <th mat-header-cell *matHeaderCellDef>
+        <th mat-header-cell *matHeaderCellDef class="resizable-header">
           Companies
-          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+          <div class="resize-handle" (mousedown)="onResizeStart($event, 'companies')"></div>
         </th>
         <td
           mat-cell
@@ -231,9 +237,9 @@
 
       <!-- Attempts Column - Clickable -->
       <ng-container matColumnDef="attempts">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="resizable-header">
           Attempts
-          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+          <div class="resize-handle" (mousedown)="onResizeStart($event, 'attempts')"></div>
         </th>
         <td
           mat-cell
@@ -248,9 +254,9 @@
 
       <!-- Time Spent Column - Clickable -->
       <ng-container matColumnDef="timeSpent">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="resizable-header">
           Time (min)
-          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+          <div class="resize-handle" (mousedown)="onResizeStart($event, 'timeSpent')"></div>
         </th>
         <td
           mat-cell
@@ -265,7 +271,10 @@
 
       <!-- Notes Column -->
       <ng-container matColumnDef="notes">
-        <th mat-header-cell *matHeaderCellDef>Notes</th>
+        <th mat-header-cell *matHeaderCellDef class="resizable-header">
+          Notes
+          <div class="resize-handle" (mousedown)="onResizeStart($event, 'notes')"></div>
+        </th>
         <td mat-cell *matCellDef="let problem">
           <button
             mat-icon-button
@@ -282,7 +291,10 @@
 
       <!-- Actions Column -->
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <th mat-header-cell *matHeaderCellDef class="resizable-header">
+          Actions
+          <div class="resize-handle" (mousedown)="onResizeStart($event, 'actions')"></div>
+        </th>
         <td mat-cell *matCellDef="let problem">
           <button mat-icon-button [matMenuTriggerFor]="actionMenu">
             <mat-icon>more_vert</mat-icon>

@@ -51,19 +51,25 @@ export class ProblemListComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  // Column definitions with visibility control
+  // Column definitions with visibility control and default widths
   columnDefinitions = [
-    { key: 'id', label: 'ID', visible: true, clickable: false },
-    { key: 'title', label: 'Title', visible: true, clickable: false },
-    { key: 'difficulty', label: 'Difficulty', visible: true, clickable: true },
-    { key: 'status', label: 'Status', visible: true, clickable: true },
-    { key: 'tags', label: 'Tags', visible: true, clickable: true },
-    { key: 'companies', label: 'Companies', visible: true, clickable: true },
-    { key: 'attempts', label: 'Attempts', visible: true, clickable: true },
-    { key: 'timeSpent', label: 'Time (min)', visible: true, clickable: true },
-    { key: 'notes', label: 'Notes', visible: true, clickable: false }, // Add notes column
-    { key: 'actions', label: 'Actions', visible: true, clickable: false }
+    { key: 'id', label: 'ID', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 120 },
+    { key: 'title', label: 'Title', visible: true, clickable: false, width: 200, minWidth: 150, maxWidth: 400 },
+    { key: 'difficulty', label: 'Difficulty', visible: true, clickable: true, width: 120, minWidth: 100, maxWidth: 150 },
+    { key: 'status', label: 'Status', visible: true, clickable: true, width: 120, minWidth: 100, maxWidth: 150 },
+    { key: 'tags', label: 'Tags', visible: true, clickable: true, width: 180, minWidth: 120, maxWidth: 300 },
+    { key: 'companies', label: 'Companies', visible: true, clickable: true, width: 150, minWidth: 100, maxWidth: 200 },
+    { key: 'attempts', label: 'Attempts', visible: true, clickable: true, width: 100, minWidth: 80, maxWidth: 120 },
+    { key: 'timeSpent', label: 'Time (min)', visible: true, clickable: true, width: 120, minWidth: 100, maxWidth: 150 },
+    { key: 'notes', label: 'Notes', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 100 },
+    { key: 'actions', label: 'Actions', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 100 }
   ];
+
+  // Track resizing state
+  isResizing = false;
+  resizingColumn: string | null = null;
+  startX = 0;
+  startWidth = 0;
 
   get displayedColumns(): string[] {
     return this.columnDefinitions
@@ -118,6 +124,10 @@ export class ProblemListComponent implements OnInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    this.setupResizeListeners();
+    this.loadColumnWidths();
+    // Apply column widths after a delay to ensure DOM is ready
+    setTimeout(() => this.applyColumnWidths(), 200);
   }
 
   private updateAvailableCompanies(): void {
@@ -389,9 +399,118 @@ export class ProblemListComponent implements OnInit {
     }
   }
 
+  // Column resizing methods
+  private setupResizeListeners(): void {
+    document.addEventListener('mousemove', this.onMouseMove.bind(this));
+    document.addEventListener('mouseup', this.onMouseUp.bind(this));
+  }
+
+  onResizeStart(event: MouseEvent, columnKey: string): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.isResizing = true;
+    this.resizingColumn = columnKey;
+    this.startX = event.clientX;
+
+    const column = this.columnDefinitions.find(col => col.key === columnKey);
+    this.startWidth = column ? column.width : 100;
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.body.classList.add('resizing');
+  }
+
+  private onMouseMove(event: MouseEvent): void {
+    if (!this.isResizing || !this.resizingColumn) return;
+
+    const diff = event.clientX - this.startX;
+    const newWidth = Math.max(this.startWidth + diff, 60); // Minimum width of 60px
+
+    const column = this.columnDefinitions.find(col => col.key === this.resizingColumn);
+    if (column) {
+      const maxWidth = column.maxWidth || 500;
+      column.width = Math.min(newWidth, maxWidth);
+      this.applyColumnWidths();
+    }
+  }
+
+  private onMouseUp(): void {
+    if (this.isResizing) {
+      this.isResizing = false;
+      this.resizingColumn = null;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.body.classList.remove('resizing');
+      this.saveColumnWidths();
+    }
+  }
+
+  private applyColumnWidths(): void {
+    // Use requestAnimationFrame to ensure DOM updates
+    requestAnimationFrame(() => {
+      this.columnDefinitions.forEach(col => {
+        if (col.visible) {
+          const headerCells = document.querySelectorAll(`.mat-column-${col.key}.mat-mdc-header-cell`);
+          const cells = document.querySelectorAll(`.mat-column-${col.key}.mat-mdc-cell`);
+
+          [...headerCells, ...cells].forEach(el => {
+            const element = el as HTMLElement;
+            element.style.width = `${col.width}px`;
+            element.style.minWidth = `${col.minWidth}px`;
+            element.style.maxWidth = `${col.maxWidth || 500}px`;
+            element.style.flex = `0 0 ${col.width}px`;
+          });
+        }
+      });
+    });
+  }
+
+  private saveColumnWidths(): void {
+    const widths = this.columnDefinitions.reduce((acc, col) => {
+      acc[col.key] = col.width;
+      return acc;
+    }, {} as Record<string, number>);
+    localStorage.setItem('leetcode-tracker-column-widths', JSON.stringify(widths));
+  }
+
+  private loadColumnWidths(): void {
+    const saved = localStorage.getItem('leetcode-tracker-column-widths');
+    if (saved) {
+      try {
+        const widths = JSON.parse(saved);
+        this.columnDefinitions.forEach(col => {
+          if (widths.hasOwnProperty(col.key)) {
+            col.width = widths[col.key];
+          }
+        });
+      } catch (error) {
+        console.error('Error loading column widths:', error);
+      }
+    }
+  }
+
   resetColumns(): void {
-    this.columnDefinitions.forEach(col => col.visible = true);
+    // Reset both visibility and widths
+    this.columnDefinitions.forEach(col => {
+      col.visible = true;
+      // Reset to default widths
+      switch (col.key) {
+        case 'id': col.width = 80; break;
+        case 'title': col.width = 200; break;
+        case 'difficulty': col.width = 120; break;
+        case 'status': col.width = 120; break;
+        case 'tags': col.width = 180; break;
+        case 'companies': col.width = 150; break;
+        case 'attempts': col.width = 100; break;
+        case 'timeSpent': col.width = 120; break;
+        case 'notes': col.width = 80; break;
+        case 'actions': col.width = 80; break;
+      }
+    });
     this.saveColumnPreferences();
+    this.saveColumnWidths();
+    this.applyColumnWidths();
   }
 
   private saveColumnPreferences(): void {

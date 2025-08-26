@@ -955,31 +955,6 @@
       background-color: rgba(103, 80, 164, 0.04) !important;
     }
 
-    .clickable-cell:hover::after {
-      content: '';
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      width: 12px;
-      height: 12px;
-      background: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>') no-repeat center center;
-      background-size: contain;
-      opacity: 0.6;
-    }
-
-    .clickable-indicator {
-      font-size: 12px !important;
-      width: 12px !important;
-      height: 12px !important;
-      margin-left: 4px !important;
-      opacity: 0.4;
-      vertical-align: middle;
-    }
-
-    :host-context(.dark-theme) .clickable-cell:hover {
-      background-color: rgba(255, 255, 255, 0.08) !important;
-    }
-
     // Column menu styles
     ::ng-deep .column-menu {
       min-width: 280px !important;
@@ -1089,48 +1064,6 @@
       height: 14px !important;
     }
 
-    // Dark theme support for column menu
-    :host-context(.dark-theme) .column-menu-header {
-      background: rgba(255, 255, 255, 0.05);
-      border-bottom-color: rgba(255, 255, 255, 0.12);
-    }
-
-    :host-context(.dark-theme) .column-section h4 {
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    :host-context(.dark-theme) .visible-column {
-      color: rgba(255, 255, 255, 0.87) !important;
-    }
-
-    :host-context(.dark-theme) .visible-column:hover {
-      background-color: rgba(244, 67, 54, 0.08) !important;
-      color: #ff6b6b !important;
-    }
-
-    :host-context(.dark-theme) .visible-column:hover .hide-icon {
-      color: #ff6b6b !important;
-    }
-
-    :host-context(.dark-theme) .hidden-column {
-      color: rgba(255, 255, 255, 0.6) !important;
-    }
-
-    :host-context(.dark-theme) .hidden-column:hover {
-      background-color: rgba(76, 175, 80, 0.08) !important;
-      color: #81c784 !important;
-    }
-
-    :host-context(.dark-theme) .hidden-column:hover .show-icon {
-      color: #81c784 !important;
-    }
-
-    :host-context(.dark-theme) .column-hint {
-      background: rgba(33, 150, 243, 0.1);
-      color: #64b5f6;
-      border-top-color: rgba(255, 255, 255, 0.12);
-    }
-
     // Enhanced header indicators
     .mat-mdc-header-cell {
       position: relative;
@@ -1144,18 +1077,206 @@
       opacity: 0.8;
     }
 
-    // Mobile responsive
+    /* Table resizing styles */
+    .resizable-table {
+      width: 100%;
+      table-layout: fixed !important;
+      border-collapse: separate !important;
+      border-spacing: 0 !important;
+    }
+
+    .resizable-header {
+      position: relative !important;
+      border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+      user-select: none !important;
+      box-sizing: border-box !important;
+    }
+
+    .resize-handle {
+      position: absolute;
+      top: 0;
+      right: -3px;
+      width: 6px;
+      height: 100%;
+      cursor: col-resize;
+      background: transparent;
+      border-right: 2px solid transparent;
+      transition: border-color 0.2s ease;
+      z-index: 10;
+    }
+
+    .resize-handle:hover {
+      border-right-color: rgba(103, 80, 164, 0.5);
+    }
+
+    .resize-handle:active,
+    .table-container.resizing .resize-handle {
+      border-right-color: var(--mdc-theme-primary, #673ab7);
+    }
+
+    /* Enhanced resizing behavior */
+    .mat-mdc-header-cell,
+    .mat-mdc-cell {
+      padding: 8px 16px !important;
+      border-bottom: none !important;
+      vertical-align: middle !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+      box-sizing: border-box !important;
+      position: relative !important;
+    }
+
+    /* Column borders for better visual separation */
+    .mat-column-id,
+    .mat-column-title,
+    .mat-column-difficulty,
+    .mat-column-status,
+    .mat-column-tags,
+    .mat-column-companies,
+    .mat-column-attempts,
+    .mat-column-timeSpent,
+    .mat-column-notes,
+    .mat-column-actions {
+      border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Tags column specific styling - show only 2 tags horizontally */
+    .mat-column-tags .mat-mdc-cell {
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    .tags-container {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.25rem !important;
+      overflow: hidden !important;
+      white-space: nowrap !important;
+      max-width: 100% !important;
+    }
+
+    .tags-container mat-chip {
+      font-size: 0.7rem !important;
+      height: 24px !important;
+      margin: 0 !important;
+      flex-shrink: 0 !important;
+      max-width: 80px !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    .more-tags {
+      font-size: 0.7rem !important;
+      color: rgba(0, 0, 0, 0.6) !important;
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
+    }
+
+    /* Companies column - keep existing behavior but ensure no wrapping */
+    .mat-column-companies .mat-mdc-cell {
+      white-space: nowrap !important;
+      overflow: hidden !important;
+    }
+
+    .company-logos-container {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.25rem !important;
+      overflow: hidden !important;
+      white-space: nowrap !important;
+    }
+
+    /* Global resizing state */
+    body.resizing {
+      cursor: col-resize !important;
+      user-select: none !important;
+    }
+
+    body.resizing * {
+      user-select: none !important;
+      pointer-events: none !important;
+    }
+
+    body.resizing .resize-handle {
+      pointer-events: all !important;
+    }
+
+    /* Resizing cursor and selection disable */
+    .table-container.resizing {
+      cursor: col-resize !important;
+      user-select: none !important;
+    }
+
+    .table-container.resizing * {
+      user-select: none !important;
+      pointer-events: none !important;
+    }
+
+    .table-container.resizing .resize-handle {
+      pointer-events: all !important;
+    }
+
+    /* Dark theme support for resize handles */
+    :host-context(.dark-theme) .resizable-header {
+      border-right-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    :host-context(.dark-theme) .resize-handle:hover {
+      border-right-color: rgba(159, 168, 218, 0.5);
+    }
+
+    :host-context(.dark-theme) .resize-handle:active,
+    :host-context(.dark-theme) .table-container.resizing .resize-handle {
+      border-right-color: #9fa8da;
+    }
+
+    :host-context(.dark-theme) .mat-column-id,
+    :host-context(.dark-theme) .mat-column-title,
+    :host-context(.dark-theme) .mat-column-difficulty,
+    :host-context(.dark-theme) .mat-column-status,
+    :host-context(.dark-theme) .mat-column-tags,
+    :host-context(.dark-theme) .mat-column-companies,
+    :host-context(.dark-theme) .mat-column-attempts,
+    :host-context(.dark-theme) .mat-column-timeSpent,
+    :host-context(.dark-theme) .mat-column-notes,
+    :host-context(.dark-theme) .mat-column-actions {
+      border-right-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    :host-context(.dark-theme) .more-tags {
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
+
+    /* Mobile responsive adjustments */
     @media (max-width: 768px) {
-      .clickable-indicator {
-        display: none !important;
+      .resize-handle {
+        display: none !important; /* Hide resize handles on mobile */
       }
 
-      .clickable-cell:hover::after {
-        display: none;
+      .resizable-table {
+        table-layout: auto !important;
       }
 
-      ::ng-deep .column-menu {
-        min-width: 250px !important;
-        max-width: 90vw !important;
+      .mat-mdc-header-cell,
+      .mat-mdc-cell {
+        white-space: normal !important;
+      }
+
+      .tags-container {
+        flex-wrap: wrap !important;
+        white-space: normal !important;
+        max-height: 48px !important;
+        overflow: hidden !important;
+      }
+    }
+
+    /* Tablet responsive */
+    @media (max-width: 1024px) and (min-width: 769px) {
+      .resize-handle {
+        width: 6px;
+        right: -3px;
       }
     }
