@@ -269,6 +269,17 @@
         </td>
       </ng-container>
 
+      <!-- Date Added Column -->
+      <ng-container matColumnDef="dateAdded">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="resizable-header">
+          Date Added
+          <div class="resize-handle" (mousedown)="onResizeStart($event, 'dateAdded')"></div>
+        </th>
+        <td mat-cell *matCellDef="let problem">
+          {{ formatDate(problem.createdAt) }}
+        </td>
+      </ng-container>
+
       <!-- Notes Column -->
       <ng-container matColumnDef="notes">
         <th mat-header-cell *matHeaderCellDef class="resizable-header">

@@ -61,6 +61,7 @@ export class ProblemListComponent implements OnInit {
     { key: 'companies', label: 'Companies', visible: true, clickable: true, width: 150, minWidth: 100, maxWidth: 200 },
     { key: 'attempts', label: 'Attempts', visible: true, clickable: true, width: 100, minWidth: 80, maxWidth: 120 },
     { key: 'timeSpent', label: 'Time (min)', visible: true, clickable: true, width: 120, minWidth: 100, maxWidth: 150 },
+    { key: 'dateAdded', label: 'Date Added', visible: true, clickable: false, width: 120, minWidth: 100, maxWidth: 150 },
     { key: 'notes', label: 'Notes', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 100 },
     { key: 'actions', label: 'Actions', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 100 }
   ];
@@ -504,6 +505,7 @@ export class ProblemListComponent implements OnInit {
         case 'companies': col.width = 150; break;
         case 'attempts': col.width = 100; break;
         case 'timeSpent': col.width = 120; break;
+        case 'dateAdded': col.width = 120; break;
         case 'notes': col.width = 80; break;
         case 'actions': col.width = 80; break;
       }
@@ -684,5 +686,21 @@ export class ProblemListComponent implements OnInit {
   // Check if problem has notes
   hasNotes(problem: Problem): boolean {
     return !!(problem.notes && problem.notes.trim().length > 0);
+  }
+
+  // Helper method to format date
+  formatDate(date: string | Date | undefined): string {
+    if (!date) return '—';
+
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return dateObj.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return '—';
+    }
   }
 }

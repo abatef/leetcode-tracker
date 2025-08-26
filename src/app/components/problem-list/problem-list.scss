@@ -291,6 +291,14 @@
   box-sizing: border-box;
 }
 
+.mat-column-dateAdded {
+  flex: 0 0 120px;
+  width: 120px;
+  text-align: center;
+  border-right: 1px solid var(--table-border-color);
+  box-sizing: border-box;
+}
+
 // ===== CONTENT STYLING =====
 .title-link {
   color: var(--mdc-theme-primary);
@@ -996,6 +1004,7 @@ body.resizing {
   .mat-column-companies,
   .mat-column-attempts,
   .mat-column-timeSpent,
+  .mat-column-dateAdded,
   .mat-column-notes,
   .mat-column-actions {
     border-right-color: var(--dark-table-border-color);
@@ -1126,7 +1135,8 @@ body.resizing {
   }
 
   .mat-column-tags,
-  .mat-column-companies {
+  .mat-column-companies,
+  .mat-column-dateAdded {
     display: none;
   }
 
