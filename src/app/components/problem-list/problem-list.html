@@ -7,7 +7,6 @@
         Add Problem
       </button>
 
-      <!-- New Search Button -->
       <button mat-raised-button color="accent" (click)="openSearchDialog()">
         <mat-icon>search</mat-icon>
         Search Problems
@@ -17,6 +16,57 @@
         <mat-icon>cloud_download</mat-icon>
         Import from LeetCode
       </button>
+
+      <!-- Column Options Button -->
+      <button mat-raised-button [matMenuTriggerFor]="columnMenu">
+        <mat-icon>view_column</mat-icon>
+        Columns
+      </button>
+
+      <mat-menu #columnMenu="matMenu" class="column-menu">
+        <div class="column-menu-header">
+          <h3>Column Visibility</h3>
+          <button mat-icon-button (click)="resetColumns()" matTooltip="Reset to default">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </div>
+        <mat-divider></mat-divider>
+
+        <div class="column-section">
+          <h4>Visible Columns</h4>
+          <button
+            *ngFor="let column of visibleColumns"
+            mat-menu-item
+            (click)="hideColumn(column.key)"
+            class="column-item visible-column"
+          >
+            <mat-icon>visibility</mat-icon>
+            <span>{{ column.label }}</span>
+            <mat-icon class="hide-icon">visibility_off</mat-icon>
+          </button>
+        </div>
+
+        <div class="column-section" *ngIf="hiddenColumns.length > 0">
+          <mat-divider></mat-divider>
+          <h4>Hidden Columns</h4>
+          <button
+            *ngFor="let column of hiddenColumns"
+            mat-menu-item
+            (click)="showColumn(column.key)"
+            class="column-item hidden-column"
+          >
+            <mat-icon>visibility_off</mat-icon>
+            <span>{{ column.label }}</span>
+            <mat-icon class="show-icon">visibility</mat-icon>
+          </button>
+        </div>
+
+        <mat-divider></mat-divider>
+        <div class="column-hint">
+          <mat-icon>info</mat-icon>
+          <span>Click on column cells to quick edit</span>
+        </div>
+      </mat-menu>
     </div>
   </div>
 
@@ -77,20 +127,38 @@
         </td>
       </ng-container>
 
-      <!-- Difficulty Column -->
+      <!-- Difficulty Column - Clickable -->
       <ng-container matColumnDef="difficulty">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Difficulty</th>
-        <td mat-cell *matCellDef="let problem">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          Difficulty
+          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+        </th>
+        <td
+          mat-cell
+          *matCellDef="let problem"
+          class="clickable-cell"
+          (click)="onColumnClick('difficulty', problem, $event)"
+          matTooltip="Click to edit difficulty"
+        >
           <span class="difficulty-badge" [class]="'difficulty-' + problem.difficulty.toLowerCase()">
             {{ problem.difficulty }}
           </span>
         </td>
       </ng-container>
 
-      <!-- Status Column -->
+      <!-- Status Column - Clickable -->
       <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
-        <td mat-cell *matCellDef="let problem">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          Status
+          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+        </th>
+        <td
+          mat-cell
+          *matCellDef="let problem"
+          class="clickable-cell"
+          (click)="onColumnClick('status', problem, $event)"
+          matTooltip="Click to edit status"
+        >
           <span
             class="status-badge"
             [class]="'status-' + problem.status.replace(' ', '-').toLowerCase()"
@@ -100,10 +168,19 @@
         </td>
       </ng-container>
 
-      <!-- Tags Column -->
+      <!-- Tags Column - Clickable -->
       <ng-container matColumnDef="tags">
-        <th mat-header-cell *matHeaderCellDef>Tags</th>
-        <td mat-cell *matCellDef="let problem">
+        <th mat-header-cell *matHeaderCellDef>
+          Tags
+          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+        </th>
+        <td
+          mat-cell
+          *matCellDef="let problem"
+          class="clickable-cell"
+          (click)="onColumnClick('tags', problem, $event)"
+          matTooltip="Click to edit tags"
+        >
           <div class="tags-container">
             <mat-chip *ngFor="let tag of problem.tags.slice(0, 3)">{{ tag }}</mat-chip>
             <span class="more-tags" *ngIf="problem.tags.length > 3">
@@ -113,10 +190,19 @@
         </td>
       </ng-container>
 
-      <!-- Companies Column -->
+      <!-- Companies Column - Clickable -->
       <ng-container matColumnDef="companies">
-        <th mat-header-cell *matHeaderCellDef>Companies</th>
-        <td mat-cell *matCellDef="let problem">
+        <th mat-header-cell *matHeaderCellDef>
+          Companies
+          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+        </th>
+        <td
+          mat-cell
+          *matCellDef="let problem"
+          class="clickable-cell"
+          (click)="onColumnClick('companies', problem, $event)"
+          matTooltip="Click to edit companies"
+        >
           <div
             class="company-logos-container"
             *ngIf="problem.companies && problem.companies.length > 0"
@@ -143,16 +229,55 @@
         </td>
       </ng-container>
 
-      <!-- Attempts Column -->
+      <!-- Attempts Column - Clickable -->
       <ng-container matColumnDef="attempts">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Attempts</th>
-        <td mat-cell *matCellDef="let problem">{{ problem.attempts }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          Attempts
+          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+        </th>
+        <td
+          mat-cell
+          *matCellDef="let problem"
+          class="clickable-cell"
+          (click)="onColumnClick('attempts', problem, $event)"
+          matTooltip="Click to edit attempts"
+        >
+          {{ problem.attempts }}
+        </td>
       </ng-container>
 
-      <!-- Time Spent Column -->
+      <!-- Time Spent Column - Clickable -->
       <ng-container matColumnDef="timeSpent">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Time (min)</th>
-        <td mat-cell *matCellDef="let problem">{{ problem.timeSpent }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          Time (min)
+          <mat-icon class="clickable-indicator" matTooltip="Click to edit">edit</mat-icon>
+        </th>
+        <td
+          mat-cell
+          *matCellDef="let problem"
+          class="clickable-cell"
+          (click)="onColumnClick('timeSpent', problem, $event)"
+          matTooltip="Click to edit time spent"
+        >
+          {{ problem.timeSpent }}
+        </td>
+      </ng-container>
+
+      <!-- Notes Column -->
+      <ng-container matColumnDef="notes">
+        <th mat-header-cell *matHeaderCellDef>Notes</th>
+        <td mat-cell *matCellDef="let problem">
+          <button
+            mat-icon-button
+            (click)="viewNotes(problem)"
+            [color]="hasNotes(problem) ? 'primary' : ''"
+            [matTooltip]="hasNotes(problem) ? 'View/Edit Notes' : 'Add Notes'"
+            class="notes-button"
+            [class.has-notes]="hasNotes(problem)"
+          >
+            <mat-icon>{{ hasNotes(problem) ? 'description' : 'note_add' }}</mat-icon>
+          </button>
+        </td>
       </ng-container>
 
       <!-- Actions Column -->
@@ -171,14 +296,9 @@
               <mat-icon>edit</mat-icon>
               <span>Edit</span>
             </button>
-            <button
-              mat-menu-item
-              (click)="viewNotes(problem)"
-              *ngIf="problem.notes"
-              class="action-menu-item"
-            >
+            <button mat-menu-item (click)="viewNotes(problem)" class="action-menu-item">
               <mat-icon>description</mat-icon>
-              <span>View Notes</span>
+              <span>{{ hasNotes(problem) ? 'View/Edit Notes' : 'Add Notes' }}</span>
             </button>
             <button
               mat-menu-item

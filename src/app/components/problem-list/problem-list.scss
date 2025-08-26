@@ -294,6 +294,113 @@
       text-align: center !important;
     }
 
+    // Notes column specific styles
+    .mat-column-notes {
+      flex: 0 0 80px !important;
+      width: 80px !important;
+      text-align: center !important;
+    }
+
+    .notes-button {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      border-radius: 50% !important;
+      width: 36px !important;
+      height: 36px !important;
+      line-height: 36px !important;
+      display: flex !important; // Add flex display
+      align-items: center !important; // Center vertically
+      justify-content: center !important; // Center horizontally
+      padding: 0 !important; // Remove any padding that might offset the icon
+    }
+
+    .notes-button:not(.has-notes) {
+      color: rgba(0, 0, 0, 0.54) !important;
+      opacity: 0.7;
+    }
+
+    .notes-button:not(.has-notes):hover {
+      background-color: rgba(0, 0, 0, 0.04) !important;
+      color: rgba(0, 0, 0, 0.87) !important;
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .notes-button.has-notes {
+      background-color: rgba(25, 118, 210, 0.1) !important;
+      color: #1976d2 !important;
+      border: 1px solid rgba(25, 118, 210, 0.2) !important;
+    }
+
+    .notes-button.has-notes:hover {
+      background-color: rgba(25, 118, 210, 0.15) !important;
+      border-color: rgba(25, 118, 210, 0.3) !important;
+      transform: scale(1.1);
+      box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+    }
+
+    .notes-button mat-icon {
+      font-size: 20px !important;
+      width: 20px !important;
+      height: 20px !important;
+      margin: 0 !important; // Remove any margin that might offset the icon
+      display: flex !important; // Ensure the icon itself is flex
+      align-items: center !important; // Center icon content
+      justify-content: center !important; // Center icon content
+    }
+
+    // Enhanced animation for notes button
+    .notes-button.has-notes mat-icon {
+      animation: notesPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes notesPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    // Dark theme support for notes button
+    :host-context(.dark-theme) .notes-button:not(.has-notes) {
+      color: rgba(255, 255, 255, 0.7) !important;
+    }
+
+    :host-context(.dark-theme) .notes-button:not(.has-notes):hover {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      color: rgba(255, 255, 255, 0.87) !important;
+    }
+
+    :host-context(.dark-theme) .notes-button.has-notes {
+      background-color: rgba(100, 181, 246, 0.15) !important;
+      color: #64b5f6 !important;
+      border-color: rgba(100, 181, 246, 0.3) !important;
+    }
+
+    :host-context(.dark-theme) .notes-button.has-notes:hover {
+      background-color: rgba(100, 181, 246, 0.2) !important;
+      border-color: rgba(100, 181, 246, 0.4) !important;
+      box-shadow: 0 2px 8px rgba(100, 181, 246, 0.3);
+    }
+
+    // Mobile responsive for notes column
+    @media (max-width: 768px) {
+      .mat-column-notes {
+        flex: 0 0 60px !important;
+        width: 60px !important;
+      }
+
+      .notes-button {
+        width: 32px !important;
+        height: 32px !important;
+        line-height: 32px !important;
+      }
+
+      .notes-button mat-icon {
+        font-size: 18px !important;
+        width: 18px !important;
+        height: 18px !important;
+      }
+    }
+
     /* FIX: Remove any conflicting table styles */
     .mat-mdc-table {
       border-collapse: separate !important;
@@ -833,4 +940,222 @@
 
     :host-context(.dark-theme) .delete-action:focus {
       background-color: rgba(244, 143, 177, 0.08);
+    }
+
+    // Clickable cell styles
+    .clickable-cell {
+      cursor: pointer;
+      position: relative;
+      transition: background-color 0.2s ease;
+      border-radius: 4px;
+      padding: 8px 12px !important;
+    }
+
+    .clickable-cell:hover {
+      background-color: rgba(103, 80, 164, 0.04) !important;
+    }
+
+    .clickable-cell:hover::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+      background: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>') no-repeat center center;
+      background-size: contain;
+      opacity: 0.6;
+    }
+
+    .clickable-indicator {
+      font-size: 12px !important;
+      width: 12px !important;
+      height: 12px !important;
+      margin-left: 4px !important;
+      opacity: 0.4;
+      vertical-align: middle;
+    }
+
+    :host-context(.dark-theme) .clickable-cell:hover {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    // Column menu styles
+    ::ng-deep .column-menu {
+      min-width: 280px !important;
+      max-width: 320px !important;
+    }
+
+    ::ng-deep .column-menu .mat-mdc-menu-content {
+      padding: 0 !important;
+    }
+
+    .column-menu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      background: rgba(103, 80, 164, 0.05);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .column-menu-header h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--mdc-theme-primary);
+    }
+
+    .column-section {
+      padding: 8px 0;
+    }
+
+    .column-section h4 {
+      margin: 0;
+      padding: 8px 16px 4px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    .column-item {
+      display: flex !important;
+      align-items: center !important;
+      padding: 8px 16px !important;
+      min-height: 40px !important;
+      font-size: 14px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .column-item .mat-icon {
+      margin-right: 12px !important;
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+    }
+
+    .visible-column {
+      color: rgba(0, 0, 0, 0.87) !important;
+    }
+
+    .visible-column:hover {
+      background-color: rgba(244, 67, 54, 0.04) !important;
+      color: #d32f2f !important;
+    }
+
+    .visible-column:hover .hide-icon {
+      opacity: 1 !important;
+      color: #d32f2f !important;
+    }
+
+    .hidden-column {
+      color: rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .hidden-column:hover {
+      background-color: rgba(76, 175, 80, 0.04) !important;
+      color: #2e7d32 !important;
+    }
+
+    .hidden-column:hover .show-icon {
+      opacity: 1 !important;
+      color: #2e7d32 !important;
+    }
+
+    .hide-icon,
+    .show-icon {
+      margin-left: auto !important;
+      margin-right: 0 !important;
+      opacity: 0.3 !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .column-hint {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: rgba(33, 150, 243, 0.05);
+      color: #1976d2;
+      font-size: 12px;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .column-hint mat-icon {
+      font-size: 14px !important;
+      width: 14px !important;
+      height: 14px !important;
+    }
+
+    // Dark theme support for column menu
+    :host-context(.dark-theme) .column-menu-header {
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+    }
+
+    :host-context(.dark-theme) .column-section h4 {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    :host-context(.dark-theme) .visible-column {
+      color: rgba(255, 255, 255, 0.87) !important;
+    }
+
+    :host-context(.dark-theme) .visible-column:hover {
+      background-color: rgba(244, 67, 54, 0.08) !important;
+      color: #ff6b6b !important;
+    }
+
+    :host-context(.dark-theme) .visible-column:hover .hide-icon {
+      color: #ff6b6b !important;
+    }
+
+    :host-context(.dark-theme) .hidden-column {
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
+
+    :host-context(.dark-theme) .hidden-column:hover {
+      background-color: rgba(76, 175, 80, 0.08) !important;
+      color: #81c784 !important;
+    }
+
+    :host-context(.dark-theme) .hidden-column:hover .show-icon {
+      color: #81c784 !important;
+    }
+
+    :host-context(.dark-theme) .column-hint {
+      background: rgba(33, 150, 243, 0.1);
+      color: #64b5f6;
+      border-top-color: rgba(255, 255, 255, 0.12);
+    }
+
+    // Enhanced header indicators
+    .mat-mdc-header-cell {
+      position: relative;
+    }
+
+    .mat-mdc-header-cell .clickable-indicator {
+      transition: opacity 0.2s ease;
+    }
+
+    .mat-mdc-header-cell:hover .clickable-indicator {
+      opacity: 0.8;
+    }
+
+    // Mobile responsive
+    @media (max-width: 768px) {
+      .clickable-indicator {
+        display: none !important;
+      }
+
+      .clickable-cell:hover::after {
+        display: none;
+      }
+
+      ::ng-deep .column-menu {
+        min-width: 250px !important;
+        max-width: 90vw !important;
+      }
     }

@@ -23,6 +23,8 @@ import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
 import { SearchDialogComponent } from '../search-dialog/search-dialog';
 import { ProblemDetailsDialogComponent } from '../problem-details-dialog/problem-details-dialog';
 import { MatDividerModule } from '@angular/material/divider';
+import { QuickEditDialogComponent } from '../quick-edit-dialog/quick-edit-dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-problem-list',
@@ -39,7 +41,8 @@ import { MatDividerModule } from '@angular/material/divider';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatDividerModule
+    MatDividerModule,
+    MatTooltipModule
   ],
   templateUrl: './problem-list.html',
   styleUrls: ['./problem-list.scss']
@@ -48,10 +51,38 @@ export class ProblemListComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  displayedColumns: string[] = ['id', 'title', 'difficulty', 'status', 'tags', 'companies', 'attempts', 'timeSpent', 'actions'];
+  // Column definitions with visibility control
+  columnDefinitions = [
+    { key: 'id', label: 'ID', visible: true, clickable: false },
+    { key: 'title', label: 'Title', visible: true, clickable: false },
+    { key: 'difficulty', label: 'Difficulty', visible: true, clickable: true },
+    { key: 'status', label: 'Status', visible: true, clickable: true },
+    { key: 'tags', label: 'Tags', visible: true, clickable: true },
+    { key: 'companies', label: 'Companies', visible: true, clickable: true },
+    { key: 'attempts', label: 'Attempts', visible: true, clickable: true },
+    { key: 'timeSpent', label: 'Time (min)', visible: true, clickable: true },
+    { key: 'notes', label: 'Notes', visible: true, clickable: false }, // Add notes column
+    { key: 'actions', label: 'Actions', visible: true, clickable: false }
+  ];
+
+  get displayedColumns(): string[] {
+    return this.columnDefinitions
+      .filter(col => col.visible)
+      .map(col => col.key);
+  }
+
+  get visibleColumns() {
+    return this.columnDefinitions.filter(col => col.visible);
+  }
+
+  get hiddenColumns() {
+    return this.columnDefinitions.filter(col => !col.visible);
+  }
+
   dataSource = new MatTableDataSource<Problem>();
   problems: Problem[] = [];
   availableCompanies: string[] = [];
+  showColumnOptions = false;
 
   // Company logos mapping
   private companyLogos: { [key: string]: string } = {
@@ -76,6 +107,7 @@ export class ProblemListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadColumnPreferences();
     this.leetcodeService.problems$.subscribe(problems => {
       this.problems = problems;
       this.dataSource.data = problems;
@@ -208,11 +240,22 @@ export class ProblemListComponent implements OnInit {
     });
   }
 
+  // Update viewNotes method to handle the result
   viewNotes(problem: Problem): void {
-    this.dialog.open(NotesDialogComponent, {
+    const dialogRef = this.dialog.open(NotesDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
       data: problem
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== undefined) {
+        // Update the local problem data with the new notes
+        const updatedProblem = this.problems.find(p => p.id === problem.id);
+        if (updatedProblem) {
+          updatedProblem.notes = result;
+        }
+      }
     });
   }
 
@@ -318,5 +361,209 @@ export class ProblemListComponent implements OnInit {
       fallback.title = companyName;
       parent.appendChild(fallback);
     }
+  }
+
+  // Column visibility methods
+  toggleColumn(columnKey: string): void {
+    const column = this.columnDefinitions.find(col => col.key === columnKey);
+    if (column) {
+      column.visible = !column.visible;
+      // Save to localStorage
+      this.saveColumnPreferences();
+    }
+  }
+
+  showColumn(columnKey: string): void {
+    const column = this.columnDefinitions.find(col => col.key === columnKey);
+    if (column) {
+      column.visible = true;
+      this.saveColumnPreferences();
+    }
+  }
+
+  hideColumn(columnKey: string): void {
+    const column = this.columnDefinitions.find(col => col.key === columnKey);
+    if (column) {
+      column.visible = false;
+      this.saveColumnPreferences();
+    }
+  }
+
+  resetColumns(): void {
+    this.columnDefinitions.forEach(col => col.visible = true);
+    this.saveColumnPreferences();
+  }
+
+  private saveColumnPreferences(): void {
+    const preferences = this.columnDefinitions.reduce((acc, col) => {
+      acc[col.key] = col.visible;
+      return acc;
+    }, {} as Record<string, boolean>);
+    localStorage.setItem('leetcode-tracker-columns', JSON.stringify(preferences));
+  }
+
+  private loadColumnPreferences(): void {
+    const saved = localStorage.getItem('leetcode-tracker-columns');
+    if (saved) {
+      try {
+        const preferences = JSON.parse(saved);
+        this.columnDefinitions.forEach(col => {
+          if (preferences.hasOwnProperty(col.key)) {
+            col.visible = preferences[col.key];
+          }
+        });
+      } catch (error) {
+        console.error('Error loading column preferences:', error);
+      }
+    }
+  }
+
+  // Column click handlers
+  onColumnClick(column: string, problem: Problem, event: Event): void {
+    // Prevent click if it's on a link or button
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'A' || target.closest('button') || target.closest('mat-chip')) {
+      return;
+    }
+
+    const columnDef = this.columnDefinitions.find(col => col.key === column);
+    if (!columnDef || !columnDef.clickable) {
+      return;
+    }
+
+    switch (column) {
+      case 'difficulty':
+        this.editDifficulty(problem);
+        break;
+      case 'status':
+        this.editStatus(problem);
+        break;
+      case 'tags':
+        this.editTags(problem);
+        break;
+      case 'companies':
+        this.editCompanies(problem);
+        break;
+      case 'attempts':
+        this.editAttempts(problem);
+        break;
+      case 'timeSpent':
+        this.editTimeSpent(problem);
+        break;
+    }
+  }
+
+  // Quick edit dialogs
+  private editDifficulty(problem: Problem): void {
+    const dialogRef = this.dialog.open(QuickEditDialogComponent, {
+      width: '300px',
+      data: {
+        title: 'Edit Difficulty',
+        field: 'difficulty',
+        value: problem.difficulty,
+        type: 'select',
+        options: ['Easy', 'Medium', 'Hard']
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== undefined && result !== problem.difficulty) {
+        this.updateProblemField(problem, 'difficulty', result);
+      }
+    });
+  }
+
+  private editStatus(problem: Problem): void {
+    const dialogRef = this.dialog.open(QuickEditDialogComponent, {
+      width: '300px',
+      data: {
+        title: 'Edit Status',
+        field: 'status',
+        value: problem.status,
+        type: 'select',
+        options: ['Not Attempted', 'Attempted', 'Solved', 'Reviewed']
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== undefined && result !== problem.status) {
+        this.updateProblemField(problem, 'status', result);
+      }
+    });
+  }
+
+  private editTags(problem: Problem): void {
+    this.dialog.open(AllTagsDialogComponent, {
+      width: '500px',
+      maxWidth: '90vw',
+      data: { ...problem, editable: true }
+    }).afterClosed().subscribe(result => {
+      if (result !== undefined) {
+        this.updateProblemField(problem, 'tags', result);
+      }
+    });
+  }
+
+  private editCompanies(problem: Problem): void {
+    this.viewCompanies(problem);
+  }
+
+  private editAttempts(problem: Problem): void {
+    const dialogRef = this.dialog.open(QuickEditDialogComponent, {
+      width: '300px',
+      data: {
+        title: 'Edit Attempts',
+        field: 'attempts',
+        value: problem.attempts,
+        type: 'number',
+        min: 0
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== undefined && result !== problem.attempts) {
+        this.updateProblemField(problem, 'attempts', parseInt(result));
+      }
+    });
+  }
+
+  private editTimeSpent(problem: Problem): void {
+    const dialogRef = this.dialog.open(QuickEditDialogComponent, {
+      width: '300px',
+      data: {
+        title: 'Edit Time Spent (minutes)',
+        field: 'timeSpent',
+        value: problem.timeSpent,
+        type: 'number',
+        min: 0
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== undefined && result !== problem.timeSpent) {
+        this.updateProblemField(problem, 'timeSpent', parseInt(result));
+      }
+    });
+  }
+
+  private async updateProblemField(problem: Problem, field: string, value: any): Promise<void> {
+    try {
+      await this.leetcodeService.updateProblem(problem.id!, { [field]: value });
+      this.snackBar.open(`${field} updated successfully!`, 'Close', {
+        duration: 3000,
+        panelClass: 'success-snackbar'
+      });
+    } catch (error) {
+      console.error(`Error updating ${field}:`, error);
+      this.snackBar.open(`Error updating ${field}`, 'Close', {
+        duration: 3000,
+        panelClass: 'error-snackbar'
+      });
+    }
+  }
+
+  // Check if problem has notes
+  hasNotes(problem: Problem): boolean {
+    return !!(problem.notes && problem.notes.trim().length > 0);
   }
 }

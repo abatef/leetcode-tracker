@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>
   <mat-icon>local_offer</mat-icon>
-  All Tags
+  {{ isEditable ? 'Edit Tags' : 'All Tags' }}
 </h2>
 
 <mat-dialog-content>
@@ -8,7 +8,37 @@
     <h3>{{ data.title }}</h3>
   </div>
 
-  <div class="all-tags">
+  <div *ngIf="isEditable" class="edit-section">
+    <form [formGroup]="tagForm">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Add Tags</mat-label>
+        <mat-chip-grid #chipGrid>
+          <mat-chip-row *ngFor="let tag of selectedTags" (removed)="removeTag(tag)">
+            {{ tag }}
+            <button matChipRemove>
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+        </mat-chip-grid>
+        <input
+          matInput
+          #tagInput
+          formControlName="tagInput"
+          [matAutocomplete]="auto"
+          [matChipInputFor]="chipGrid"
+          (matChipInputTokenEnd)="addTag($event)"
+          placeholder="Add tags..."
+        />
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectTag($event)">
+          <mat-option *ngFor="let tag of filteredTags | async" [value]="tag">
+            {{ tag }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </form>
+  </div>
+
+  <div class="all-tags" *ngIf="!isEditable">
     <mat-chip *ngFor="let tag of data.tags" class="tag-chip">
       {{ tag }}
     </mat-chip>
@@ -16,5 +46,6 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Close</button>
+  <button mat-button (click)="onCancel()">{{ isEditable ? 'Cancel' : 'Close' }}</button>
+  <button *ngIf="isEditable" mat-raised-button color="primary" (click)="onSave()">Save Tags</button>
 </mat-dialog-actions>
