@@ -53,6 +53,22 @@ export class ProblemListComponent implements OnInit {
   problems: Problem[] = [];
   availableCompanies: string[] = [];
 
+  // Company logos mapping
+  private companyLogos: { [key: string]: string } = {
+    'Meta': 'https://upload.wikimedia.org/wikipedia/commons/0/05/Meta_Platforms_Inc._logo_%28cropped%29.svg',
+    'Apple': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg',
+    'Amazon': 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg',
+    'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/0c/Netflix_2015_N_logo.svg',
+    'Google': 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
+    'Microsoft': 'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg',
+    'Tesla': 'https://upload.wikimedia.org/wikipedia/commons/b/bb/Tesla_T_symbol.svg',
+    'Uber': 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png',
+    'LinkedIn': 'https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg',
+    'Spotify': 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
+    'Airbnb': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg',
+    'Twitter': 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg'
+  };
+
   constructor(
     private leetcodeService: LeetcodeService,
     private dialog: MatDialog,
@@ -270,5 +286,37 @@ export class ProblemListComponent implements OnInit {
         });
       }
     });
+  }
+
+  getCompanyLogo(companyName: string): string {
+    return this.companyLogos[companyName] || '';
+  }
+
+  onCompanyImageError(event: any, companyName: string): void {
+    // Create a fallback with company initial
+    const img = event.target;
+    img.style.display = 'none';
+
+    const parent = img.parentElement;
+    if (parent && !parent.querySelector('.company-fallback')) {
+      const fallback = document.createElement('div');
+      fallback.className = 'company-fallback';
+      fallback.style.cssText = `
+        width: 24px;
+        height: 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 10px;
+        border-radius: 4px;
+        text-transform: uppercase;
+      `;
+      fallback.textContent = companyName.charAt(0).toUpperCase();
+      fallback.title = companyName;
+      parent.appendChild(fallback);
+    }
   }
 }
