@@ -1,0 +1,399 @@
+<div class="ai-analysis-dialog">
+  <!-- Dialog Header -->
+  <div mat-dialog-title class="dialog-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">psychology</mat-icon>
+      <div class="header-text">
+        <h2>AI Analysis</h2>
+        <p class="problem-info">{{ data.title }}</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div
+        class="cache-status"
+        [class.cached]="isFromCache"
+        [class.fresh]="!isFromCache && aiAnalysis"
+      >
+        <mat-icon>{{ isFromCache ? 'cached' : 'auto_awesome' }}</mat-icon>
+        <span>{{ isFromCache ? 'Cached' : 'Fresh' }}</span>
+      </div>
+      <button
+        mat-icon-button
+        (click)="refreshAnalysis()"
+        [disabled]="loading"
+        matTooltip="Regenerate analysis"
+      >
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        (click)="exportAnalysis()"
+        [disabled]="!aiAnalysis"
+        matTooltip="Export analysis"
+      >
+        <mat-icon>download</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dialog Content -->
+  <mat-dialog-content class="dialog-content">
+    <!-- Loading State -->
+    <div class="content-state loading-state" *ngIf="loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <h3>{{ isFromCache ? 'Loading Analysis...' : 'Generating Analysis...' }}</h3>
+      <p>
+        {{
+          isFromCache
+            ? 'Retrieving cached analysis'
+            : 'AI is analyzing the problem and generating insights'
+        }}
+      </p>
+    </div>
+
+    <!-- Error State -->
+    <div class="content-state error-state" *ngIf="error && !loading">
+      <mat-icon class="state-icon error">error_outline</mat-icon>
+      <h3>Generation Failed</h3>
+      <p>{{ error }}</p>
+      <button mat-raised-button color="primary" (click)="generateAIAnalysis()">
+        <mat-icon>refresh</mat-icon>
+        Try Again
+      </button>
+    </div>
+
+    <!-- Analysis Results -->
+    <div class="analysis-content" *ngIf="aiAnalysis && !loading">
+      <mat-tab-group class="analysis-tabs" (selectedTabChange)="onTabChange($event.index)">
+        <!-- Overview Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>description</mat-icon>
+            Overview
+          </ng-template>
+
+          <div class="tab-content">
+            <!-- Problem Summary Card -->
+            <mat-card class="summary-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>info</mat-icon>
+                  Problem Summary
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="problem-meta">
+                  <div class="meta-item">
+                    <span class="meta-label">Problem ID:</span>
+                    <span class="meta-value">#{{ data.problemId }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">Difficulty:</span>
+                    <mat-chip
+                      [style.background-color]="getDifficultyColor(data.difficulty)"
+                      class="difficulty-chip"
+                    >
+                      {{ data.difficulty }}
+                    </mat-chip>
+                  </div>
+                </div>
+                <div
+                  class="detailed-explanation"
+                  [innerHTML]="aiAnalysis.detailedExplanation"
+                ></div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Key Insights -->
+            <mat-card class="insights-card" *ngIf="aiAnalysis.keyInsights.length > 0">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>lightbulb</mat-icon>
+                  Key Insights
+                  <mat-chip-set>
+                    <mat-chip>{{ aiAnalysis.keyInsights.length }}</mat-chip>
+                  </mat-chip-set>
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="insights-grid">
+                  <div
+                    class="insight-item"
+                    *ngFor="let insight of aiAnalysis.keyInsights; let i = index"
+                  >
+                    <mat-icon class="insight-icon">tips_and_updates</mat-icon>
+                    <span>{{ insight }}</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Difficulty Analysis -->
+            <mat-card class="difficulty-analysis" *ngIf="aiAnalysis.difficultyAnalysis">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>analytics</mat-icon>
+                  Difficulty Analysis
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <p class="difficulty-reasoning">{{ aiAnalysis.difficultyAnalysis.reasoning }}</p>
+                <div
+                  class="skills-required"
+                  *ngIf="aiAnalysis.difficultyAnalysis.skillsRequired.length > 0"
+                >
+                  <h4>Skills Required:</h4>
+                  <mat-chip-set>
+                    <mat-chip *ngFor="let skill of aiAnalysis.difficultyAnalysis.skillsRequired">
+                      {{ skill }}
+                    </mat-chip>
+                  </mat-chip-set>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+        <!-- Solutions Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>code</mat-icon>
+            Solutions
+            <mat-chip *ngIf="aiAnalysis.multipleApproaches.length > 0">
+              {{ aiAnalysis.multipleApproaches.length }}
+            </mat-chip>
+          </ng-template>
+
+          <div class="tab-content">
+            <mat-accordion *ngIf="aiAnalysis.multipleApproaches.length > 0">
+              <mat-expansion-panel
+                *ngFor="let approach of aiAnalysis.multipleApproaches; let i = index"
+                [expanded]="i === 0"
+                class="approach-panel"
+              >
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon [color]="i === 0 ? 'primary' : ''">{{ getApproachIcon(i) }}</mat-icon>
+                    {{ approach.name }}
+                  </mat-panel-title>
+                  <mat-panel-description>
+                    <div class="complexity-badges">
+                      <mat-chip class="time-chip">T: {{ approach.timeComplexity }}</mat-chip>
+                      <mat-chip class="space-chip">S: {{ approach.spaceComplexity }}</mat-chip>
+                    </div>
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+
+                <div class="approach-content">
+                  <p class="approach-description">{{ approach.description }}</p>
+
+                  <div class="complexity-details">
+                    <div class="complexity-item">
+                      <mat-icon>schedule</mat-icon>
+                      <div>
+                        <strong>Time Complexity:</strong>
+                        <span>{{ approach.timeComplexity }}</span>
+                      </div>
+                    </div>
+                    <div class="complexity-item">
+                      <mat-icon>memory</mat-icon>
+                      <div>
+                        <strong>Space Complexity:</strong>
+                        <span>{{ approach.spaceComplexity }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="pros-cons"
+                    *ngIf="approach.pros.length > 0 || approach.cons.length > 0"
+                  >
+                    <div class="pros" *ngIf="approach.pros.length > 0">
+                      <h4><mat-icon>thumb_up</mat-icon> Advantages</h4>
+                      <ul>
+                        <li *ngFor="let pro of approach.pros">{{ pro }}</li>
+                      </ul>
+                    </div>
+                    <div class="cons" *ngIf="approach.cons.length > 0">
+                      <h4><mat-icon>thumb_down</mat-icon> Disadvantages</h4>
+                      <ul>
+                        <li *ngFor="let con of approach.cons">{{ con }}</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="code-section" *ngIf="approach.code">
+                    <div class="code-header">
+                      <h4><mat-icon>code</mat-icon> Implementation</h4>
+                      <button
+                        mat-icon-button
+                        (click)="copyToClipboard(approach.code!)"
+                        matTooltip="Copy code"
+                      >
+                        <mat-icon>content_copy</mat-icon>
+                      </button>
+                    </div>
+                    <pre class="code-block"><code>{{ approach.code }}</code></pre>
+                  </div>
+                </div>
+              </mat-expansion-panel>
+            </mat-accordion>
+
+            <div class="no-approaches" *ngIf="aiAnalysis.multipleApproaches.length === 0">
+              <mat-icon>code_off</mat-icon>
+              <p>No solution approaches available</p>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Insights Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>psychology</mat-icon>
+            Insights
+          </ng-template>
+
+          <div class="tab-content">
+            <div class="insights-grid-layout">
+              <!-- Common Mistakes -->
+              <mat-card class="insight-card" *ngIf="aiAnalysis.commonMistakes.length > 0">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon class="warning-icon">warning</mat-icon>
+                    Common Mistakes
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="mistake-list">
+                    <div class="mistake-item" *ngFor="let mistake of aiAnalysis.commonMistakes">
+                      <mat-icon>error_outline</mat-icon>
+                      <span>{{ mistake }}</span>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Edge Cases -->
+              <mat-card class="insight-card" *ngIf="aiAnalysis.edgeCases.length > 0">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon class="edge-case-icon">bug_report</mat-icon>
+                    Edge Cases
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="edge-case-list">
+                    <div class="edge-case-item" *ngFor="let edgeCase of aiAnalysis.edgeCases">
+                      <mat-icon>outlined_flag</mat-icon>
+                      <span>{{ edgeCase }}</span>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Practice Recommendations -->
+              <mat-card
+                class="insight-card full-width"
+                *ngIf="aiAnalysis.practiceRecommendations.length > 0"
+              >
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon class="practice-icon">school</mat-icon>
+                    Practice Recommendations
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="recommendation-list">
+                    <div
+                      class="recommendation-item"
+                      *ngFor="let rec of aiAnalysis.practiceRecommendations"
+                    >
+                      <mat-icon>recommend</mat-icon>
+                      <span>{{ rec }}</span>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Topics & Companies Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>business</mat-icon>
+            Meta
+          </ng-template>
+
+          <div class="tab-content">
+            <div class="meta-grid">
+              <!-- Topics -->
+              <mat-card class="meta-card" *ngIf="aiAnalysis.topicTags.length > 0">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon>topic</mat-icon>
+                    Topics & Algorithms
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <mat-chip-set class="topic-chips">
+                    <mat-chip *ngFor="let topic of aiAnalysis.topicTags" class="topic-chip">
+                      {{ topic }}
+                    </mat-chip>
+                  </mat-chip-set>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Companies -->
+              <mat-card class="meta-card" *ngIf="aiAnalysis.frequentCompanies.length > 0">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon>business</mat-icon>
+                    Frequent Companies
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <mat-chip-set class="company-chips">
+                    <mat-chip
+                      *ngFor="let company of aiAnalysis.frequentCompanies"
+                      class="company-chip"
+                    >
+                      {{ company }}
+                    </mat-chip>
+                  </mat-chip-set>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Related Problems -->
+              <mat-card class="meta-card full-width" *ngIf="aiAnalysis.relatedProblems.length > 0">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon>link</mat-icon>
+                    Related Problems
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="related-problems">
+                    <div class="related-problem" *ngFor="let problem of aiAnalysis.relatedProblems">
+                      <mat-icon>link</mat-icon>
+                      <span>{{ problem }}</span>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  </mat-dialog-content>
+
+  <!-- Dialog Actions -->
+  <mat-dialog-actions class="dialog-actions">
+    <button mat-button mat-dialog-close>Close</button>
+    <button mat-raised-button color="primary" (click)="exportAnalysis()" [disabled]="!aiAnalysis">
+      <mat-icon>download</mat-icon>
+      Export Analysis
+    </button>
+  </mat-dialog-actions>
+</div>

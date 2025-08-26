@@ -1,0 +1,511 @@
+.ai-analysis-dialog {
+  // Dialog header styling
+  .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .header-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+        color: #1976d2;
+      }
+
+      .header-text {
+        h2 {
+          margin: 0;
+          font-size: 1.5rem;
+          font-weight: 500;
+        }
+
+        .problem-info {
+          margin: 4px 0 0 0;
+          color: rgba(0, 0, 0, 0.6);
+          font-size: 14px;
+        }
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .cache-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 500;
+
+        &.cached {
+          background: rgba(76, 175, 80, 0.1);
+          color: #2e7d32;
+        }
+
+        &.fresh {
+          background: rgba(25, 118, 210, 0.1);
+          color: #1565c0;
+        }
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+
+  // Dialog content
+  .dialog-content {
+    padding: 0;
+    margin: 0;
+    max-height: 70vh;
+    overflow: hidden;
+  }
+
+  // Content states
+  .content-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+
+    .state-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+
+      &.error {
+        color: #d32f2f;
+      }
+    }
+
+    h3 {
+      margin: 16px 0 8px 0;
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+
+    p {
+      margin: 0 0 24px 0;
+      color: rgba(0, 0, 0, 0.6);
+      max-width: 400px;
+    }
+  }
+
+  // Tab content
+  .analysis-tabs {
+    height: 100%;
+
+    ::ng-deep .mat-mdc-tab-body-wrapper {
+      height: calc(70vh - 120px);
+      overflow-y: auto;
+    }
+  }
+
+  .tab-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  // Cards
+  mat-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    mat-card-header {
+      padding-bottom: 8px;
+
+      mat-card-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.1rem;
+        font-weight: 500;
+
+        mat-icon {
+          color: #1976d2;
+        }
+      }
+    }
+  }
+
+  // Summary card
+  .summary-card {
+    .problem-meta {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 16px;
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .meta-label {
+          font-weight: 500;
+          color: rgba(0, 0, 0, 0.6);
+        }
+
+        .meta-value {
+          font-weight: 500;
+        }
+
+        .difficulty-chip {
+          color: white;
+          font-weight: 500;
+        }
+      }
+    }
+
+    .detailed-explanation {
+      line-height: 1.6;
+    }
+  }
+
+  // Insights
+  .insights-grid {
+    display: grid;
+    gap: 16px;
+
+    .insight-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(25, 118, 210, 0.04);
+      border-radius: 8px;
+
+      .insight-icon {
+        color: #1976d2;
+        margin-top: 2px;
+      }
+    }
+  }
+
+  // Skills
+  .skills-required {
+    margin-top: 16px;
+
+    h4 {
+      margin: 0 0 12px 0;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  }
+
+  // Approach panels
+  .approach-panel {
+    .complexity-badges {
+      display: flex;
+      gap: 8px;
+
+      .time-chip {
+        background: rgba(76, 175, 80, 0.1);
+        color: #2e7d32;
+      }
+
+      .space-chip {
+        background: rgba(255, 152, 0, 0.1);
+        color: #f57c00;
+      }
+    }
+  }
+
+  .approach-content {
+    padding: 16px 0;
+
+    .approach-description {
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .complexity-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+
+      .complexity-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 8px;
+
+        mat-icon {
+          color: #1976d2;
+        }
+
+        div {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+
+          strong {
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.6);
+          }
+
+          span {
+            font-weight: 500;
+          }
+        }
+      }
+    }
+
+    .pros-cons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+
+      h4 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 12px 0;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      .pros h4 {
+        color: #4caf50;
+
+        mat-icon {
+          color: #4caf50;
+        }
+      }
+
+      .cons h4 {
+        color: #f44336;
+
+        mat-icon {
+          color: #f44336;
+        }
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 20px;
+
+        li {
+          margin: 8px 0;
+          line-height: 1.5;
+        }
+      }
+    }
+
+    .code-section {
+      .code-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+
+        h4 {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 0;
+          font-size: 1rem;
+          font-weight: 500;
+        }
+      }
+
+      .code-block {
+        background: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 16px;
+        overflow-x: auto;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 14px;
+        line-height: 1.4;
+        margin: 0;
+      }
+    }
+  }
+
+  // Insights grid layout
+  .insights-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+
+    .insight-card {
+      &.full-width {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .mistake-list,
+    .edge-case-list,
+    .recommendation-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .mistake-item,
+      .edge-case-item,
+      .recommendation-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 8px;
+
+        mat-icon {
+          margin-top: 2px;
+        }
+      }
+
+      .mistake-item {
+        background: rgba(244, 67, 54, 0.04);
+
+        mat-icon {
+          color: #f44336;
+        }
+      }
+
+      .edge-case-item {
+        background: rgba(255, 152, 0, 0.04);
+
+        mat-icon {
+          color: #ff9800;
+        }
+      }
+
+      .recommendation-item {
+        background: rgba(76, 175, 80, 0.04);
+
+        mat-icon {
+          color: #4caf50;
+        }
+      }
+    }
+  }
+
+  // Meta grid
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+
+    .meta-card {
+      &.full-width {
+        grid-column: 1 / -1;
+      }
+    }
+  }
+
+  // Chips
+  .topic-chips,
+  .company-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .topic-chip {
+      background: rgba(25, 118, 210, 0.1);
+      color: #1976d2;
+    }
+
+    .company-chip {
+      background: rgba(255, 152, 0, 0.1);
+      color: #f57c00;
+    }
+  }
+
+  // Related problems
+  .related-problems {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .related-problem {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(25, 118, 210, 0.04);
+      border-radius: 8px;
+
+      mat-icon {
+        color: #1976d2;
+      }
+    }
+  }
+
+  // No content states
+  .no-approaches {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.6);
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+  }
+
+  // Dialog actions
+  .dialog-actions {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    .dialog-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+
+      .header-actions {
+        align-self: stretch;
+        justify-content: space-between;
+      }
+    }
+
+    .insights-grid-layout,
+    .meta-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .complexity-details,
+    .pros-cons {
+      grid-template-columns: 1fr;
+    }
+
+    .problem-meta {
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+}
