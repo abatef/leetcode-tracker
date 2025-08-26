@@ -315,6 +315,12 @@ export class NotesDialogComponent {
     }
   }
 
+  // Add this method to handle the close button explicitly
+  closeDialog(): void {
+    // Close without returning any value - this prevents updating the parent
+    this.dialogRef.close();
+  }
+
   clearNotes(): void {
     if (confirm('Are you sure you want to clear all notes? This action cannot be undone.')) {
       this.pushToUndoStack();

@@ -177,7 +177,7 @@
 <mat-dialog-actions align="end">
   <!-- View Mode Actions -->
   <ng-container *ngIf="!isEditing">
-    <button mat-button mat-dialog-close>Close</button>
+    <button mat-button (click)="closeDialog()">Close</button>
     <button mat-raised-button color="primary" (click)="startEditing()">
       <mat-icon>edit</mat-icon>
       Edit Notes
