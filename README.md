@@ -3,6 +3,8 @@
 Try the live demo of the app here:
 https://leetcode-tracker-bf05c.web.app
 
+**Quick Note:** This app is primarily designed for desktop use and is not intended for mobile devices. While some pages may be responsive on mobile, others are not. Mobile responsiveness is not taken into account anyways.
+
 ## Getting Started
 
 To get started, add your Firebase credentials to the following files:
