@@ -298,31 +298,7 @@ h2[mat-dialog-title] {
       white-space: nowrap;
     }
 
-    .difficulty-badge {
-      padding: 0.25rem 0.5rem;
-      border-radius: 8px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: capitalize;
-    }
-
-    .difficulty-easy {
-      background-color: rgba(76, 175, 80, 0.1);
-      color: #4CAF50;
-      border: 1px solid #4CAF50;
-    }
-
-    .difficulty-medium {
-      background-color: rgba(255, 152, 0, 0.1);
-      color: #FF9800;
-      border: 1px solid #FF9800;
-    }
-
-    .difficulty-hard {
-      background-color: rgba(244, 67, 54, 0.1);
-      color: #F44336;
-      border: 1px solid #F44336;
-    }
+    // Use global .difficulty-badge utilities from styles.scss
 
     .premium-badge {
       display: flex;

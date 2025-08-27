@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Auth, GoogleAuthProvider, signInWithPopup, signOut, user, User } from '@angular/fire/auth';
+import { Auth, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, user, User } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -33,5 +33,14 @@ export class AuthService {
 
   getCurrentUser(): User | null {
     return this.auth.currentUser;
+  }
+
+  async signInAsGuest(): Promise<void> {
+    try {
+      await signInAnonymously(this.auth);
+    } catch (error) {
+      console.error('Anonymous sign-in failed:', error);
+      throw error;
+    }
   }
 }

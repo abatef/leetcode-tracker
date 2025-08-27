@@ -18,20 +18,41 @@
         <span>{{ isFromCache ? 'Cached' : 'Fresh' }}</span>
       </div>
       <button
-        mat-icon-button
+        mat-raised-button
         (click)="refreshAnalysis()"
         [disabled]="loading"
         matTooltip="Regenerate analysis"
+        class="header-btn"
       >
-        <mat-icon>refresh</mat-icon>
+        <span class="button-content">
+          <mat-icon>refresh</mat-icon>
+          <span>Regenerate</span>
+        </span>
       </button>
       <button
-        mat-icon-button
+        mat-raised-button
+        color="primary"
+        (click)="loadOrGenerateAnalysis()"
+        [disabled]="loading"
+        matTooltip="Load cached analysis if available, otherwise generate"
+        class="header-btn"
+      >
+        <span class="button-content">
+          <mat-icon>cloud_sync</mat-icon>
+          <span>Load or Generate</span>
+        </span>
+      </button>
+      <button
+        mat-raised-button
         (click)="exportAnalysis()"
         [disabled]="!aiAnalysis"
         matTooltip="Export analysis"
+        class="header-btn"
       >
-        <mat-icon>download</mat-icon>
+        <span class="button-content">
+          <mat-icon>download</mat-icon>
+          <span>Export</span>
+        </span>
       </button>
     </div>
   </div>
@@ -40,11 +61,24 @@
   <mat-dialog-content class="dialog-content">
     <!-- Loading State -->
     <div class="content-state loading-state" *ngIf="loading">
-      <mat-spinner diameter="48"></mat-spinner>
-      <h3>{{ isFromCache ? 'Loading Analysis...' : 'Generating Analysis...' }}</h3>
+      <div class="icon-spinner">
+        <mat-spinner diameter="56"></mat-spinner>
+        <mat-icon class="spinner-icon">auto_awesome</mat-icon>
+      </div>
+      <h3>
+        {{
+          isRefreshing
+            ? 'Regenerating Analysis...'
+            : isFromCache
+            ? 'Loading Analysis...'
+            : 'Generating Analysis...'
+        }}
+      </h3>
       <p>
         {{
-          isFromCache
+          isRefreshing
+            ? 'Refreshing with the latest AI model'
+            : isFromCache
             ? 'Retrieving cached analysis'
             : 'AI is analyzing the problem and generating insights'
         }}
@@ -57,8 +91,10 @@
       <h3>Generation Failed</h3>
       <p>{{ error }}</p>
       <button mat-raised-button color="primary" (click)="generateAIAnalysis()">
-        <mat-icon>refresh</mat-icon>
-        Try Again
+        <span class="button-content">
+          <mat-icon>refresh</mat-icon>
+          <span>Try Again</span>
+        </span>
       </button>
     </div>
 
@@ -89,12 +125,14 @@
                   </div>
                   <div class="meta-item">
                     <span class="meta-label">Difficulty:</span>
-                    <mat-chip
-                      [style.background-color]="getDifficultyColor(data.difficulty)"
-                      class="difficulty-chip"
+                    <span
+                      class="difficulty-badge"
+                      [ngClass]="
+                        data && data.difficulty ? 'difficulty-' + data.difficulty.toLowerCase() : ''
+                      "
                     >
                       {{ data.difficulty }}
-                    </mat-chip>
+                    </span>
                   </div>
                 </div>
                 <div
@@ -110,9 +148,9 @@
                 <mat-card-title>
                   <mat-icon>lightbulb</mat-icon>
                   Key Insights
-                  <mat-chip-set>
-                    <mat-chip>{{ aiAnalysis.keyInsights.length }}</mat-chip>
-                  </mat-chip-set>
+                  <span class="count-badge" *ngIf="aiAnalysis.keyInsights.length > 0">
+                    {{ aiAnalysis.keyInsights.length }}
+                  </span>
                 </mat-card-title>
               </mat-card-header>
               <mat-card-content>
@@ -159,9 +197,9 @@
           <ng-template mat-tab-label>
             <mat-icon>code</mat-icon>
             Solutions
-            <mat-chip *ngIf="aiAnalysis.multipleApproaches.length > 0">
+            <span class="tab-count-badge large" *ngIf="aiAnalysis.multipleApproaches.length > 0">
               {{ aiAnalysis.multipleApproaches.length }}
-            </mat-chip>
+            </span>
           </ng-template>
 
           <div class="tab-content">
@@ -181,11 +219,81 @@
                       <mat-chip class="time-chip">T: {{ approach.timeComplexity }}</mat-chip>
                       <mat-chip class="space-chip">S: {{ approach.spaceComplexity }}</mat-chip>
                     </div>
+                    <div class="approach-actions" *ngIf="approach.code">
+                      <button mat-icon-button (click)="copyApproachCode(i)" matTooltip="Copy code">
+                        <mat-icon>content_copy</mat-icon>
+                      </button>
+                      <button
+                        mat-icon-button
+                        (click)="downloadApproachCode(i)"
+                        matTooltip="Download code"
+                      >
+                        <mat-icon>download</mat-icon>
+                      </button>
+                    </div>
                   </mat-panel-description>
                 </mat-expansion-panel-header>
 
                 <div class="approach-content">
                   <p class="approach-description">{{ approach.description }}</p>
+
+                  <!-- Language selector, generate, and code preview per approach -->
+                  <div class="approach-code-tools">
+                    <div class="code-toolbar">
+                      <mat-form-field
+                        appearance="outline"
+                        class="code-lang-select"
+                        floatLabel="always"
+                      >
+                        <mat-label>Language</mat-label>
+                        <mat-select
+                          [value]="selectedApproachLang[i] || programmingLanguages[0]"
+                          (selectionChange)="setApproachLanguage(i, $event.value)"
+                        >
+                          <mat-option *ngFor="let lang of programmingLanguages" [value]="lang">
+                            {{ lang }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+
+                      <div class="code-actions">
+                        <button
+                          mat-raised-button
+                          color="primary"
+                          (click)="generateApproachCode(i)"
+                          [disabled]="generatingCode[i]"
+                          class="generate-btn"
+                        >
+                          <span class="button-content">
+                            <mat-spinner diameter="16" *ngIf="generatingCode[i]"></mat-spinner>
+                            <mat-icon *ngIf="!generatingCode[i]">auto_awesome</mat-icon>
+                            <span>{{ generatingCode[i] ? 'Generating…' : 'Generate Code' }}</span>
+                          </span>
+                        </button>
+                        <button
+                          mat-stroked-button
+                          (click)="copyApproachCode(i)"
+                          [disabled]="!getApproachCodeFor(i)"
+                        >
+                          <mat-icon>content_copy</mat-icon>
+                          Copy
+                        </button>
+                        <button
+                          mat-stroked-button
+                          (click)="downloadApproachCode(i)"
+                          [disabled]="!getApproachCodeFor(i)"
+                        >
+                          <mat-icon>download</mat-icon>
+                          Download
+                        </button>
+                      </div>
+                    </div>
+
+                    <pre
+                      class="code-block"
+                      *ngIf="getApproachCodeFor(i)"
+                    ><code>{{ getApproachCodeFor(i) }}</code></pre>
+                  </div>
 
                   <div class="complexity-details">
                     <div class="complexity-item">
@@ -220,20 +328,6 @@
                         <li *ngFor="let con of approach.cons">{{ con }}</li>
                       </ul>
                     </div>
-                  </div>
-
-                  <div class="code-section" *ngIf="approach.code">
-                    <div class="code-header">
-                      <h4><mat-icon>code</mat-icon> Implementation</h4>
-                      <button
-                        mat-icon-button
-                        (click)="copyToClipboard(approach.code!)"
-                        matTooltip="Copy code"
-                      >
-                        <mat-icon>content_copy</mat-icon>
-                      </button>
-                    </div>
-                    <pre class="code-block"><code>{{ approach.code }}</code></pre>
                   </div>
                 </div>
               </mat-expansion-panel>

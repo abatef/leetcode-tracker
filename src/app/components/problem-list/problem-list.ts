@@ -25,6 +25,7 @@ import { ProblemDetailsDialogComponent } from '../problem-details-dialog/problem
 import { MatDividerModule } from '@angular/material/divider';
 import { QuickEditDialogComponent } from '../quick-edit-dialog/quick-edit-dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AIAnalysisDialogComponent } from '../ai-analysis-dialog/ai-analysis-dialog';
 
 @Component({
   selector: 'app-problem-list',
@@ -62,6 +63,7 @@ export class ProblemListComponent implements OnInit {
     { key: 'attempts', label: 'Attempts', visible: true, clickable: true, width: 100, minWidth: 80, maxWidth: 120 },
     { key: 'timeSpent', label: 'Time (min)', visible: true, clickable: true, width: 120, minWidth: 100, maxWidth: 150 },
     { key: 'dateAdded', label: 'Date Added', visible: true, clickable: false, width: 130, minWidth: 100, maxWidth: 150 }, // Increased from 120
+    { key: 'ai', label: 'AI', visible: true, clickable: false, width: 20, minWidth: 60, maxWidth: 100 },
     { key: 'notes', label: 'Notes', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 100 },
     { key: 'actions', label: 'Actions', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 100 }
   ];
@@ -208,6 +210,23 @@ export class ProblemListComponent implements OnInit {
         titleSlug: titleSlug
       },
       panelClass: 'problem-details-dialog-container'
+    });
+  }
+
+  openAIAnalysis(problem: Problem): void {
+    const titleSlug = this.generateTitleSlug(problem.title);
+    this.dialog.open(AIAnalysisDialogComponent, {
+      width: '90vw',
+      maxWidth: '1000px',
+      height: '90vh',
+      maxHeight: '800px',
+      data: {
+        problemId: problem.leetcodeId,
+        titleSlug: titleSlug,
+        title: problem.title,
+        difficulty: problem.difficulty,
+        tags: problem.tags
+      }
     });
   }
 

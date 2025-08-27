@@ -54,6 +54,13 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+// Shared color tokens (light)
+:root {
+  --success-color: #2e7d32;
+  --warning-color: #f57c00;
+  --error-color: #d32f2f;
+}
+
 // Dark Theme - Fixed with proper body background
 .dark-theme {
   @include mat.all-component-colors($dark-theme);
@@ -607,6 +614,104 @@ body.dark-theme {
   --mdc-chip-container-height: 28px;
   font-weight: 500;
   letter-spacing: 0.25px;
+}
+
+// ==========================
+// Global UI utility classes
+// ==========================
+
+// Difficulty badge (shared across components)
+.difficulty-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  display: inline-block;
+}
+
+.difficulty-badge.difficulty-easy {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: var(--success-color);
+}
+
+.difficulty-badge.difficulty-medium {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: var(--warning-color);
+}
+
+.difficulty-badge.difficulty-hard {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: var(--error-color);
+}
+
+// Count badges for titles and tabs
+.count-badge {
+  margin-left: 8px;
+  padding: 0 8px;
+  height: 20px;
+  line-height: 20px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.7);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tab-count-badge {
+  padding: 0 6px;
+  height: 18px;
+  line-height: 18px;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.75);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+// Consistent code block styling
+.code-block {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+  overflow-x: auto;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  color: #212529;
+}
+
+// Info box variants (use for insights, warnings, success callouts)
+.info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.info-box.info {
+  background: rgba(25, 118, 210, 0.04);
+}
+
+.info-box.warn {
+  background: rgba(255, 152, 0, 0.04);
+}
+
+.info-box.error {
+  background: rgba(244, 67, 54, 0.04);
+}
+
+.info-box.success {
+  background: rgba(76, 175, 80, 0.04);
+}
+
+// Small chip helper
+.chip--sm {
+  font-size: 0.75rem !important;
+  height: 24px !important;
+  --mdc-chip-container-height: 24px !important;
 }
 
 // Form field fixes

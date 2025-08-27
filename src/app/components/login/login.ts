@@ -22,6 +22,7 @@ import { AuthService } from '../../services/auth';
 })
 export class LoginComponent {
   loading = false;
+  demoLoading = false;
 
   constructor(
     private authService: AuthService,
@@ -39,6 +40,18 @@ export class LoginComponent {
       // You might want to show an error message to the user
     } finally {
       this.loading = false;
+    }
+  }
+
+  async continueAsGuest(): Promise<void> {
+    this.demoLoading = true;
+    try {
+      await this.authService.signInAsGuest();
+      this.router.navigate(['/dashboard'], { queryParams: { demo: '1' } });
+    } catch (error) {
+      console.error('Guest sign-in error:', error);
+    } finally {
+      this.demoLoading = false;
     }
   }
 }

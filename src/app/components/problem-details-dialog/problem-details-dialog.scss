@@ -131,34 +131,7 @@
     flex-shrink: 0;
   }
 
-  // Badge styling consistent with problem list
-  .difficulty-badge {
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 500;
-    text-transform: capitalize;
-    letter-spacing: 0.25px;
-    border: 1px solid;
-  }
-
-  .difficulty-easy {
-    background-color: rgba(76, 175, 80, 0.1);
-    color: #2e7d32;
-    border-color: #2e7d32;
-  }
-
-  .difficulty-medium {
-    background-color: rgba(255, 152, 0, 0.1);
-    color: #f57c00;
-    border-color: #f57c00;
-  }
-
-  .difficulty-hard {
-    background-color: rgba(244, 67, 54, 0.1);
-    color: #d32f2f;
-    border-color: #d32f2f;
-  }
+  // Use global difficulty-badge utility from styles.scss
 
   .premium-badge {
     display: flex;

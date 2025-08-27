@@ -348,30 +348,7 @@
 }
 
 // ===== BADGES =====
-.difficulty-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-block;
-
-  &.difficulty-easy {
-    background-color: rgba(76, 175, 80, 0.1);
-    color: var(--success-color);
-  }
-
-  &.difficulty-medium {
-    background-color: rgba(255, 152, 0, 0.1);
-    color: var(--warning-color);
-  }
-
-  &.difficulty-hard {
-    background-color: rgba(244, 67, 54, 0.1);
-    color: var(--error-color);
-  }
-}
+// Use global .difficulty-badge utilities from styles.scss
 
 .status-badge {
   padding: 0.25rem 0.75rem;

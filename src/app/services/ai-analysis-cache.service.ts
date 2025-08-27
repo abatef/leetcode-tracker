@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, doc, getDocs, addDoc, query, where, orderBy, updateDoc } from '@angular/fire/firestore';
+import { Firestore } from '@angular/fire/firestore';
+import { collection, doc, getDocs, addDoc, query, where, orderBy, updateDoc } from 'firebase/firestore';
 import { Observable, BehaviorSubject, from, of } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
 import { CachedAIAnalysis, ProblemAnalysis } from '../models/ai-analysis';
@@ -34,8 +35,13 @@ export class AIAnalysisCacheService {
     }
 
     try {
-      // Check Firestore cache
-      const cacheRef = collection(this.firestore, this.CACHE_COLLECTION);
+      const user = this.authService.getCurrentUser();
+      if (!user) {
+        console.warn('No authenticated user; skipping Firestore cache lookup');
+        return null;
+      }
+      // Check Firestore cache in user subcollection
+      const cacheRef = collection(this.firestore, 'users', user.uid, this.CACHE_COLLECTION);
 
       // Query by problemId and current version
       const q = query(
@@ -82,6 +88,9 @@ export class AIAnalysisCacheService {
   ): Promise<void> {
     try {
       const user = this.authService.getCurrentUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
       const now = new Date();
 
       const cacheData: Omit<CachedAIAnalysis, 'id'> = {
@@ -91,11 +100,11 @@ export class AIAnalysisCacheService {
         createdAt: now,
         updatedAt: now,
         version: this.CURRENT_VERSION,
-        userId: user?.uid // Optional: for user-specific caching
+        userId: user.uid // user-specific caching
       };
 
-      // Save to Firestore
-      const cacheRef = collection(this.firestore, this.CACHE_COLLECTION);
+      // Save to Firestore in user subcollection
+      const cacheRef = collection(this.firestore, 'users', user.uid, this.CACHE_COLLECTION);
       const docRef = await addDoc(cacheRef, {
         ...cacheData,
         problemTitle: problemTitle || `Problem ${problemId}` // For easier identification
@@ -133,7 +142,11 @@ export class AIAnalysisCacheService {
     analysisData: ProblemAnalysis
   ): Promise<void> {
     try {
-      const docRef = doc(this.firestore, this.CACHE_COLLECTION, cachedAnalysisId);
+      const user = this.authService.getCurrentUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      const docRef = doc(this.firestore, 'users', user.uid, this.CACHE_COLLECTION, cachedAnalysisId);
 
       await updateDoc(docRef, {
         analysisData,

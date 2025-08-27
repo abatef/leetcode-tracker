@@ -112,7 +112,7 @@ export class AIService {
   }
 
   private async generateFreshAnalysis(problemData: any): Promise<ProblemAnalysis> {
-    const prompt = `Please provide a comprehensive analysis of this LeetCode problem. Return the response in a structured JSON format.
+    const prompt = `Please provide a comprehensive, practical analysis of this LeetCode problem. Return the response in a structured JSON format ONLY (no prose outside JSON).
 
 Problem Details:
 - Title: ${problemData.title}
@@ -121,7 +121,7 @@ Problem Details:
 - Description: ${problemData.description || 'Not provided'}
 - LeetCode ID: ${problemData.leetcodeId || problemData.id || problemData.problemId}
 
-Please provide a detailed analysis in the following JSON structure:
+Please provide a detailed analysis in the following JSON structure. Keep items concise and actionable. Use clear, direct language suitable for interview prep.
 
 {
   "multipleApproaches": [
@@ -135,7 +135,7 @@ Please provide a detailed analysis in the following JSON structure:
       "cons": ["Disadvantage 1", "Disadvantage 2"]
     }
   ],
-  "detailedExplanation": "Comprehensive explanation of the problem and its nuances",
+  "detailedExplanation": "Concise end-to-end explanation focusing on approach selection and why",
   "keyInsights": ["Key insight 1", "Key insight 2", "Key insight 3"],
   "commonMistakes": ["Common mistake 1", "Common mistake 2"],
   "edgeCases": ["Edge case 1", "Edge case 2"],
@@ -143,11 +143,20 @@ Please provide a detailed analysis in the following JSON structure:
   "topicTags": ["Data Structure/Algorithm topic 1", "Topic 2"],
   "frequentCompanies": ["Company 1", "Company 2", "Company 3"],
   "difficultyAnalysis": {
-    "reasoning": "Why this problem has this difficulty rating",
-    "skillsRequired": ["Skill 1", "Skill 2"]
+    "reasoning": "1-2 paragraphs on what makes it hard/easy (patterns, traps, constraints)",
+    "skillsRequired": [
+      "Primary data structure/algorithm pattern",
+      "Secondary techniques (e.g., two-pointers, sliding window)",
+      "Complexity/Optimization awareness"
+    ]
   },
   "practiceRecommendations": ["Recommendation 1", "Recommendation 2"]
 }
+
+Rules:
+- Focus on correctness and clarity over cleverness.
+- Prefer standard variable names and readable formatting in code samples.
+- Ensure arrays have 3-6 succinct items where applicable.
 
 Ensure the response is valid JSON only, no additional text or formatting.`;
 
@@ -165,6 +174,15 @@ Ensure the response is valid JSON only, no additional text or formatting.`;
       }
 
       const analysisData = JSON.parse(cleanedResponse);
+      // Normalize difficultyAnalysis for UI expectations
+      if (analysisData && analysisData.difficultyAnalysis) {
+        if (typeof analysisData.difficultyAnalysis.reasoning !== 'string') {
+          analysisData.difficultyAnalysis.reasoning = String(analysisData.difficultyAnalysis.reasoning || '');
+        }
+        if (!Array.isArray(analysisData.difficultyAnalysis.skillsRequired)) {
+          analysisData.difficultyAnalysis.skillsRequired = [];
+        }
+      }
       return analysisData as ProblemAnalysis;
     } catch (error) {
       console.error('Error parsing problem analysis:', error);
