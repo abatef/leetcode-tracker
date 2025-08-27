@@ -106,7 +106,23 @@ export class ProblemListComponent implements OnInit {
     'LinkedIn': 'https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg',
     'Spotify': 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
     'Airbnb': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg',
-    'Twitter': 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg'
+    'Twitter': 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg',
+    'Adobe': 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Adobe_Systems_logo_and_wordmark.svg',
+    'Atlassian': 'https://cdn.simpleicons.org/atlassian',
+    'Bloomberg': 'https://upload.wikimedia.org/wikipedia/commons/5/5d/New_Bloomberg_Logo.svg',
+    'Datadog': 'https://cdn.simpleicons.org/datadog',
+    'Doordash': 'https://cdn.simpleicons.org/doordash',
+    'Dropbox': 'https://cdn.simpleicons.org/dropbox',
+    'Goldman Sachs': 'https://cdn.simpleicons.org/goldmansachs',
+    'Nvidia': 'https://cdn.simpleicons.org/nvidia',
+    'Oracle': 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Oracle_Corporation_logo.svg',
+    'Palantir': 'https://cdn.simpleicons.org/palantir',
+    'PayPal': 'https://cdn.simpleicons.org/paypal',
+    'Salesforce': 'https://cdn.simpleicons.org/salesforce',
+    'Snowflake': 'https://cdn.simpleicons.org/snowflake',
+    'Square': 'https://cdn.simpleicons.org/square',
+    'Stripe': 'https://cdn.simpleicons.org/stripe',
+    'TikTok': 'https://cdn.simpleicons.org/tiktok'
   };
 
   constructor(

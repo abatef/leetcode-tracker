@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, doc, addDoc, updateDoc, deleteDoc, query, where, orderBy, getDocs, onSnapshot } from '@angular/fire/firestore';
+import { Firestore, collection, doc, addDoc, updateDoc, deleteDoc, query, where, orderBy, getDocs, onSnapshot, limit } from '@angular/fire/firestore';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { Problem, UserStats, ProblemAction } from '../models/problem';
 import { AuthService } from './auth';
@@ -145,6 +145,113 @@ export class LeetcodeService {
   }
 
   // ...existing code...
+
+  async seedDemoDataIfEmpty(): Promise<void> {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      throw new Error('Cannot seed demo data without a signed-in user');
+    }
+
+    const problemsRef = collection(this.firestore, 'problems');
+    const q = query(problemsRef, where('userId', '==', user.uid), limit(1));
+    const existing = await getDocs(q);
+    if (!existing.empty) {
+      return; // User already has data
+    }
+
+    const today = new Date();
+    const daysAgo = (n: number) => {
+      const d = new Date();
+      d.setDate(d.getDate() - n);
+      return d;
+    };
+
+    const demoProblems: Array<Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'>> = [
+      {
+        leetcodeId: 1,
+        title: 'Two Sum',
+        difficulty: 'Easy',
+        status: 'Solved',
+        url: 'https://leetcode.com/problems/two-sum/',
+        tags: ['Array', 'Hash Table'],
+        companies: ['Amazon', 'Google'],
+        notes: 'Classic hash map approach.',
+        attempts: 1,
+        timeSpent: 10,
+        firstAttemptDate: daysAgo(7),
+        firstSolvedDate: daysAgo(7),
+        solvedDate: daysAgo(1),
+        lastAttemptDate: daysAgo(1)
+      },
+      {
+        leetcodeId: 2,
+        title: 'Add Two Numbers',
+        difficulty: 'Medium',
+        status: 'Attempted',
+        url: 'https://leetcode.com/problems/add-two-numbers/',
+        tags: ['Linked List', 'Math'],
+        companies: ['Microsoft', 'Facebook'],
+        notes: 'Review edge cases for carry.',
+        attempts: 2,
+        timeSpent: 35,
+        firstAttemptDate: daysAgo(3),
+        lastAttemptDate: daysAgo(2)
+      },
+      {
+        leetcodeId: 3,
+        title: 'Longest Substring Without Repeating Characters',
+        difficulty: 'Medium',
+        status: 'Solved',
+        url: 'https://leetcode.com/problems/longest-substring-without-repeating-characters/',
+        tags: ['String', 'Sliding Window'],
+        companies: ['Google', 'Adobe'],
+        notes: 'Sliding window with map of last seen positions.',
+        attempts: 1,
+        timeSpent: 25,
+        firstAttemptDate: daysAgo(5),
+        firstSolvedDate: daysAgo(5),
+        solvedDate: daysAgo(5),
+        lastAttemptDate: daysAgo(5)
+      },
+      {
+        leetcodeId: 4,
+        title: 'Median of Two Sorted Arrays',
+        difficulty: 'Hard',
+        status: 'Not Attempted',
+        url: 'https://leetcode.com/problems/median-of-two-sorted-arrays/',
+        tags: ['Array', 'Binary Search'],
+        companies: ['Google', 'Apple'],
+        notes: '',
+        attempts: 0,
+        timeSpent: 0
+      },
+      {
+        leetcodeId: 5,
+        title: 'Best Time to Buy and Sell Stock',
+        difficulty: 'Easy',
+        status: 'Reviewed',
+        url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/',
+        tags: ['Array', 'Dynamic Programming'],
+        companies: ['Bloomberg'],
+        notes: 'One pass tracking min price.',
+        attempts: 3,
+        timeSpent: 15,
+        firstAttemptDate: daysAgo(14),
+        lastAttemptDate: daysAgo(1)
+      }
+    ];
+
+    for (const p of demoProblems) {
+      // Space out createdAt/updatedAt via provided dates; addProblem will handle
+      await this.addProblem(p);
+    }
+
+    // After seeding, force a stats recompute using current subject value
+    const current = this.problemsSubject.value;
+    if (current.length > 0) {
+      this.updateStats(current);
+    }
+  }
 
 async addProblem(problem: Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<void> {
   const user = this.authService.getCurrentUser();

@@ -39,9 +39,31 @@
           (click)="signInWithGoogle()"
           [disabled]="loading"
         >
-          <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
-          <mat-icon *ngIf="!loading">google</mat-icon>
-          <span>{{ loading ? 'Signing in...' : 'Continue with Google' }}</span>
+          <span class="btn-content">
+            <mat-spinner diameter="18" *ngIf="loading"></mat-spinner>
+            <img
+              *ngIf="!loading"
+              class="google-logo"
+              alt="Google logo"
+              src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
+            />
+            <span class="btn-text">{{ loading ? 'Signing in...' : 'Continue with Google' }}</span>
+          </span>
+        </button>
+
+        <button
+          mat-stroked-button
+          class="guest-signin-btn"
+          (click)="continueAsGuest()"
+          [disabled]="demoLoading"
+        >
+          <span class="btn-content">
+            <mat-spinner diameter="18" *ngIf="demoLoading"></mat-spinner>
+            <mat-icon *ngIf="!demoLoading">visibility</mat-icon>
+            <span class="btn-text">{{
+              demoLoading ? 'Starting demo...' : 'Try Demo (no account)'
+            }}</span>
+          </span>
         </button>
       </mat-card-actions>
     </mat-card>

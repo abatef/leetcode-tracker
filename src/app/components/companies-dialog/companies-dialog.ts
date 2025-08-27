@@ -26,7 +26,23 @@ const MAANG_COMPANIES: Company[] = [
   { name: 'LinkedIn', logo: 'https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg' },
   { name: 'Spotify', logo: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg' },
   { name: 'Airbnb', logo: 'https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg' },
-  { name: 'Twitter', logo: 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg' }
+  { name: 'Twitter', logo: 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg' },
+  { name: 'Adobe', logo: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Adobe_Systems_logo_and_wordmark.svg' },
+  { name: 'Atlassian', logo: 'https://cdn.simpleicons.org/atlassian' },
+  { name: 'Bloomberg', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/New_Bloomberg_Logo.svg' },
+  { name: 'Datadog', logo: 'https://cdn.simpleicons.org/datadog' },
+  { name: 'Doordash', logo: 'https://cdn.simpleicons.org/doordash' },
+  { name: 'Dropbox', logo: 'https://cdn.simpleicons.org/dropbox' },
+  { name: 'Goldman Sachs', logo: 'https://cdn.simpleicons.org/goldmansachs' },
+  { name: 'Nvidia', logo: 'https://cdn.simpleicons.org/nvidia' },
+  { name: 'Oracle', logo: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Oracle_Corporation_logo.svg' },
+  { name: 'Palantir', logo: 'https://cdn.simpleicons.org/palantir' },
+  { name: 'PayPal', logo: 'https://cdn.simpleicons.org/paypal' },
+  { name: 'Salesforce', logo: 'https://cdn.simpleicons.org/salesforce' },
+  { name: 'Snowflake', logo: 'https://cdn.simpleicons.org/snowflake' },
+  { name: 'Square', logo: 'https://cdn.simpleicons.org/square' },
+  { name: 'Stripe', logo: 'https://cdn.simpleicons.org/stripe' },
+  { name: 'TikTok', logo: 'https://cdn.simpleicons.org/tiktok' }
 ];
 
 @Component({
