@@ -1,59 +1,107 @@
 # LeetcodeTracker
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.0.
+## Getting Started
 
-## Development server
+To begin, add your Firebase credentials to the appropriate files:
+- For testing, update [`environment.ts`](./src/app/environments/environment.ts).
+- For production, update [`environment.prod.ts`](./src/app/environments/environment.prod.ts).
 
-To start a local development server, run:
+**Note:** Direct API requests may encounter CORS issues. To resolve this, set up a proxy using Cloudflare Workers:
+1. Copy the code from [`worker.js`](./src/app/environments/worker.js).
+2. Deploy it as a Cloudflare Worker.
+3. Update your API calls to use your Worker’s URL.
 
-```bash
-ng serve
+Example environment configuration:
+```typescript
+export const environment = {
+    production: true,
+    apiUrl: 'https://{worker-name}.{your-username}.workers.dev/api/leetcode/graphql',
+    geminiApiKey: 'your-gemini-api-key',
+    firebase: {
+        apiKey: 'your-firebase-api-key',
+        authDomain: 'your-firebase-auth-domain',
+        projectId: 'your-firebase-project-id',
+        storageBucket: 'your-firebase-storage-bucket',
+        messagingSenderId: 'your-firebase-messaging-sender-id',
+        appId: 'your-firebase-app-id'
+    }
+};
+
+export default environment;
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Firestore Security Rules
 
-## Code scaffolding
+Set up Firestore rules in the Firebase console to secure your data:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /problems/{problemId} {
+      allow read, write: if request.auth != null;
+    }
+    match /userProblems/{userId}/problems/{problemId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+If your app needs additional indexes, Firebase will prompt you with a link in the browser console. Follow it to create the required indexes.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Authentication Setup
 
+Enable both "Login with Google" and "Anonymous login" in the Firebase Authentication settings.
+
+## Installing Dependencies
+
+Install all necessary npm packages by running:
 ```bash
-ng generate component component-name
+npm install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Setting Up the Proxy with Cloudflare Workers (Web UI)
 
+You can easily set up the proxy using the Cloudflare Workers web interface:
+1. Visit the [Cloudflare Dashboard](https://dash.cloudflare.com/) and go to **Workers & Pages**.
+2. Click **Create a Worker**.
+3. Paste the code from [`worker.js`](./src/app/environments/worker.js) into the editor.
+4. Save and deploy your Worker.
+5. Use your Worker’s URL (e.g., `https://{worker-name}.{your-username}.workers.dev/api/leetcode/graphql`) as the API endpoint in your environment configuration.
+
+## Building the Project
+
+To build the project for production, run:
 ```bash
-ng generate --help
+ng build --configuration=production
 ```
 
-## Building
+## Deploying with Firebase Hosting
 
-To build the project run:
+1. Install the Firebase CLI:
+    ```bash
+    npm install -g firebase-tools
+    ```
+2. Log in to your Firebase account:
+    ```bash
+    firebase login
+    ```
+3. Initialize Firebase in your project directory:
+    ```bash
+    firebase init
+    ```
+    - Select **Hosting** and follow the prompts.
+    - Set your public directory to `dist/` (or your Angular build output directory).
+    - Enable single-page app configuration.
 
-```bash
-ng build
-```
+4. Deploy your app:
+    ```bash
+    firebase deploy
+    ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+After deployment, your app will be available at the Firebase Hosting URL provided.

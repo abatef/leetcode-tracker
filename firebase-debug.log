@@ -1,0 +1,69 @@
+[debug] [2025-08-27T22:01:12.125Z] ----------------------------------------------------------------------
+[debug] [2025-08-27T22:01:12.126Z] Command:       /home/abatef/.nvm/versions/node/v24.6.0/bin/node /home/abatef/.nvm/versions/node/v24.6.0/bin/firebase init hosting
+[debug] [2025-08-27T22:01:12.126Z] CLI Version:   14.14.0
+[debug] [2025-08-27T22:01:12.126Z] Platform:      linux
+[debug] [2025-08-27T22:01:12.126Z] Node Version:  v24.6.0
+[debug] [2025-08-27T22:01:12.127Z] Time:          Thu Aug 28 2025 01:01:12 GMT+0300 (Eastern European Summer Time)
+[debug] [2025-08-27T22:01:12.127Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-08-27T22:01:12.327Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-08-27T22:01:12.327Z] > authorizing via signed-in user (abdoatef.ab@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /home/abatef/leetcode-tracker
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2025-08-27T22:01:12.329Z] Using project from CLI flag: leetcode-tracker-bf05c
+[debug] [2025-08-27T22:01:12.329Z] Checked if tokens are valid: false, expires at: 1756313063314
+[debug] [2025-08-27T22:01:12.329Z] Checked if tokens are valid: false, expires at: 1756313063314
+[debug] [2025-08-27T22:01:12.330Z] > refreshing access token with scopes: []
+[debug] [2025-08-27T22:01:12.331Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-08-27T22:01:12.332Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-08-27T22:01:12.726Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-08-27T22:01:12.727Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-08-27T22:01:12.739Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/leetcode-tracker-bf05c [none]
+[debug] [2025-08-27T22:01:13.343Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/leetcode-tracker-bf05c 200
+[debug] [2025-08-27T22:01:13.343Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/leetcode-tracker-bf05c {"projectId":"leetcode-tracker-bf05c","projectNumber":"994141080211","displayName":"leetcode-tracker","name":"projects/leetcode-tracker-bf05c","resources":{"hostingSite":"leetcode-tracker-bf05c"},"state":"ACTIVE","etag":"1_20cac65d-cd0c-4f64-aaf8-a2b65ad97bf1"}
+[info] i  Using project leetcode-tracker-bf05c (leetcode-tracker) 
+[info] 
+=== Hosting Setup
+[debug] [2025-08-27T22:01:13.355Z] Checked if tokens are valid: true, expires at: 1756335671727
+[debug] [2025-08-27T22:01:13.356Z] Checked if tokens are valid: true, expires at: 1756335671727
+[debug] [2025-08-27T22:01:13.356Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/leetcode-tracker-bf05c [none]
+[debug] [2025-08-27T22:01:13.653Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/leetcode-tracker-bf05c 200
+[debug] [2025-08-27T22:01:13.653Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/leetcode-tracker-bf05c {"projectId":"leetcode-tracker-bf05c","projectNumber":"994141080211","displayName":"leetcode-tracker","name":"projects/leetcode-tracker-bf05c","resources":{"hostingSite":"leetcode-tracker-bf05c"},"state":"ACTIVE","etag":"1_20cac65d-cd0c-4f64-aaf8-a2b65ad97bf1"}
+[info] 
+[info] Your public directory is the folder (relative to your project directory) that
+[info] will contain Hosting assets to be uploaded with firebase deploy. If you
+[info] have a build process for your assets, use your build's output directory.
+[info] 
+[debug] [2025-08-27T22:01:15.548Z] ExitPromptError: User force closed the prompt with SIGINT
+    at Interface.sigint (/home/abatef/.nvm/versions/node/v24.6.0/lib/node_modules/firebase-tools/node_modules/@inquirer/core/dist/commonjs/lib/create-prompt.js:101:37)
+    at Interface.emit (node:events:508:28)
+    at Interface.emit (node:domain:489:12)
+    at [_ttyWrite] [as _ttyWrite] (node:internal/readline/interface:1315:18)
+    at ReadStream.onkeypress (node:internal/readline/interface:284:20)
+    at ReadStream.emit (node:events:520:35)
+    at ReadStream.emit (node:domain:489:12)
+    at emitKeys (node:internal/readline/utils:371:14)
+    at emitKeys.next (<anonymous>)
+    at ReadStream.onData (node:internal/readline/emitKeypressEvents:64:36)
+[error] 
+[error] Error: An unexpected error has occurred.
