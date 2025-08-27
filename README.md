@@ -1,9 +1,12 @@
 # LeetcodeTracker
 
+Try the live demo of the app here:
+https://leetcode-tracker-bf05c.web.app
+
 ## Getting Started
 
-To begin, add your Firebase credentials to the appropriate files:
-- For testing, update [`environment.ts`](./src/app/environments/environment.ts).
+To get started, add your Firebase credentials to the following files:
+- For development, update [`environment.ts`](./src/app/environments/environment.ts).
 - For production, update [`environment.prod.ts`](./src/app/environments/environment.prod.ts).
 
 **Note:** Direct API requests may encounter CORS issues. To resolve this, set up a proxy using Cloudflare Workers:
