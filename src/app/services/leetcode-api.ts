@@ -101,7 +101,7 @@ export interface LeetCodeUserProfile {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LeetCodeApiService {
   private readonly graphqlUrl: string;
@@ -110,7 +110,7 @@ export class LeetCodeApiService {
     this.graphqlUrl = environment.production
       ? `${environment.apiUrl}/graphql`
       : '/api/leetcode/graphql';
-      console.log('GraphQL API URL:', this.graphqlUrl);
+    console.log('GraphQL API URL:', this.graphqlUrl);
   }
 
   /**
@@ -119,30 +119,26 @@ export class LeetCodeApiService {
   getProblem(identifier: string | number): Observable<LeetCodeProblem> {
     console.log('Getting problem for identifier:', identifier);
 
-    // Determine if identifier is a number (questionId) or string (titleSlug)
     const isNumeric = !isNaN(Number(identifier));
 
     if (isNumeric) {
-      // Try multiple approaches for numeric identifiers
       return this.getProblemByQuestionId(Number(identifier)).pipe(
-        switchMap(response => {
+        switchMap((response) => {
           if (response.data?.question) {
             return of(this.validateProblemResponse(response));
           } else {
             console.log('Question not found by questionId, trying to search in problem list...');
-            // Fallback: search in the problem list
             return this.searchProblemInList(Number(identifier));
           }
         }),
-        catchError(error => {
+        catchError((error) => {
           console.log('Primary search failed, trying fallback search...', error);
           return this.searchProblemInList(Number(identifier));
         })
       );
     } else {
-      // For string identifiers, try titleSlug first, then search if not found
       return this.getProblemByTitleSlug(String(identifier)).pipe(
-        switchMap(response => {
+        switchMap((response) => {
           if (response.data?.question) {
             return of(this.validateProblemResponse(response));
           } else {
@@ -150,7 +146,7 @@ export class LeetCodeApiService {
             return this.searchProblemByTitleInList(String(identifier));
           }
         }),
-        catchError(error => {
+        catchError((error) => {
           console.log('Primary search failed, trying fallback search...', error);
           return this.searchProblemByTitleInList(String(identifier));
         })
@@ -158,9 +154,6 @@ export class LeetCodeApiService {
     }
   }
 
-  /**
-   * Search for problem in the problem list by frontend ID
-   */
   private searchProblemInList(frontendId: number): Observable<LeetCodeProblem> {
     const query = `
       query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
@@ -189,37 +182,32 @@ export class LeetCodeApiService {
     `;
 
     const variables = {
-      categorySlug: "",
+      categorySlug: '',
       limit: 1,
       skip: 0,
       filters: {
-        searchKeywords: frontendId.toString()
-      }
+        searchKeywords: frontendId.toString(),
+      },
     };
 
     return this.executeGraphQLQuery(query, variables).pipe(
-      map(response => {
+      map((response) => {
         const questions = response.data?.problemsetQuestionList?.questions || [];
 
-        // Find exact match by frontend ID
-        const exactMatch = questions.find((q: any) =>
-          parseInt(q.questionFrontendId) === frontendId
+        const exactMatch = questions.find(
+          (q: any) => parseInt(q.questionFrontendId) === frontendId
         );
 
         if (exactMatch) {
           return this.validateProblemResponse({ data: { question: exactMatch } });
         }
 
-        // If no exact match, throw error
         throw new Error(`Problem with ID ${frontendId} not found`);
       }),
       catchError(this.handleError)
     );
   }
 
-  /**
-   * Search for problem in the problem list by title
-   */
   private searchProblemByTitleInList(titleOrSlug: string): Observable<LeetCodeProblem> {
     const query = `
       query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
@@ -248,29 +236,27 @@ export class LeetCodeApiService {
     `;
 
     const variables = {
-      categorySlug: "",
+      categorySlug: '',
       limit: 10,
       skip: 0,
       filters: {
-        searchKeywords: titleOrSlug
-      }
+        searchKeywords: titleOrSlug,
+      },
     };
 
     return this.executeGraphQLQuery(query, variables).pipe(
-      map(response => {
+      map((response) => {
         const questions = response.data?.problemsetQuestionList?.questions || [];
 
         if (questions.length === 0) {
           throw new Error(`Problem "${titleOrSlug}" not found`);
         }
 
-        // Find best match
-        let bestMatch = questions.find((q: any) =>
-          q.titleSlug === titleOrSlug ||
-          q.title.toLowerCase() === titleOrSlug.toLowerCase()
+        let bestMatch = questions.find(
+          (q: any) =>
+            q.titleSlug === titleOrSlug || q.title.toLowerCase() === titleOrSlug.toLowerCase()
         );
 
-        // If no exact match, use first result
         if (!bestMatch) {
           bestMatch = questions[0];
         }
@@ -281,9 +267,6 @@ export class LeetCodeApiService {
     );
   }
 
-  /**
-   * Get problem by question ID
-   */
   private getProblemByQuestionId(questionId: number): Observable<any> {
     const query = `
       query getQuestionDetail($questionId: String!) {
@@ -309,15 +292,12 @@ export class LeetCodeApiService {
     `;
 
     const variables = {
-      questionId: questionId.toString()
+      questionId: questionId.toString(),
     };
 
     return this.executeGraphQLQuery(query, variables);
   }
 
-  /**
-   * Get problem by title slug
-   */
   private getProblemByTitleSlug(titleSlug: string): Observable<any> {
     const query = `
       query getQuestionDetail($titleSlug: String!) {
@@ -343,15 +323,12 @@ export class LeetCodeApiService {
     `;
 
     const variables = {
-      titleSlug: titleSlug
+      titleSlug: titleSlug,
     };
 
     return this.executeGraphQLQuery(query, variables);
   }
 
-  /**
-   * Get daily challenge using GraphQL
-   */
   getDailyChallenge(): Observable<LeetCodeDailyChallenge> {
     const query = `
       query questionOfToday {
@@ -373,7 +350,7 @@ export class LeetCodeApiService {
     `;
 
     return this.executeGraphQLQuery(query, {}).pipe(
-      map(response => {
+      map((response) => {
         const challenge = response.data?.activeDailyCodingChallengeQuestion;
         if (!challenge) {
           throw new Error('Daily challenge not found');
@@ -384,11 +361,7 @@ export class LeetCodeApiService {
     );
   }
 
-  /**
-   * Get random problem by difficulty using GraphQL
-   */
   getRandomProblem(difficulty?: 'Easy' | 'Medium' | 'Hard'): Observable<LeetCodeProblem> {
-    // First get all problems, then filter and pick random
     const query = `
       query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
         problemsetQuestionList: questionList(
@@ -421,20 +394,19 @@ export class LeetCodeApiService {
     }
 
     const variables = {
-      categorySlug: "",
-      limit: 50, // Get 50 problems to choose from
-      skip: Math.floor(Math.random() * 1000), // Random starting point
-      filters: filters
+      categorySlug: '',
+      limit: 50,
+      skip: Math.floor(Math.random() * 1000),
+      filters: filters,
     };
 
     return this.executeGraphQLQuery(query, variables).pipe(
-      map(response => {
+      map((response) => {
         const questions = response.data?.problemsetQuestionList?.questions;
         if (!questions || questions.length === 0) {
           throw new Error('No problems found');
         }
 
-        // Pick random problem from the list
         const randomIndex = Math.floor(Math.random() * questions.length);
         const randomQuestion = questions[randomIndex];
 
@@ -444,9 +416,6 @@ export class LeetCodeApiService {
     );
   }
 
-  /**
-   * Search problems by keyword
-   */
   searchProblems(keyword: string, limit: number = 20): Observable<LeetCodeProblem[]> {
     const query = `
       query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
@@ -475,16 +444,16 @@ export class LeetCodeApiService {
     `;
 
     const variables = {
-      categorySlug: "",
+      categorySlug: '',
       limit: limit,
       skip: 0,
       filters: {
-        searchKeywords: keyword
-      }
+        searchKeywords: keyword,
+      },
     };
 
     return this.executeGraphQLQuery(query, variables).pipe(
-      map(response => {
+      map((response) => {
         const questions = response.data?.problemsetQuestionList?.questions || [];
         return questions.map((q: any) => this.validateProblemResponse({ data: { question: q } }));
       }),
@@ -492,9 +461,6 @@ export class LeetCodeApiService {
     );
   }
 
-  /**
-   * Get problems by tag
-   */
   getProblemsByTag(tag: string, limit: number = 50): Observable<LeetCodeProblem[]> {
     const query = `
       query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
@@ -523,16 +489,16 @@ export class LeetCodeApiService {
     `;
 
     const variables = {
-      categorySlug: "",
+      categorySlug: '',
       limit: limit,
       skip: 0,
       filters: {
-        tags: [tag]
-      }
+        tags: [tag],
+      },
     };
 
     return this.executeGraphQLQuery(query, variables).pipe(
-      map(response => {
+      map((response) => {
         const questions = response.data?.problemsetQuestionList?.questions || [];
         return questions.map((q: any) => this.validateProblemResponse({ data: { question: q } }));
       }),
@@ -540,10 +506,10 @@ export class LeetCodeApiService {
     );
   }
 
-  /**
-   * Get all problems with pagination
-   */
-  getAllProblems(limit: number = 50, skip: number = 0): Observable<{problems: LeetCodeProblem[], total: number}> {
+  getAllProblems(
+    limit: number = 50,
+    skip: number = 0
+  ): Observable<{ problems: LeetCodeProblem[]; total: number }> {
     const query = `
       query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {
         problemsetQuestionList: questionList(
@@ -571,53 +537,47 @@ export class LeetCodeApiService {
     `;
 
     const variables = {
-      categorySlug: "",
+      categorySlug: '',
       limit: limit,
       skip: skip,
-      filters: {}
+      filters: {},
     };
 
     return this.executeGraphQLQuery(query, variables).pipe(
-      map(response => {
+      map((response) => {
         const questionList = response.data?.problemsetQuestionList;
         const questions = questionList?.questions || [];
         const total = questionList?.total || 0;
 
         return {
-          problems: questions.map((q: any) => this.validateProblemResponse({ data: { question: q } })),
-          total: total
+          problems: questions.map((q: any) =>
+            this.validateProblemResponse({ data: { question: q } })
+          ),
+          total: total,
         };
       }),
       catchError(this.handleError)
     );
   }
 
-  /**
-   * Execute GraphQL query with better error handling and retries
-   */
   private executeGraphQLQuery(query: string, variables: any): Observable<any> {
     const headers = new HttpHeaders({
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     });
 
     const body = {
       query: query,
-      variables: variables
+      variables: variables,
     };
 
     console.log(`Making request to: ${this.graphqlUrl}`);
     console.log('Request body:', body);
 
-    return this.http.post(this.graphqlUrl, body, { headers }).pipe(
-      timeout(10000), // 10 second timeout
-      retry(2), // Retry up to 2 times
-      catchError(this.handleError)
-    );
+    return this.http
+      .post(this.graphqlUrl, body, { headers })
+      .pipe(timeout(10000), retry(2), catchError(this.handleError));
   }
 
-  /**
-   * Validate and normalize problem response with better error handling
-   */
   private validateProblemResponse(response: any): LeetCodeProblem {
     console.log('Validating GraphQL response:', response);
 
@@ -630,22 +590,20 @@ export class LeetCodeApiService {
       throw new Error('Question not found in response');
     }
 
-    // Parse company tags safely
     let companies: string[] = [];
     if (question.companyTagStats) {
       try {
         const companyStats = JSON.parse(question.companyTagStats);
         companies = Object.keys(companyStats)
           .slice(0, 10)
-          .filter(company => company && typeof company === 'string');
+          .filter((company) => company && typeof company === 'string');
       } catch (e) {
         console.warn('Failed to parse company stats:', e);
         companies = [];
       }
     }
 
-    // Parse similar questions safely
-    let similar: Array<{title: string; titleSlug: string; difficulty: string}> = [];
+    let similar: Array<{ title: string; titleSlug: string; difficulty: string }> = [];
     if (question.similarQuestions) {
       try {
         similar = JSON.parse(question.similarQuestions);
@@ -658,7 +616,6 @@ export class LeetCodeApiService {
       }
     }
 
-    // Parse stats safely
     let stats: any = null;
     if (question.stats) {
       try {
@@ -669,26 +626,24 @@ export class LeetCodeApiService {
       }
     }
 
-    // Parse tags safely
     const tags = Array.isArray(question.topicTags)
       ? question.topicTags
           .map((tag: any) => tag?.name)
           .filter((name: string) => name && typeof name === 'string')
       : [];
 
-    // Parse hints safely
     const hints = Array.isArray(question.hints)
       ? question.hints.filter((hint: string) => hint && typeof hint === 'string')
       : [];
 
-    // Normalize the response with proper fallbacks and no undefined values
     const normalizedProblem: LeetCodeProblem = {
       id: parseInt(question.questionFrontendId) || parseInt(question.questionId) || 0,
       questionId: question.questionId || '',
       questionFrontendId: question.questionFrontendId || question.questionId || '',
       title: question.title || 'Unknown Problem',
-      titleSlug: question.titleSlug ||
-                 (question.title ? question.title.toLowerCase().replace(/\s+/g, '-') : 'unknown'),
+      titleSlug:
+        question.titleSlug ||
+        (question.title ? question.title.toLowerCase().replace(/\s+/g, '-') : 'unknown'),
       difficulty: question.difficulty || 'Medium',
       content: question.content || '',
       isPaidOnly: Boolean(question.isPaidOnly),
@@ -697,16 +652,13 @@ export class LeetCodeApiService {
       hints: hints,
       similar: similar,
       exampleTestcases: question.exampleTestcases || '',
-      stats: stats
+      stats: stats,
     };
 
     console.log('Normalized problem:', normalizedProblem);
     return normalizedProblem;
   }
 
-  /**
-   * Get user profile by username (requires authentication)
-   */
   getUserProfile(username: string): Observable<LeetCodeUserProfile> {
     const query = `
       query getUserProfile($username: String!) {
@@ -759,7 +711,7 @@ export class LeetCodeApiService {
     const variables = { username };
 
     return this.executeGraphQLQuery(query, variables).pipe(
-      map(response => {
+      map((response) => {
         const user = response.data?.matchedUser;
         if (!user) {
           throw new Error('User not found');
@@ -768,7 +720,7 @@ export class LeetCodeApiService {
           username: user.username,
           name: user.profile?.realName || user.username,
           avatar: user.profile?.userAvatar || '',
-          ranking: 0, // Not available in basic query
+          ranking: 0,
           reputation: user.profile?.reputation || 0,
           gitHubUrl: '',
           twitterUrl: '',
@@ -777,23 +729,17 @@ export class LeetCodeApiService {
           submissionCalendar: user.submissionCalendar ? JSON.parse(user.submissionCalendar) : {},
           submitStats: user.submitStats,
           badges: user.badges || [],
-          activeBadge: user.activeBadge
+          activeBadge: user.activeBadge,
         };
       }),
       catchError(this.handleError)
     );
   }
 
-  /**
-   * Get LeetCode problem URL from title slug
-   */
   getLeetCodeUrl(titleSlug: string): string {
     return `https://leetcode.com/problems/${titleSlug}/`;
   }
 
-  /**
-   * Convert API problem to our Problem model
-   */
   convertApiProblemToLocal(apiProblem: LeetCodeProblem): Partial<Problem> {
     return {
       leetcodeId: parseInt(apiProblem.questionFrontendId || apiProblem.id?.toString() || '0') || 0,
@@ -807,13 +753,10 @@ export class LeetCodeApiService {
       timeSpent: 0,
       companies: apiProblem.companies || [],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
   }
 
-  /**
-   * Normalize difficulty string
-   */
   private normalizeDifficulty(difficulty: any): 'Easy' | 'Medium' | 'Hard' {
     if (typeof difficulty === 'string') {
       const normalized = difficulty.toLowerCase();
@@ -821,7 +764,7 @@ export class LeetCodeApiService {
       if (normalized === 'medium') return 'Medium';
       if (normalized === 'hard') return 'Hard';
     }
-    return 'Medium'; // Default fallback
+    return 'Medium';
   }
 
   private handleError(error: any): Observable<never> {

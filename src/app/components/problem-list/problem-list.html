@@ -41,6 +41,80 @@
       </mat-select>
     </mat-form-field>
 
+    <!-- Tag Filter Section -->
+    <div class="tag-filter-section">
+      <button
+        mat-raised-button
+        [color]="selectedTags.length > 0 ? 'primary' : ''"
+        (click)="toggleTagFilter()"
+        class="tag-filter-toggle"
+      >
+        <mat-icon>local_offer</mat-icon>
+        Tags
+        <span class="tag-count" *ngIf="selectedTags.length > 0">({{ selectedTags.length }})</span>
+      </button>
+
+      <div class="tag-filter-panel" *ngIf="showTagFilter">
+        <div class="tag-filter-header">
+          <h4>Filter by Tags</h4>
+          <button mat-icon-button (click)="toggleTagFilter()" class="close-btn">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="tag-filter-logic">
+          <span class="logic-label">Logic:</span>
+          <mat-button-toggle-group
+            [value]="tagFilterLogic"
+            (change)="setTagFilterLogic($event.value)"
+          >
+            <mat-button-toggle value="OR">
+              <mat-icon>add</mat-icon>
+              OR
+            </mat-button-toggle>
+            <mat-button-toggle value="AND">
+              <mat-icon>filter_list</mat-icon>
+              AND
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+
+        <div class="selected-tags" *ngIf="selectedTags.length > 0">
+          <h5>Selected Tags:</h5>
+          <div class="selected-tags-container">
+            <mat-chip
+              *ngFor="let tag of selectedTags"
+              (removed)="removeTagFromFilter(tag)"
+              class="selected-tag-chip"
+            >
+              {{ tag }}
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip>
+          </div>
+          <button mat-button (click)="clearTagFilter()" class="clear-btn">
+            <mat-icon>clear_all</mat-icon>
+            Clear All
+          </button>
+        </div>
+
+        <div class="available-tags">
+          <h5>Available Tags:</h5>
+          <div class="tags-grid">
+            <button
+              *ngFor="let tag of availableTags"
+              mat-stroked-button
+              (click)="addTagToFilter(tag)"
+              [disabled]="selectedTags.includes(tag)"
+              class="tag-button"
+              [class.selected]="selectedTags.includes(tag)"
+            >
+              {{ tag }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Action Buttons moved to filters section -->
     <div class="filter-actions">
       <button mat-raised-button color="primary" (click)="addProblem()">

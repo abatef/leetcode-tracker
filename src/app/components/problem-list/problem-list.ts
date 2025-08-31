@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
@@ -9,22 +9,24 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatBadgeModule } from '@angular/material/badge';
+
 import { LeetcodeService } from '../../services/leetcode';
 import { Problem } from '../../models/problem';
 import { ProblemFormComponent } from '../problem-form/problem-form';
-import { NotesDialogComponent } from '../notes-dialog/notes-dialog';
-import { AllTagsDialogComponent } from '../tags-dialog/tags-dialog';
-import { TimestampsDialogComponent } from '../timestamps-dialog/timestamps-dialog';
-import { Observable } from 'rxjs';
-import { MatChipsModule } from '@angular/material/chips';
-import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
 import { SearchDialogComponent } from '../search-dialog/search-dialog';
 import { ProblemDetailsDialogComponent } from '../problem-details-dialog/problem-details-dialog';
-import { MatDividerModule } from '@angular/material/divider';
+import { NotesDialogComponent } from '../notes-dialog/notes-dialog';
+import { AllTagsDialogComponent } from '../tags-dialog/tags-dialog';
+import { CompaniesDialogComponent } from '../companies-dialog/companies-dialog';
+import { TimestampsDialogComponent } from '../timestamps-dialog/timestamps-dialog';
 import { QuickEditDialogComponent } from '../quick-edit-dialog/quick-edit-dialog';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { AIAnalysisDialogComponent } from '../ai-analysis-dialog/ai-analysis-dialog';
 
 @Component({
@@ -35,18 +37,20 @@ import { AIAnalysisDialogComponent } from '../ai-analysis-dialog/ai-analysis-dia
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    MatChipsModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
     MatDividerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatButtonToggleModule,
+    MatChipsModule,
+    MatBadgeModule,
   ],
   templateUrl: './problem-list.html',
-  styleUrls: ['./problem-list.scss']
+  styleUrls: ['./problem-list.scss'],
 })
 export class ProblemListComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -54,18 +58,114 @@ export class ProblemListComponent implements OnInit {
 
   // Column definitions with visibility control and default widths
   columnDefinitions = [
-    { key: 'id', label: 'ID', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 120 },
-    { key: 'title', label: 'Title', visible: true, clickable: false, width: 250, minWidth: 150, maxWidth: 400 }, // Increased from 200
-    { key: 'difficulty', label: 'Difficulty', visible: true, clickable: true, width: 120, minWidth: 100, maxWidth: 150 },
-    { key: 'status', label: 'Status', visible: true, clickable: true, width: 130, minWidth: 100, maxWidth: 150 }, // Increased from 120
-    { key: 'tags', label: 'Tags', visible: true, clickable: true, width: 220, minWidth: 120, maxWidth: 300 }, // Increased from 180
-    { key: 'companies', label: 'Companies', visible: true, clickable: true, width: 180, minWidth: 100, maxWidth: 200 }, // Increased from 150
-    { key: 'attempts', label: 'Attempts', visible: true, clickable: true, width: 100, minWidth: 80, maxWidth: 120 },
-    { key: 'timeSpent', label: 'Time (min)', visible: true, clickable: true, width: 120, minWidth: 100, maxWidth: 150 },
-    { key: 'dateAdded', label: 'Date Added', visible: true, clickable: false, width: 130, minWidth: 100, maxWidth: 150 }, // Increased from 120
-    { key: 'ai', label: 'AI', visible: true, clickable: false, width: 20, minWidth: 60, maxWidth: 100 },
-    { key: 'notes', label: 'Notes', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 100 },
-    { key: 'actions', label: 'Actions', visible: true, clickable: false, width: 80, minWidth: 60, maxWidth: 100 }
+    {
+      key: 'id',
+      label: 'ID',
+      visible: true,
+      clickable: false,
+      width: 80,
+      minWidth: 60,
+      maxWidth: 120,
+    },
+    {
+      key: 'title',
+      label: 'Title',
+      visible: true,
+      clickable: false,
+      width: 250,
+      minWidth: 150,
+      maxWidth: 400,
+    }, // Increased from 200
+    {
+      key: 'difficulty',
+      label: 'Difficulty',
+      visible: true,
+      clickable: true,
+      width: 120,
+      minWidth: 100,
+      maxWidth: 150,
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      visible: true,
+      clickable: true,
+      width: 130,
+      minWidth: 100,
+      maxWidth: 150,
+    }, // Increased from 120
+    {
+      key: 'tags',
+      label: 'Tags',
+      visible: true,
+      clickable: true,
+      width: 220,
+      minWidth: 120,
+      maxWidth: 300,
+    }, // Increased from 180
+    {
+      key: 'companies',
+      label: 'Companies',
+      visible: true,
+      clickable: true,
+      width: 180,
+      minWidth: 100,
+      maxWidth: 200,
+    }, // Increased from 150
+    {
+      key: 'attempts',
+      label: 'Attempts',
+      visible: true,
+      clickable: true,
+      width: 100,
+      minWidth: 80,
+      maxWidth: 120,
+    },
+    {
+      key: 'timeSpent',
+      label: 'Time (min)',
+      visible: true,
+      clickable: true,
+      width: 120,
+      minWidth: 100,
+      maxWidth: 150,
+    },
+    {
+      key: 'dateAdded',
+      label: 'Date Added',
+      visible: true,
+      clickable: false,
+      width: 130,
+      minWidth: 100,
+      maxWidth: 150,
+    }, // Increased from 120
+    {
+      key: 'ai',
+      label: 'AI',
+      visible: true,
+      clickable: false,
+      width: 20,
+      minWidth: 60,
+      maxWidth: 100,
+    },
+    {
+      key: 'notes',
+      label: 'Notes',
+      visible: true,
+      clickable: false,
+      width: 80,
+      minWidth: 60,
+      maxWidth: 100,
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      visible: true,
+      clickable: false,
+      width: 80,
+      minWidth: 60,
+      maxWidth: 100,
+    },
   ];
 
   // Track resizing state
@@ -75,17 +175,15 @@ export class ProblemListComponent implements OnInit {
   startWidth = 0;
 
   get displayedColumns(): string[] {
-    return this.columnDefinitions
-      .filter(col => col.visible)
-      .map(col => col.key);
+    return this.columnDefinitions.filter((col) => col.visible).map((col) => col.key);
   }
 
   get visibleColumns() {
-    return this.columnDefinitions.filter(col => col.visible);
+    return this.columnDefinitions.filter((col) => col.visible);
   }
 
   get hiddenColumns() {
-    return this.columnDefinitions.filter(col => !col.visible);
+    return this.columnDefinitions.filter((col) => !col.visible);
   }
 
   dataSource = new MatTableDataSource<Problem>();
@@ -93,36 +191,43 @@ export class ProblemListComponent implements OnInit {
   availableCompanies: string[] = [];
   showColumnOptions = false;
 
+  // Tag filtering properties
+  selectedTags: string[] = [];
+  tagFilterLogic: 'AND' | 'OR' = 'OR';
+  availableTags: string[] = [];
+  showTagFilter = false;
+
   // Company logos mapping
   private companyLogos: { [key: string]: string } = {
-    'Meta': 'https://upload.wikimedia.org/wikipedia/commons/0/05/Meta_Platforms_Inc._logo_%28cropped%29.svg',
-    'Apple': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg',
-    'Amazon': 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg',
-    'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/0c/Netflix_2015_N_logo.svg',
-    'Google': 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
-    'Microsoft': 'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg',
-    'Tesla': 'https://upload.wikimedia.org/wikipedia/commons/b/bb/Tesla_T_symbol.svg',
-    'Uber': 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png',
-    'LinkedIn': 'https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg',
-    'Spotify': 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
-    'Airbnb': 'https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg',
-    'Twitter': 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg',
-    'Adobe': 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Adobe_Systems_logo_and_wordmark.svg',
-    'Atlassian': 'https://cdn.simpleicons.org/atlassian',
-    'Bloomberg': 'https://upload.wikimedia.org/wikipedia/commons/5/5d/New_Bloomberg_Logo.svg',
-    'Datadog': 'https://cdn.simpleicons.org/datadog',
-    'Doordash': 'https://cdn.simpleicons.org/doordash',
-    'Dropbox': 'https://cdn.simpleicons.org/dropbox',
+    Meta: 'https://upload.wikimedia.org/wikipedia/commons/0/05/Meta_Platforms_Inc._logo_%28cropped%29.svg',
+    Apple: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg',
+    Amazon: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg',
+    Netflix: 'https://upload.wikimedia.org/wikipedia/commons/0/0c/Netflix_2015_N_logo.svg',
+    Google: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
+    Microsoft: 'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg',
+    Tesla: 'https://upload.wikimedia.org/wikipedia/commons/b/bb/Tesla_T_symbol.svg',
+    Uber: 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png',
+    LinkedIn: 'https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg',
+    Spotify: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
+    Airbnb: 'https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg',
+    Twitter: 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg',
+    Adobe:
+      'https://upload.wikimedia.org/wikipedia/commons/7/7b/Adobe_Systems_logo_and_wordmark.svg',
+    Atlassian: 'https://cdn.simpleicons.org/atlassian',
+    Bloomberg: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/New_Bloomberg_Logo.svg',
+    Datadog: 'https://cdn.simpleicons.org/datadog',
+    Doordash: 'https://cdn.simpleicons.org/doordash',
+    Dropbox: 'https://cdn.simpleicons.org/dropbox',
     'Goldman Sachs': 'https://cdn.simpleicons.org/goldmansachs',
-    'Nvidia': 'https://cdn.simpleicons.org/nvidia',
-    'Oracle': 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Oracle_Corporation_logo.svg',
-    'Palantir': 'https://cdn.simpleicons.org/palantir',
-    'PayPal': 'https://cdn.simpleicons.org/paypal',
-    'Salesforce': 'https://cdn.simpleicons.org/salesforce',
-    'Snowflake': 'https://cdn.simpleicons.org/snowflake',
-    'Square': 'https://cdn.simpleicons.org/square',
-    'Stripe': 'https://cdn.simpleicons.org/stripe',
-    'TikTok': 'https://cdn.simpleicons.org/tiktok'
+    Nvidia: 'https://cdn.simpleicons.org/nvidia',
+    Oracle: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Oracle_Corporation_logo.svg',
+    Palantir: 'https://cdn.simpleicons.org/palantir',
+    PayPal: 'https://cdn.simpleicons.org/paypal',
+    Salesforce: 'https://cdn.simpleicons.org/salesforce',
+    Snowflake: 'https://cdn.simpleicons.org/snowflake',
+    Square: 'https://cdn.simpleicons.org/square',
+    Stripe: 'https://cdn.simpleicons.org/stripe',
+    TikTok: 'https://cdn.simpleicons.org/tiktok',
   };
 
   constructor(
@@ -133,10 +238,11 @@ export class ProblemListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadColumnPreferences();
-    this.leetcodeService.problems$.subscribe(problems => {
+    this.leetcodeService.problems$.subscribe((problems) => {
       this.problems = problems;
       this.dataSource.data = problems;
       this.updateAvailableCompanies();
+      this.updateAvailableTags();
     });
   }
 
@@ -151,12 +257,26 @@ export class ProblemListComponent implements OnInit {
 
   private updateAvailableCompanies(): void {
     const companiesSet = new Set<string>();
-    this.problems.forEach(problem => {
+    this.problems.forEach((problem) => {
       if (problem.companies && problem.companies.length > 0) {
-        problem.companies.forEach(company => companiesSet.add(company));
+        problem.companies.forEach((company) => companiesSet.add(company));
       }
     });
     this.availableCompanies = Array.from(companiesSet).sort();
+  }
+
+  private updateAvailableTags(): void {
+    const allTags = new Set<string>();
+    this.problems.forEach((problem) => {
+      problem.tags.forEach(function (tag) {
+        if (tag == 'Dynamic Programming') {
+          allTags.add('DP');
+        } else {
+          allTags.add(tag);
+        }
+      });
+    });
+    this.availableTags = Array.from(allTags).sort();
   }
 
   applyFilter(event: Event): void {
@@ -170,7 +290,7 @@ export class ProblemListComponent implements OnInit {
 
   filterByDifficulty(difficulty: string): void {
     if (difficulty) {
-      this.dataSource.data = this.problems.filter(p => p.difficulty === difficulty);
+      this.dataSource.data = this.problems.filter((p) => p.difficulty === difficulty);
     } else {
       this.dataSource.data = this.problems;
     }
@@ -178,7 +298,7 @@ export class ProblemListComponent implements OnInit {
 
   filterByStatus(status: string): void {
     if (status) {
-      this.dataSource.data = this.problems.filter(p => p.status === status);
+      this.dataSource.data = this.problems.filter((p) => p.status === status);
     } else {
       this.dataSource.data = this.problems;
     }
@@ -186,8 +306,8 @@ export class ProblemListComponent implements OnInit {
 
   filterByCompany(company: string): void {
     if (company) {
-      this.dataSource.data = this.problems.filter(p =>
-        p.companies && p.companies.includes(company)
+      this.dataSource.data = this.problems.filter(
+        (p) => p.companies && p.companies.includes(company)
       );
     } else {
       this.dataSource.data = this.problems;
@@ -200,13 +320,13 @@ export class ProblemListComponent implements OnInit {
       maxWidth: '900px',
       maxHeight: '90vh',
       disableClose: false,
-      autoFocus: false
+      autoFocus: false,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result?.success) {
         this.snackBar.open(result.message || 'Problem imported successfully!', 'Close', {
-          duration: 3000
+          duration: 3000,
         });
       }
     });
@@ -223,9 +343,9 @@ export class ProblemListComponent implements OnInit {
       maxHeight: '800px',
       data: {
         problemId: problem.leetcodeId,
-        titleSlug: titleSlug
+        titleSlug: titleSlug,
       },
-      panelClass: 'problem-details-dialog-container'
+      panelClass: 'problem-details-dialog-container',
     });
   }
 
@@ -241,13 +361,14 @@ export class ProblemListComponent implements OnInit {
         titleSlug: titleSlug,
         title: problem.title,
         difficulty: problem.difficulty,
-        tags: problem.tags
-      }
+        tags: problem.tags,
+      },
     });
   }
 
   private generateTitleSlug(title: string): string {
-    return title.toLowerCase()
+    return title
+      .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
@@ -258,13 +379,13 @@ export class ProblemListComponent implements OnInit {
     const dialogRef = this.dialog.open(ProblemFormComponent, {
       width: '600px',
       maxWidth: '90vw',
-      data: null
+      data: null,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.snackBar.open('Problem added successfully!', 'Close', {
-          duration: 3000
+          duration: 3000,
         });
       }
     });
@@ -274,13 +395,13 @@ export class ProblemListComponent implements OnInit {
     const dialogRef = this.dialog.open(ProblemFormComponent, {
       width: '600px',
       maxWidth: '90vw',
-      data: problem
+      data: problem,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.snackBar.open('Problem updated successfully!', 'Close', {
-          duration: 3000
+          duration: 3000,
         });
       }
     });
@@ -291,13 +412,13 @@ export class ProblemListComponent implements OnInit {
     const dialogRef = this.dialog.open(NotesDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
-      data: problem
+      data: problem,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result !== undefined) {
         // Update the local problem data with the new notes
-        const updatedProblem = this.problems.find(p => p.id === problem.id);
+        const updatedProblem = this.problems.find((p) => p.id === problem.id);
         if (updatedProblem) {
           updatedProblem.notes = result;
         }
@@ -309,7 +430,7 @@ export class ProblemListComponent implements OnInit {
     this.dialog.open(AllTagsDialogComponent, {
       width: '500px',
       maxWidth: '90vw',
-      data: problem
+      data: problem,
     });
   }
 
@@ -317,14 +438,14 @@ export class ProblemListComponent implements OnInit {
     const dialogRef = this.dialog.open(CompaniesDialogComponent, {
       width: '700px',
       maxWidth: '90vw',
-      data: problem
+      data: problem,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result !== undefined) {
         this.leetcodeService.updateProblem(problem.id!, { companies: result });
         this.snackBar.open('Companies updated successfully!', 'Close', {
-          duration: 3000
+          duration: 3000,
         });
       }
     });
@@ -334,7 +455,7 @@ export class ProblemListComponent implements OnInit {
     this.dialog.open(TimestampsDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
-      data: problem
+      data: problem,
     });
   }
 
@@ -343,12 +464,12 @@ export class ProblemListComponent implements OnInit {
       try {
         await this.leetcodeService.deleteProblem(problem.id!);
         this.snackBar.open('Problem deleted successfully!', 'Close', {
-          duration: 3000
+          duration: 3000,
         });
       } catch (error) {
         console.error('Error deleting problem:', error);
         this.snackBar.open('Error deleting problem', 'Close', {
-          duration: 3000
+          duration: 3000,
         });
       }
     }
@@ -358,13 +479,13 @@ export class ProblemListComponent implements OnInit {
     const dialogRef = this.dialog.open(ProblemFormComponent, {
       width: '600px',
       maxWidth: '90vw',
-      data: problem
+      data: problem,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.snackBar.open('Problem updated successfully!', 'Close', {
-          duration: 3000
+          duration: 3000,
         });
       }
     });
@@ -404,7 +525,7 @@ export class ProblemListComponent implements OnInit {
 
   // Column visibility methods
   toggleColumn(columnKey: string): void {
-    const column = this.columnDefinitions.find(col => col.key === columnKey);
+    const column = this.columnDefinitions.find((col) => col.key === columnKey);
     if (column) {
       column.visible = !column.visible;
       // Save to localStorage
@@ -413,7 +534,7 @@ export class ProblemListComponent implements OnInit {
   }
 
   showColumn(columnKey: string): void {
-    const column = this.columnDefinitions.find(col => col.key === columnKey);
+    const column = this.columnDefinitions.find((col) => col.key === columnKey);
     if (column) {
       column.visible = true;
       this.saveColumnPreferences();
@@ -421,7 +542,7 @@ export class ProblemListComponent implements OnInit {
   }
 
   hideColumn(columnKey: string): void {
-    const column = this.columnDefinitions.find(col => col.key === columnKey);
+    const column = this.columnDefinitions.find((col) => col.key === columnKey);
     if (column) {
       column.visible = false;
       this.saveColumnPreferences();
@@ -442,7 +563,7 @@ export class ProblemListComponent implements OnInit {
     this.resizingColumn = columnKey;
     this.startX = event.clientX;
 
-    const column = this.columnDefinitions.find(col => col.key === columnKey);
+    const column = this.columnDefinitions.find((col) => col.key === columnKey);
     this.startWidth = column ? column.width : 100;
 
     document.body.style.cursor = 'col-resize';
@@ -456,7 +577,7 @@ export class ProblemListComponent implements OnInit {
     const diff = event.clientX - this.startX;
     const newWidth = Math.max(this.startWidth + diff, 60); // Minimum width of 60px
 
-    const column = this.columnDefinitions.find(col => col.key === this.resizingColumn);
+    const column = this.columnDefinitions.find((col) => col.key === this.resizingColumn);
     if (column) {
       const maxWidth = column.maxWidth || 500;
       column.width = Math.min(newWidth, maxWidth);
@@ -478,12 +599,14 @@ export class ProblemListComponent implements OnInit {
   private applyColumnWidths(): void {
     // Use requestAnimationFrame to ensure DOM updates
     requestAnimationFrame(() => {
-      this.columnDefinitions.forEach(col => {
+      this.columnDefinitions.forEach((col) => {
         if (col.visible) {
-          const headerCells = document.querySelectorAll(`.mat-column-${col.key}.mat-mdc-header-cell`);
+          const headerCells = document.querySelectorAll(
+            `.mat-column-${col.key}.mat-mdc-header-cell`
+          );
           const cells = document.querySelectorAll(`.mat-column-${col.key}.mat-mdc-cell`);
 
-          [...headerCells, ...cells].forEach(el => {
+          [...headerCells, ...cells].forEach((el) => {
             const element = el as HTMLElement;
             element.style.width = `${col.width}px`;
             element.style.minWidth = `${col.width}px`; // Set min-width to same as width
@@ -508,7 +631,7 @@ export class ProblemListComponent implements OnInit {
     if (saved) {
       try {
         const widths = JSON.parse(saved);
-        this.columnDefinitions.forEach(col => {
+        this.columnDefinitions.forEach((col) => {
           if (widths.hasOwnProperty(col.key)) {
             col.width = widths[col.key];
           }
@@ -521,21 +644,43 @@ export class ProblemListComponent implements OnInit {
 
   resetColumns(): void {
     // Reset both visibility and widths
-    this.columnDefinitions.forEach(col => {
+    this.columnDefinitions.forEach((col) => {
       col.visible = true;
       // Reset to default widths (updated values)
       switch (col.key) {
-        case 'id': col.width = 80; break;
-        case 'title': col.width = 250; break; // Updated
-        case 'difficulty': col.width = 120; break;
-        case 'status': col.width = 130; break; // Updated
-        case 'tags': col.width = 220; break; // Updated
-        case 'companies': col.width = 180; break; // Updated
-        case 'attempts': col.width = 100; break;
-        case 'timeSpent': col.width = 120; break;
-        case 'dateAdded': col.width = 130; break; // Updated
-        case 'notes': col.width = 80; break;
-        case 'actions': col.width = 80; break;
+        case 'id':
+          col.width = 80;
+          break;
+        case 'title':
+          col.width = 250;
+          break; // Updated
+        case 'difficulty':
+          col.width = 120;
+          break;
+        case 'status':
+          col.width = 130;
+          break; // Updated
+        case 'tags':
+          col.width = 220;
+          break; // Updated
+        case 'companies':
+          col.width = 180;
+          break; // Updated
+        case 'attempts':
+          col.width = 100;
+          break;
+        case 'timeSpent':
+          col.width = 120;
+          break;
+        case 'dateAdded':
+          col.width = 130;
+          break; // Updated
+        case 'notes':
+          col.width = 80;
+          break;
+        case 'actions':
+          col.width = 80;
+          break;
       }
     });
     this.saveColumnPreferences();
@@ -556,7 +701,7 @@ export class ProblemListComponent implements OnInit {
     if (saved) {
       try {
         const preferences = JSON.parse(saved);
-        this.columnDefinitions.forEach(col => {
+        this.columnDefinitions.forEach((col) => {
           if (preferences.hasOwnProperty(col.key)) {
             col.visible = preferences[col.key];
           }
@@ -575,7 +720,7 @@ export class ProblemListComponent implements OnInit {
       return;
     }
 
-    const columnDef = this.columnDefinitions.find(col => col.key === column);
+    const columnDef = this.columnDefinitions.find((col) => col.key === column);
     if (!columnDef || !columnDef.clickable) {
       return;
     }
@@ -611,11 +756,11 @@ export class ProblemListComponent implements OnInit {
         field: 'difficulty',
         value: problem.difficulty,
         type: 'select',
-        options: ['Easy', 'Medium', 'Hard']
-      }
+        options: ['Easy', 'Medium', 'Hard'],
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result !== undefined && result !== problem.difficulty) {
         this.updateProblemField(problem, 'difficulty', result);
       }
@@ -630,11 +775,11 @@ export class ProblemListComponent implements OnInit {
         field: 'status',
         value: problem.status,
         type: 'select',
-        options: ['Not Attempted', 'Attempted', 'Solved', 'Reviewed']
-      }
+        options: ['Not Attempted', 'Attempted', 'Solved', 'Reviewed'],
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result !== undefined && result !== problem.status) {
         this.updateProblemField(problem, 'status', result);
       }
@@ -642,15 +787,18 @@ export class ProblemListComponent implements OnInit {
   }
 
   private editTags(problem: Problem): void {
-    this.dialog.open(AllTagsDialogComponent, {
-      width: '500px',
-      maxWidth: '90vw',
-      data: { ...problem, editable: true }
-    }).afterClosed().subscribe(result => {
-      if (result !== undefined) {
-        this.updateProblemField(problem, 'tags', result);
-      }
-    });
+    this.dialog
+      .open(AllTagsDialogComponent, {
+        width: '500px',
+        maxWidth: '90vw',
+        data: { ...problem, editable: true },
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result !== undefined) {
+          this.updateProblemField(problem, 'tags', result);
+        }
+      });
   }
 
   private editCompanies(problem: Problem): void {
@@ -665,11 +813,11 @@ export class ProblemListComponent implements OnInit {
         field: 'attempts',
         value: problem.attempts,
         type: 'number',
-        min: 0
-      }
+        min: 0,
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result !== undefined && result !== problem.attempts) {
         this.updateProblemField(problem, 'attempts', parseInt(result));
       }
@@ -684,11 +832,11 @@ export class ProblemListComponent implements OnInit {
         field: 'timeSpent',
         value: problem.timeSpent,
         type: 'number',
-        min: 0
-      }
+        min: 0,
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result !== undefined && result !== problem.timeSpent) {
         this.updateProblemField(problem, 'timeSpent', parseInt(result));
       }
@@ -700,13 +848,13 @@ export class ProblemListComponent implements OnInit {
       await this.leetcodeService.updateProblem(problem.id!, { [field]: value });
       this.snackBar.open(`${field} updated successfully!`, 'Close', {
         duration: 3000,
-        panelClass: 'success-snackbar'
+        panelClass: 'success-snackbar',
       });
     } catch (error) {
       console.error(`Error updating ${field}:`, error);
       this.snackBar.open(`Error updating ${field}`, 'Close', {
         duration: 3000,
-        panelClass: 'error-snackbar'
+        panelClass: 'error-snackbar',
       });
     }
   }
@@ -725,10 +873,107 @@ export class ProblemListComponent implements OnInit {
       return dateObj.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
       });
     } catch (error) {
       return '—';
+    }
+  }
+
+  // Tag filtering methods
+  toggleTagFilter(): void {
+    this.showTagFilter = !this.showTagFilter;
+    if (this.showTagFilter) {
+      this.positionTagFilterPanel();
+    }
+  }
+
+  private positionTagFilterPanel(): void {
+    setTimeout(() => {
+      const button = document.querySelector('.tag-filter-toggle') as HTMLElement;
+      const panel = document.querySelector('.tag-filter-panel') as HTMLElement;
+
+      if (button && panel) {
+        const buttonRect = button.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const panelHeight = 400; // Approximate panel height
+
+        // Check if there's enough space below the button
+        const spaceBelow = viewportHeight - buttonRect.bottom;
+        const spaceAbove = buttonRect.top;
+
+        if (spaceBelow >= panelHeight || spaceBelow > spaceAbove) {
+          // Position below the button
+          panel.style.top = `${buttonRect.bottom + 8}px`;
+          panel.style.left = `${buttonRect.left}px`;
+        } else {
+          // Position above the button
+          panel.style.top = `${buttonRect.top - panelHeight - 8}px`;
+          panel.style.left = `${buttonRect.left}px`;
+        }
+      }
+    }, 0);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    // Close tag filter panel when clicking outside
+    const target = event.target as HTMLElement;
+    if (this.showTagFilter && !target.closest('.tag-filter-section')) {
+      this.showTagFilter = false;
+    }
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    // Reposition the tag filter panel on window resize
+    if (this.showTagFilter) {
+      this.positionTagFilterPanel();
+    }
+  }
+
+  addTagToFilter(tag: string): void {
+    if (!this.selectedTags.includes(tag)) {
+      this.selectedTags.push(tag);
+      this.applyTagFilter();
+    }
+  }
+
+  removeTagFromFilter(tag: string): void {
+    const index = this.selectedTags.indexOf(tag);
+    if (index >= 0) {
+      this.selectedTags.splice(index, 1);
+      this.applyTagFilter();
+    }
+  }
+
+  clearTagFilter(): void {
+    this.selectedTags = [];
+    this.applyTagFilter();
+  }
+
+  setTagFilterLogic(logic: 'AND' | 'OR'): void {
+    this.tagFilterLogic = logic;
+    this.applyTagFilter();
+  }
+
+  applyTagFilter(): void {
+    if (this.selectedTags.length === 0) {
+      this.dataSource.data = this.problems;
+    } else {
+      this.dataSource.data = this.problems.filter((problem) => {
+        if (this.tagFilterLogic === 'AND') {
+          // All selected tags must be present
+          return this.selectedTags.every((tag) => problem.tags.includes(tag));
+        } else {
+          // At least one selected tag must be present
+          return this.selectedTags.some((tag) => problem.tags.includes(tag));
+        }
+      });
+    }
+
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
     }
   }
 }

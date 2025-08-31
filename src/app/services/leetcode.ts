@@ -1,11 +1,24 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, doc, addDoc, updateDoc, deleteDoc, query, where, orderBy, getDocs, onSnapshot, limit } from '@angular/fire/firestore';
-import { Observable, BehaviorSubject } from 'rxjs';
+import {
+  Firestore,
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  onSnapshot,
+  limit,
+} from '@angular/fire/firestore';
+import { BehaviorSubject } from 'rxjs';
 import { Problem, UserStats, ProblemAction } from '../models/problem';
 import { AuthService } from './auth';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LeetcodeService {
   private problemsSubject = new BehaviorSubject<Problem[]>([]);
@@ -16,17 +29,14 @@ export class LeetcodeService {
     mediumCount: 0,
     hardCount: 0,
     streakDays: 0,
-    lastActiveDate: new Date()
+    lastActiveDate: new Date(),
   });
 
   problems$ = this.problemsSubject.asObservable();
   stats$ = this.statsSubject.asObservable();
 
-  constructor(
-    private firestore: Firestore,
-    private authService: AuthService
-  ) {
-    this.authService.user$.subscribe(user => {
+  constructor(private firestore: Firestore, private authService: AuthService) {
+    this.authService.user$.subscribe((user) => {
       if (user) {
         this.loadUserProblems(user.uid);
       } else {
@@ -38,11 +48,7 @@ export class LeetcodeService {
 
   private loadUserProblems(userId: string): void {
     const problemsRef = collection(this.firestore, 'problems');
-    const q = query(
-      problemsRef,
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    );
+    const q = query(problemsRef, where('userId', '==', userId), orderBy('createdAt', 'desc'));
 
     onSnapshot(q, (snapshot) => {
       const problems: Problem[] = [];
@@ -57,7 +63,7 @@ export class LeetcodeService {
           lastAttemptDate: data['lastAttemptDate']?.toDate() || null,
           firstAttemptDate: data['firstAttemptDate']?.toDate() || null,
           firstSolvedDate: data['firstSolvedDate']?.toDate() || null,
-          actionHistory: this.parseActionHistory(data['actionHistory'] || [])
+          actionHistory: this.parseActionHistory(data['actionHistory'] || []),
         } as Problem);
       });
       this.problemsSubject.next(problems);
@@ -66,29 +72,30 @@ export class LeetcodeService {
   }
 
   private parseActionHistory(actionHistory: any[]): ProblemAction[] {
-    return actionHistory.map(action => ({
+    return actionHistory.map((action) => ({
       ...action,
-      timestamp: action.timestamp?.toDate() || new Date()
+      timestamp: action.timestamp?.toDate() || new Date(),
     }));
   }
 
   private updateStats(problems: Problem[]): void {
     const stats: UserStats = {
       totalProblems: problems.length,
-      solvedProblems: problems.filter(p => p.status === 'Solved').length,
-      easyCount: problems.filter(p => p.difficulty === 'Easy' && p.status === 'Solved').length,
-      mediumCount: problems.filter(p => p.difficulty === 'Medium' && p.status === 'Solved').length,
-      hardCount: problems.filter(p => p.difficulty === 'Hard' && p.status === 'Solved').length,
+      solvedProblems: problems.filter((p) => p.status === 'Solved').length,
+      easyCount: problems.filter((p) => p.difficulty === 'Easy' && p.status === 'Solved').length,
+      mediumCount: problems.filter((p) => p.difficulty === 'Medium' && p.status === 'Solved')
+        .length,
+      hardCount: problems.filter((p) => p.difficulty === 'Hard' && p.status === 'Solved').length,
       streakDays: this.calculateStreak(problems),
-      lastActiveDate: this.getLastActiveDate(problems)
+      lastActiveDate: this.getLastActiveDate(problems),
     };
     this.statsSubject.next(stats);
   }
 
   private calculateStreak(problems: Problem[]): number {
     const solvedDates = problems
-      .filter(p => p.status === 'Solved' && p.solvedDate)
-      .map(p => p.solvedDate!)
+      .filter((p) => p.status === 'Solved' && p.solvedDate)
+      .map((p) => p.solvedDate!)
       .sort((a, b) => {
         const aTime = a ? a.getTime() : 0;
         const bTime = b ? b.getTime() : 0;
@@ -121,7 +128,7 @@ export class LeetcodeService {
 
   private getLastActiveDate(problems: Problem[]): Date {
     const dates = problems
-      .map(p => p.lastAttemptDate || p.createdAt)
+      .map((p) => p.lastAttemptDate || p.createdAt)
       .sort((a, b) => {
         if (!a && !b) return 0;
         if (!a) return 1;
@@ -140,11 +147,9 @@ export class LeetcodeService {
       mediumCount: 0,
       hardCount: 0,
       streakDays: 0,
-      lastActiveDate: new Date()
+      lastActiveDate: new Date(),
     });
   }
-
-  // ...existing code...
 
   async seedDemoDataIfEmpty(): Promise<void> {
     const user = this.authService.getCurrentUser();
@@ -156,7 +161,7 @@ export class LeetcodeService {
     const q = query(problemsRef, where('userId', '==', user.uid), limit(1));
     const existing = await getDocs(q);
     if (!existing.empty) {
-      return; // User already has data
+      return;
     }
 
     const today = new Date();
@@ -181,7 +186,7 @@ export class LeetcodeService {
         firstAttemptDate: daysAgo(7),
         firstSolvedDate: daysAgo(7),
         solvedDate: daysAgo(1),
-        lastAttemptDate: daysAgo(1)
+        lastAttemptDate: daysAgo(1),
       },
       {
         leetcodeId: 2,
@@ -190,12 +195,12 @@ export class LeetcodeService {
         status: 'Attempted',
         url: 'https://leetcode.com/problems/add-two-numbers/',
         tags: ['Linked List', 'Math'],
-        companies: ['Microsoft', 'Facebook'],
+        companies: ['Microsoft', 'Meta'],
         notes: 'Review edge cases for carry.',
         attempts: 2,
         timeSpent: 35,
         firstAttemptDate: daysAgo(3),
-        lastAttemptDate: daysAgo(2)
+        lastAttemptDate: daysAgo(2),
       },
       {
         leetcodeId: 3,
@@ -211,7 +216,7 @@ export class LeetcodeService {
         firstAttemptDate: daysAgo(5),
         firstSolvedDate: daysAgo(5),
         solvedDate: daysAgo(5),
-        lastAttemptDate: daysAgo(5)
+        lastAttemptDate: daysAgo(5),
       },
       {
         leetcodeId: 4,
@@ -223,7 +228,7 @@ export class LeetcodeService {
         companies: ['Google', 'Apple'],
         notes: '',
         attempts: 0,
-        timeSpent: 0
+        timeSpent: 0,
       },
       {
         leetcodeId: 5,
@@ -237,187 +242,183 @@ export class LeetcodeService {
         attempts: 3,
         timeSpent: 15,
         firstAttemptDate: daysAgo(14),
-        lastAttemptDate: daysAgo(1)
-      }
+        lastAttemptDate: daysAgo(1),
+      },
     ];
 
     for (const p of demoProblems) {
-      // Space out createdAt/updatedAt via provided dates; addProblem will handle
       await this.addProblem(p);
     }
 
-    // After seeding, force a stats recompute using current subject value
     const current = this.problemsSubject.value;
     if (current.length > 0) {
       this.updateStats(current);
     }
   }
 
-async addProblem(problem: Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<void> {
-  const user = this.authService.getCurrentUser();
-  if (!user) {
-    console.error('User not authenticated');
-    throw new Error('User not authenticated');
-  }
+  async addProblem(
+    problem: Omit<Problem, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
+  ): Promise<void> {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      console.error('User not authenticated');
+      throw new Error('User not authenticated');
+    }
 
-  console.log('Adding problem with data:', problem);
+    console.log('Adding problem with data:', problem);
 
-  // Clean the data and ensure no undefined values
-  const cleanData: any = {
-    leetcodeId: problem.leetcodeId || 0,
-    title: problem.title || 'Unknown Problem',
-    difficulty: problem.difficulty || 'Medium',
-    status: problem.status || 'Not Attempted',
-    url: problem.url || '',
-    tags: Array.isArray(problem.tags) ? problem.tags.filter(tag => tag && typeof tag === 'string') : [],
-    attempts: typeof problem.attempts === 'number' ? problem.attempts : 0,
-    timeSpent: typeof problem.timeSpent === 'number' ? problem.timeSpent : 0,
-    notes: problem.notes || '',
-    companies: Array.isArray(problem.companies) ? problem.companies.filter(company => company && typeof company === 'string') : [],
-    userId: user.uid,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    actionHistory: []
-  };
+    const cleanData: any = {
+      leetcodeId: problem.leetcodeId || 0,
+      title: problem.title || 'Unknown Problem',
+      difficulty: problem.difficulty || 'Medium',
+      status: problem.status || 'Not Attempted',
+      url: problem.url || '',
+      tags: Array.isArray(problem.tags)
+        ? problem.tags.filter((tag) => tag && typeof tag === 'string')
+        : [],
+      attempts: typeof problem.attempts === 'number' ? problem.attempts : 0,
+      timeSpent: typeof problem.timeSpent === 'number' ? problem.timeSpent : 0,
+      notes: problem.notes || '',
+      companies: Array.isArray(problem.companies)
+        ? problem.companies.filter((company) => company && typeof company === 'string')
+        : [],
+      userId: user.uid,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      actionHistory: [],
+    };
 
-  // Create initial action
-  const initialAction = this.createAction(
-    'created',
-    undefined,
-    undefined,
-    undefined,
-    `Problem "${cleanData.title}" was added`
-  );
-  cleanData.actionHistory.push(initialAction);
-
-  // Set firstAttemptDate if status is Attempted or Solved and it's not already set
-  if ((cleanData.status === 'Attempted' || cleanData.status === 'Solved') && !problem.firstAttemptDate) {
-    cleanData.firstAttemptDate = new Date();
-    const attemptAction = this.createAction(
-      'status_changed',
-      'status',
-      'Not Attempted',
-      cleanData.status,
-      `Status changed to ${cleanData.status}`
-    );
-    cleanData.actionHistory.push(attemptAction);
-  }
-
-  // Set firstSolvedDate if status is Solved
-  if (cleanData.status === 'Solved') {
-    cleanData.firstSolvedDate = new Date();
-    cleanData.solvedDate = new Date();
-    const solvedAction = this.createAction(
-      'status_changed',
-      'status',
+    const initialAction = this.createAction(
+      'created',
       undefined,
-      'Solved',
-      'Problem solved for the first time'
+      undefined,
+      undefined,
+      `Problem "${cleanData.title}" was added`
     );
-    cleanData.actionHistory.push(solvedAction);
+    cleanData.actionHistory.push(initialAction);
+
+    if (
+      (cleanData.status === 'Attempted' || cleanData.status === 'Solved') &&
+      !problem.firstAttemptDate
+    ) {
+      cleanData.firstAttemptDate = new Date();
+      const attemptAction = this.createAction(
+        'status_changed',
+        'status',
+        'Not Attempted',
+        cleanData.status,
+        `Status changed to ${cleanData.status}`
+      );
+      cleanData.actionHistory.push(attemptAction);
+    }
+
+    if (cleanData.status === 'Solved') {
+      cleanData.firstSolvedDate = new Date();
+      cleanData.solvedDate = new Date();
+      const solvedAction = this.createAction(
+        'status_changed',
+        'status',
+        undefined,
+        'Solved',
+        'Problem solved for the first time'
+      );
+      cleanData.actionHistory.push(solvedAction);
+    }
+
+    if (problem.solvedDate && problem.solvedDate instanceof Date) {
+      cleanData.solvedDate = problem.solvedDate;
+    }
+
+    if (problem.lastAttemptDate && problem.lastAttemptDate instanceof Date) {
+      cleanData.lastAttemptDate = problem.lastAttemptDate;
+    }
+
+    if (problem.firstAttemptDate && problem.firstAttemptDate instanceof Date) {
+      cleanData.firstAttemptDate = problem.firstAttemptDate;
+    }
+
+    const firebaseData = this.removeUndefinedFields(cleanData);
+
+    console.log('Final problem data for Firestore:', firebaseData);
+
+    try {
+      const problemsRef = collection(this.firestore, 'problems');
+      const docRef = await addDoc(problemsRef, firebaseData);
+      console.log('Problem added successfully with ID:', docRef.id);
+    } catch (error) {
+      console.error('Error adding problem to Firestore:', error);
+      throw error;
+    }
   }
 
-  // Only add optional dates if they exist and are valid
-  if (problem.solvedDate && problem.solvedDate instanceof Date) {
-    cleanData.solvedDate = problem.solvedDate;
-  }
+  private removeUndefinedFields(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return null;
+    }
 
-  if (problem.lastAttemptDate && problem.lastAttemptDate instanceof Date) {
-    cleanData.lastAttemptDate = problem.lastAttemptDate;
-  }
+    if (Array.isArray(obj)) {
+      return obj
+        .map((item) => this.removeUndefinedFields(item))
+        .filter((item) => item !== undefined);
+    }
 
-  if (problem.firstAttemptDate && problem.firstAttemptDate instanceof Date) {
-    cleanData.firstAttemptDate = problem.firstAttemptDate;
-  }
+    if (typeof obj === 'object' && obj instanceof Date) {
+      return obj;
+    }
 
-  // Final cleaning to remove any undefined values
-  const firebaseData = this.removeUndefinedFields(cleanData);
+    if (typeof obj === 'object') {
+      const cleaned: any = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (value !== undefined) {
+          const cleanedValue = this.removeUndefinedFields(value);
+          if (cleanedValue !== undefined) {
+            cleaned[key] = cleanedValue;
+          }
+        }
+      }
+      return cleaned;
+    }
 
-  console.log('Final problem data for Firestore:', firebaseData);
-
-  try {
-    const problemsRef = collection(this.firestore, 'problems');
-    const docRef = await addDoc(problemsRef, firebaseData);
-    console.log('Problem added successfully with ID:', docRef.id);
-  } catch (error) {
-    console.error('Error adding problem to Firestore:', error);
-    throw error;
-  }
-}
-
-/**
- * Recursively remove undefined fields from an object
- */
-private removeUndefinedFields(obj: any): any {
-  if (obj === null || obj === undefined) {
-    return null;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj
-      .map(item => this.removeUndefinedFields(item))
-      .filter(item => item !== undefined);
-  }
-
-  if (typeof obj === 'object' && obj instanceof Date) {
     return obj;
   }
 
-  if (typeof obj === 'object') {
-    const cleaned: any = {};
-    for (const [key, value] of Object.entries(obj)) {
-      if (value !== undefined) {
-        const cleanedValue = this.removeUndefinedFields(value);
-        if (cleanedValue !== undefined) {
-          cleaned[key] = cleanedValue;
-        }
-      }
-    }
-    return cleaned;
+  private createAction(
+    action: string,
+    field?: string,
+    oldValue?: any,
+    newValue?: any,
+    description?: string
+  ): ProblemAction {
+    const user = this.authService.getCurrentUser();
+    return {
+      timestamp: new Date(),
+      action: action as any,
+      details: {
+        field: field || undefined,
+        oldValue: oldValue !== undefined ? oldValue : undefined,
+        newValue: newValue !== undefined ? newValue : undefined,
+        description: description || undefined,
+      },
+      userId: user?.uid,
+    };
   }
 
-  return obj;
-}
-
-/**
- * Create action with proper data cleaning
- */
-private createAction(action: string, field?: string, oldValue?: any, newValue?: any, description?: string): ProblemAction {
-  const user = this.authService.getCurrentUser();
-  return {
-    timestamp: new Date(),
-    action: action as any,
-    details: {
-      field: field || undefined,
-      oldValue: oldValue !== undefined ? oldValue : undefined,
-      newValue: newValue !== undefined ? newValue : undefined,
-      description: description || undefined
-    },
-    userId: user?.uid
-  };
-}
-
-// ...existing code...
-
   async updateProblem(problemId: string, updates: Partial<Problem>): Promise<void> {
-    // Get current problem to check previous status
     const currentProblems = this.problemsSubject.value;
-    const currentProblem = currentProblems.find(p => p.id === problemId);
+    const currentProblem = currentProblems.find((p) => p.id === problemId);
 
     if (!currentProblem) {
       throw new Error('Problem not found');
     }
 
-    // Clean updates to remove undefined values
     const cleanUpdates: any = {
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
-    // Initialize action history if it doesn't exist
     const currentActionHistory = currentProblem.actionHistory || [];
     const newActions: ProblemAction[] = [];
 
-    Object.keys(updates).forEach(key => {
+    Object.keys(updates).forEach((key) => {
       if (updates[key as keyof Problem] !== undefined && key !== 'actionHistory') {
         const oldValue = currentProblem[key as keyof Problem];
         const newValue = updates[key as keyof Problem];
@@ -425,7 +426,6 @@ private createAction(action: string, field?: string, oldValue?: any, newValue?: 
         if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
           cleanUpdates[key] = newValue;
 
-          // Create action for this change
           let actionType = 'status_changed';
           let description = '';
 
@@ -463,46 +463,37 @@ private createAction(action: string, field?: string, oldValue?: any, newValue?: 
       }
     });
 
-    // Handle status change logic
     if (updates.status) {
       const wasNotAttempted = currentProblem.status === 'Not Attempted';
       const nowAttempted = updates.status === 'Attempted' || updates.status === 'Solved';
       const wasSolved = currentProblem.status === 'Solved';
       const nowSolved = updates.status === 'Solved';
 
-      // Track first attempt date
       if (wasNotAttempted && nowAttempted && !currentProblem.firstAttemptDate) {
         cleanUpdates.firstAttemptDate = new Date();
       }
 
-      // Update lastAttemptDate when status changes to Attempted or Solved
       if (updates.status === 'Attempted' || updates.status === 'Solved') {
         cleanUpdates.lastAttemptDate = new Date();
       }
 
-      // Handle first time solved
       if (!wasSolved && nowSolved) {
-        // This is the first time the problem is being marked as solved
         if (!currentProblem.firstSolvedDate) {
           cleanUpdates.firstSolvedDate = new Date();
           cleanUpdates.solvedDate = new Date();
 
-          // Update the action description for first solve
-          const solveAction = newActions.find(action => action.details.field === 'status');
+          const solveAction = newActions.find((action) => action.details.field === 'status');
           if (solveAction) {
             solveAction.details.description = 'Problem solved for the first time';
           }
         } else {
-          // Problem was solved before, just update solvedDate
           cleanUpdates.solvedDate = new Date();
         }
       } else if (wasSolved && !nowSolved) {
-        // Problem was unsolved
         cleanUpdates.solvedDate = null;
       }
     }
 
-    // Combine existing and new actions
     cleanUpdates.actionHistory = [...currentActionHistory, ...newActions];
 
     const problemRef = doc(this.firestore, 'problems', problemId);
@@ -514,10 +505,9 @@ private createAction(action: string, field?: string, oldValue?: any, newValue?: 
     await deleteDoc(problemRef);
   }
 
-  // Helper method to get problem action history
   getProblemActionHistory(problemId: string): ProblemAction[] {
     const problems = this.problemsSubject.value;
-    const problem = problems.find(p => p.id === problemId);
+    const problem = problems.find((p) => p.id === problemId);
     return problem?.actionHistory || [];
   }
 }
