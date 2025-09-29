@@ -2,6 +2,7 @@
 
 Try the live demo of the app here:
 https://black-ocean-0e05c7e1e.2.azurestaticapps.net/
+
 **Quick Note:** This app is primarily designed for desktop use and is not intended for mobile devices. While some pages may be responsive on mobile, others are not. Mobile responsiveness is not taken into account anyways.
 
 ## Getting Started
